@@ -15,6 +15,7 @@
 
 \input{settings}
 \usepackage{lipsum} % for filling pages with stuff
+\setlipsum{auto-lang=false} % to avoid babel errors
 
 % -------------------------------------------------------------------------------
 % --------------------------------- Thesis Info ---------------------------------
@@ -54,7 +55,7 @@
     \large DER TECHNISCHEN UNIVERSITÄT MÜNCHEN\\[24mm]
 
     {\Large \doctype in \studyProgram}\\[20mm]
-    {\huge\bf \title\par}
+    {\huge\textbf{\title}\par}
     \vspace{15mm}
     {\LARGE  \author}
 \end{center}
@@ -74,8 +75,8 @@
     \huge SCHOOL OF COMPUTATION, INFORMATION AND TECHNOLOGY\\[5mm]
     \large DER TECHNISCHEN UNIVERSITÄT MÜNCHEN\\[24mm]
     {\Large \doctype in \studyProgram}\\[20mm]
-    {\LARGE\bf \title}\\[10mm]
-    {\LARGE\bf \titleGer}\\[10mm]
+    {\LARGE\textbf{\title}}\\[10mm]
+    {\LARGE\textbf{\titleGer}}\\[10mm]
     \begin{tabular}{ll}
         \Large Author:     & \Large \author     \\[2mm]
         \Large Supervisor: & \Large \supervisor \\[2mm]
@@ -112,7 +113,7 @@ Munich, \date \hspace{5cm} \author
 \addcontentsline{toc}{chapter}{Acknowledgements}
 \vspace*{2cm}
 \begin{center}
-    {\Large \bf Acknowledgements}
+    {\Large \textbf{Acknowledgements}}
 \end{center}
 \vspace{1cm}
 
@@ -128,7 +129,7 @@ Munich, \date \hspace{5cm} \author
 \addcontentsline{toc}{chapter}{Abstract}
 \vspace*{2cm}
 \begin{center}
-    {\Large \bf Abstract}
+    {\Large \textbf{Abstract}}
 \end{center}
 \vspace{1cm}
 
@@ -140,7 +141,7 @@ Munich, \date \hspace{5cm} \author
 \addcontentsline{toc}{chapter}{Zusammenfassung}
 \vspace*{2cm}
 \begin{center}
-    {\Large \bf Zusammenfassung}
+    {\Large \textbf{Zusammenfassung}}
 \end{center}
 \vspace{1cm}
 
