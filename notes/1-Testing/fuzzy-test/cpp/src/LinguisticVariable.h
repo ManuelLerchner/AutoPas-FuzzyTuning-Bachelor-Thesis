@@ -14,36 +14,36 @@
 
 namespace autopas::fuzzy_logic {
 
-class LinguisticVariable {
- public:
-    /**
-     * Constructs a LinguisticVariable with the given name.
-     * @param name
-     */
-  explicit LinguisticVariable(const std::shared_ptr<CrispSet>& crispSet);
+    class LinguisticVariable {
+    public:
+        /**
+         * Constructs a LinguisticVariable with the given name.
+         * @param name
+         */
+        explicit LinguisticVariable(const std::string &name, const std::pair<double, double> &range);
 
-  /**
-   * Adds a FuzzySet to the LinguisticVariable.
-   * @param fuzzySet
-   */
-  void addLinguisticTerm(const std::shared_ptr<FuzzySet>& fuzzySet);
+        /**
+         * Adds a FuzzySet to the LinguisticVariable.
+         * @param fuzzySet
+         */
+        void addLinguisticTerm(const std::shared_ptr<FuzzySet> &fuzzySet);
 
-  /**
-   * Overload of the operator== to get a FuzzySet by its name. This allows a very concise syntax to create fuzzy rules.
-   * @param linguisticTerm
-   * @return The FuzzySet with the given name.
-   */
-   std::shared_ptr<FuzzySet> operator==(const std::string &linguisticTerm) const;
+        /**
+         * Overload of the operator== to get a FuzzySet by its name. This allows a very concise syntax to create fuzzy rules.
+         * @param linguisticTerm
+         * @return The FuzzySet with the given name.
+         */
+        std::shared_ptr<FuzzySet> operator==(const std::string &linguisticTerm) const;
 
- private:
-  /**
-   * The CrispSet on which the LinguisticVariable is defined.
-   */
-  std::shared_ptr<CrispSet> _crispSet;
+    private:
+        /**
+         * The CrispSet on which the LinguisticVariable is defined.
+         */
+        std::shared_ptr<CrispSet> _crispSet;
 
-  /**
-   * All linguistic terms of the LinguisticVariable organized by their name.
-   */
-  std::map<std::string, std::shared_ptr<FuzzySet>> _linguisticTerms;
-};
+        /**
+         * All linguistic terms of the LinguisticVariable organized by their name.
+         */
+        std::map<std::string, std::shared_ptr<FuzzySet>> _linguisticTerms;
+    };
 }  // namespace autopas::fuzzy_logic

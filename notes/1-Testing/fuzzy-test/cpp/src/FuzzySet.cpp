@@ -10,16 +10,19 @@
 
 namespace autopas::fuzzy_logic {
 
-    FuzzySet::FuzzySet(std::string linguisticTerm, const std::shared_ptr<MembershipFunction> &membershipFunction)
+    FuzzySet::FuzzySet(std::string linguisticTerm,
+                       const std::shared_ptr<ComposedMembershipFunction> &membershipFunction)
             : _linguisticTerm(std::move(linguisticTerm)), _membershipFunction(membershipFunction) {}
 
     FuzzySet::FuzzySet(std::string linguisticTerm,
                        const std::shared_ptr<BaseMembershipFunction> &baseMembershipFunction)
             : _linguisticTerm(std::move(linguisticTerm)), _baseMembershipFunction(baseMembershipFunction) {}
 
-    FuzzySet::FuzzySet(std::string linguisticTerm, const std::shared_ptr<MembershipFunction> &membershipFunction,
+    FuzzySet::FuzzySet(std::string linguisticTerm,
+                       const std::shared_ptr<ComposedMembershipFunction> &membershipFunction,
                        const std::shared_ptr<CrispSet> &crispSet)
-            : _linguisticTerm(std::move(linguisticTerm)), _membershipFunction(membershipFunction), _crispSet(crispSet) {}
+            : _linguisticTerm(std::move(linguisticTerm)), _membershipFunction(membershipFunction),
+              _crispSet(crispSet) {}
 
     double FuzzySet::evaluate_membership(const std::map<std::string, double> &data) const {
         if (_baseMembershipFunction.has_value()) {
@@ -29,7 +32,7 @@ namespace autopas::fuzzy_logic {
             if (crisp_dimensions.size() != 1) {
             }
             const auto dimension_name = crisp_dimensions.begin()->first;
-            auto v= (*_baseMembershipFunction)->operator()(data.at(dimension_name));
+            auto v = (*_baseMembershipFunction)->operator()(data.at(dimension_name));
             return v;
         } else {
             // The current fuzzy set is a derived set and has needs to delegate the evaluation recursively to its base sets.
@@ -58,35 +61,6 @@ namespace autopas::fuzzy_logic {
         return denominator == 0 ? 0 : numerator / denominator;
     }
 
-    std::shared_ptr<FuzzySet> FuzzySet::unionSet(const std::shared_ptr<FuzzySet> &lhs,
-                                                 const std::shared_ptr<FuzzySet> &rhs) {
-        const std::string newLinguisticTerm = lhs->_linguisticTerm + " or " + rhs->_linguisticTerm;
-        const auto newCrispSet = (*lhs->_crispSet) * (*rhs->_crispSet);
-        auto newMembershipFunction = std::make_shared<MembershipFunction>([lhs, rhs](auto data) {
-            return std::max((lhs->evaluate_membership(data)), (rhs->evaluate_membership(data)));
-        });
-        return std::make_shared<FuzzySet>(newLinguisticTerm, newMembershipFunction, newCrispSet);
-    }
-
-    std::shared_ptr<FuzzySet> FuzzySet::intersectionSet(const std::shared_ptr<FuzzySet> &lhs,
-                                                        const std::shared_ptr<FuzzySet> &rhs) {
-        const std::string newLinguisticTerm = lhs->_linguisticTerm + " and " + rhs->_linguisticTerm;
-        const auto newCrispSet = (*lhs->_crispSet) * (*rhs->_crispSet);
-        auto newMembershipFunction = std::make_shared<MembershipFunction>([lhs, rhs](auto data) {
-            return std::min((lhs->evaluate_membership(data)), (rhs->evaluate_membership(data)));
-        });
-        return std::make_shared<FuzzySet>(newLinguisticTerm, newMembershipFunction, newCrispSet);
-    }
-
-    std::shared_ptr<FuzzySet> FuzzySet::complementSet(const std::shared_ptr<FuzzySet> &lhs) {
-        const std::string newLinguisticTerm = "not " + lhs->_linguisticTerm;
-        const auto newCrispSet = lhs->_crispSet;
-        auto newMembershipFunction = std::make_shared<MembershipFunction>([lhs](auto data) {
-            return 1 - (lhs->evaluate_membership(data));
-        });
-        return std::make_shared<FuzzySet>(newLinguisticTerm, newMembershipFunction, newCrispSet);
-    }
-
     const std::string &FuzzySet::getLinguisticTerm() const { return _linguisticTerm; }
 
     const std::shared_ptr<CrispSet> &FuzzySet::getCrispSet() const { return _crispSet; }
@@ -94,4 +68,30 @@ namespace autopas::fuzzy_logic {
     void FuzzySet::setCrispSet(const std::shared_ptr<CrispSet> &crispSet) { _crispSet = crispSet; }
 
 
+    std::shared_ptr<FuzzySet> operator||(const std::shared_ptr<FuzzySet> &lhs, const std::shared_ptr<FuzzySet> &rhs) {
+        const std::string newLinguisticTerm = "(" + lhs->_linguisticTerm + " || " + rhs->_linguisticTerm + ")";
+        const auto newCrispSet = (*lhs->_crispSet) * (*rhs->_crispSet);
+        auto newMembershipFunction = std::make_shared<FuzzySet::ComposedMembershipFunction>([lhs, rhs](auto data) {
+            return std::max((lhs->evaluate_membership(data)), (rhs->evaluate_membership(data)));
+        });
+        return std::make_shared<FuzzySet>(newLinguisticTerm, newMembershipFunction, newCrispSet);
+    }
+
+    std::shared_ptr<FuzzySet> operator&&(const std::shared_ptr<FuzzySet> &lhs, const std::shared_ptr<FuzzySet> &rhs) {
+        const std::string newLinguisticTerm = "(" + lhs->_linguisticTerm + " && " + rhs->_linguisticTerm + ")";
+        const auto newCrispSet = (*lhs->_crispSet) * (*rhs->_crispSet);
+        auto newMembershipFunction = std::make_shared<FuzzySet::ComposedMembershipFunction>([lhs, rhs](auto data) {
+            return std::min((lhs->evaluate_membership(data)), (rhs->evaluate_membership(data)));
+        });
+        return std::make_shared<FuzzySet>(newLinguisticTerm, newMembershipFunction, newCrispSet);
+    }
+
+    std::shared_ptr<FuzzySet> operator!(const std::shared_ptr<FuzzySet> &set) {
+        const std::string newLinguisticTerm = "(not " + set->_linguisticTerm + ")";
+        const auto newCrispSet = set->_crispSet;
+        auto newMembershipFunction = std::make_shared<FuzzySet::ComposedMembershipFunction>([set](auto data) {
+            return 1 - (set->evaluate_membership(data));
+        });
+        return std::make_shared<FuzzySet>(newLinguisticTerm, newMembershipFunction, newCrispSet);
+    }
 }  // namespace autopas::fuzzy_logic

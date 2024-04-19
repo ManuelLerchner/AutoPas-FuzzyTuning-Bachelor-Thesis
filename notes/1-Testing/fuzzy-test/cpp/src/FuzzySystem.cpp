@@ -8,26 +8,25 @@
 
 namespace autopas::fuzzy_logic {
 
-void FuzzySystem::addRule(const FuzzyRule &rule) { _rules.push_back(rule); };
+    void FuzzySystem::addRule(const FuzzyRule &rule) { _rules.push_back(rule); };
 
-std::shared_ptr<FuzzySet> FuzzySystem::applyRules(const std::map<std::string, double> &data) const {
-  std::vector<std::shared_ptr<FuzzySet>> consequents;
-  consequents.reserve(_rules.size());
-for (const auto &rule : _rules) {
-    consequents.push_back(rule.apply(data));
-  }
+    std::shared_ptr<FuzzySet> FuzzySystem::applyRules(const std::map<std::string, double> &data) const {
+        std::vector<std::shared_ptr<FuzzySet>> consequences;
 
-  auto result = consequents[0];
-  for (size_t i = 1; i < consequents.size(); ++i) {
-    result = FuzzySet::unionSet(result, consequents[i]);
-  }
+        std::transform(_rules.begin(), _rules.end(), std::back_inserter(consequences),
+                       [&data](const FuzzyRule &rule) { return rule.apply(data); });
 
-  return result;
-}
+        auto result = consequences[0];
+        for (size_t i = 1; i < consequences.size(); ++i) {
+            result = result || consequences[i];
+        }
 
-double FuzzySystem::predict(const std::map<std::string, double> &data, size_t numSamples) const {
-  auto unionSet = applyRules(data);
-  return unionSet->centroid(numSamples);
-}
+        return result;
+    }
+
+    double FuzzySystem::predict(const std::map<std::string, double> &data, size_t numSamples) const {
+        auto unionSet = applyRules(data);
+        return unionSet->centroid(numSamples);
+    }
 
 }  // namespace autopas::fuzzy_logic
