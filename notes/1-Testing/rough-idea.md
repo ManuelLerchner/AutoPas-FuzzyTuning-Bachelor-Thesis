@@ -16,3 +16,5 @@
    + FuzzySystem: needs "List(Input)", "List(Output)", "List(Rule)"
      + make sure they are compatible
    + Rule: needs "BoolExpression", "OutputStatement"
+
+4. Maybe suggest multiple close Predictions
