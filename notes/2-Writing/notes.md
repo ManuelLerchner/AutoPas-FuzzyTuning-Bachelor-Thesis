@@ -37,6 +37,7 @@
    + To demonstrate the system a simple Proof of Concept Rule-Set is used
    + Sources of Rules
      + Reverse Engineer Full Tuning results and their connections to the LiveInfoStruct
+       + Maybe show a plot of some discovered connections
      + Expert Knowledge
 5. Comparison and Evaluation
    + How well does it work, compare to other methods
