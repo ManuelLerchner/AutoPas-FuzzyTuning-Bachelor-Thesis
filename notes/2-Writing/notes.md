@@ -33,7 +33,7 @@
         + Line Ranking / Higher Dimensional Configuration Embedding
         + Suitability Approach
         + Tune Parameters seperately and merge them
-4. Setting up the Fuzzy System
+4. Proof of Concept
    + To demonstrate the system a simple Proof of Concept Rule-Set is used
    + Sources of Rules
      + Reverse Engineer Full Tuning results and their connections to the LiveInfoStruct
