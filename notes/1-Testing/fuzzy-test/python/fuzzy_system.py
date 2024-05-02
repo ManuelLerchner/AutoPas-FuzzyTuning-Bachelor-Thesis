@@ -121,7 +121,10 @@ class FuzzySet:
             # Pass the data down recursively
             return self.function(data)
 
-    def center_of_gravity(self, numpoints=100):
+    def defuzzyfy(self, numpoints=100):
+        return self.mom(numpoints)
+
+    def cog(self, numpoints=100):
         """
         Calculate the center of gravity of the fuzzy set.
 
@@ -147,11 +150,43 @@ class FuzzySet:
 
         return (numX/den, numY/den)
 
+    def mom(self, numpoints=100):
+        """
+        Calculate the mean of maximum of the fuzzy set.
+
+        Returns: (x,y) The x and y coordinates of the mean of maximum.
+        Uses the range of the crisp set to calculate the mean of maximum numerically.
+        """
+
+        assert len(
+            self.crisp_set.dimensions) == 1, "Can only calculate mean of maximum for one variable"
+        (name, range) = next(iter(self.crisp_set.dimensions))
+
+        max_y = 0
+
+        places_of_max = []
+
+        for x in np.linspace(*range, numpoints):
+            y = self.function({name: x})
+            if y > max_y:
+                max_y = y
+                places_of_max = [x]
+            elif y == max_y:
+                places_of_max.append(x)
+
+        if len(places_of_max) == 0:
+            return (0, 0)
+
+        mean = sum(places_of_max) / len(places_of_max)
+
+        return (mean, max_y)
+
     def __and__(self, other):
         """
         The intersection of two fuzzy sets.
         """
-        new_linguistic_term = f"({self.linguistic_term} and {other.linguistic_term})"
+        new_linguistic_term = f"({self.linguistic_term} and {
+            other.linguistic_term})"
         new_crisp_set = self.crisp_set * other.crisp_set
         return FuzzySet(new_linguistic_term, lambda data: min(self(data), other(data)), [self, other], crisp_set=new_crisp_set)
 
@@ -159,7 +194,8 @@ class FuzzySet:
         """
         The union of two fuzzy sets.
         """
-        new_linguistic_term = f"({self.linguistic_term} or {other.linguistic_term})"
+        new_linguistic_term = f"({self.linguistic_term} or {
+            other.linguistic_term})"
         new_crisp_set = self.crisp_set * other.crisp_set
         return FuzzySet(new_linguistic_term, lambda data: max(self(data), other(data)), [self, other], crisp_set=new_crisp_set)
 
@@ -187,7 +223,7 @@ class FuzzySet:
 
         if len(self.based_on) > 0:
             ax.fill_between(xrange, 0, y, alpha=0.25)
-            (cog_x, cog_y) = self.center_of_gravity()
+            (cog_x, cog_y) = self.defuzzyfy()
             ax.axvline(cog_x, color='black', linestyle='--')
             ax.plot([cog_x], [cog_y], marker='o', markersize=5, color="black",
                     label=f"Center of Gravity: ({cog_x:.2f}, {cog_y:.2f})")
@@ -276,6 +312,26 @@ def makeGaussian(linguistic_term, mean, sigma):
     return Gaussian(linguistic_term, mean, sigma)
 
 
+class Sigmoid(FuzzySet):
+    def __init__(self,  linguistic_term, a, b):
+        """
+        A class representing a sigmoid fuzzy set.
+
+        linguistic_term: The name of the fuzzy set. (e.g. "young")
+        a: The slope of the sigmoid. (The steepness of the sigmoid)
+        b: The center of the sigmoid. (The point where the membership value is 0.5)
+        """
+
+        self.a = a
+        self.b = b
+        def function(x): return 1 / (1 + np.exp(-a * (x - b)))
+        super().__init__(linguistic_term, function, is_base_set=True)
+
+
+def makeSigmoid(linguistic_term, a, b):
+    return Sigmoid(linguistic_term, a, b)
+
+
 class LinguisticVariable:
     def __init__(self, name: str, range: tuple[float, float]):
         """
@@ -284,6 +340,7 @@ class LinguisticVariable:
         crisp_set: The name of the crisp set. (e.g. "age")
         """
         self.crisp_set = CrispSet({(name, range)})
+        self.name = name
         self.linguistic_terms: dict[str, FuzzySet] = dict()
 
     def addLinguisticTerm(self, fuzzySet: FuzzySet):
@@ -393,8 +450,13 @@ class FuzzySystem:
         """
 
         union = self.applyRules(data)
-        (cx, cy) = union.center_of_gravity()
+        (cx, cy) = union.defuzzyfy()
         return cx
+
+    def predictClosest(self, data: dict, algo_ranking: dict[str, float]):
+        cx = self.predict(data)
+
+        return cx, min(algo_ranking, key=lambda x: abs(algo_ranking[x] - cx))
 
     def getInputCrispSets(self):
         inputs = set()
@@ -404,4 +466,4 @@ class FuzzySystem:
 
     def __repr__(self):
         newline = "\n"
-        return f"FuzzySystem with rules:\n\n{newline.join(map(str,self.rules))}"
+        return f"FuzzySystem with rules:\n\n{newline.join(map(str, self.rules))}"

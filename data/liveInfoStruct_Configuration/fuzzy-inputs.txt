@@ -1,0 +1,29 @@
+Axis: maxParticlesPerCell range: (0.00, 28.00)
+	Low: Sigmoid(-0.42857, 2.50000)
+	High: Sigmoid(0.42857, 2.50000)
+
+Axis: avgParticlesPerCell range: (0.00, 8.16)
+	Very Low: Sigmoid(-1.47000, 0.11200)
+	Low: Gaussian(0.26550, 0.15350)
+	High: Gaussian(3.02850, 2.60950)
+	Very High: Sigmoid(1.47000, 5.63800)
+
+Axis: numCells range: (147.00, 481635.00)
+	Very Low: Sigmoid(-0.00002, 1462.00000)
+	Medium: Gaussian(2645.25000, 1183.25000)
+	Very High: Sigmoid(0.00002, 3828.50000)
+
+Axis: particlesPerCellStdDev range: (0.00, 0.18)
+	Very Low: Sigmoid(-67.91671, 0.01000)
+	Medium: Gaussian(0.04350, 0.03350)
+	Very High: Sigmoid(67.91671, 0.07700)
+
+Axis: numParticles range: (0.00, 167323.00)
+	Very Low: Sigmoid(-0.00007, 1400.00000)
+	Medium: Gaussian(7913.25000, 6513.25000)
+	Very High: Sigmoid(0.00007, 14426.50000)
+
+Axis: numEmptyCells range: (0.00, 481581.00)
+	Low: Sigmoid(-0.00002, 33035.50000)
+	High: Sigmoid(0.00002, 33035.50000)
+
