@@ -1,10 +1,49 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[84]:
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 import functools
 
 
+# In[85]:
+
+
+from enum import Enum
+
+
+class Set:
+    class SetType(Enum):
+        CONTINUOUS = 1
+        DISCRETE = 2
+
+    def __init__(self, type: SetType, values: any):
+        self.type = type
+        self.values = values
+
+    def get_coverage(self, grid_size: int):
+        if self.type == Set.SetType.CONTINUOUS:
+            return np.linspace(self.values[0], self.values[1], grid_size)
+        elif self.type == Set.SetType.DISCRETE:
+            return self.values
+
+    def __repr__(self):
+        return f"Set({self.type}, {self.values})"
+
+
+def make_continuousSet(range: tuple[float, float]):
+    return Set(Set.SetType.CONTINUOUS, range)
+
+
+def make_discrete(values: list[float]):
+    return Set(Set.SetType.DISCRETE, values)
+
+
 class CrispSet:
-    def __init__(self, dimensions: set[tuple[str, tuple[float, float]]]):
+    def __init__(self, dimensions: set[tuple[str, Set]]):
         """
         A class representing a crisp set.
 
@@ -27,69 +66,7 @@ class CrispSet:
         return str(self.dimensions)
 
 
-def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict, mesh=15, contour_levels=30):
-    fig = plt.figure()
-    axs = fig.subplot_mosaic([['A', 'B']])
-    fig.set_size_inches(16, 6)
-
-    nameX = axesMap['x']
-    nameY = axesMap['y']
-    nameZ = axesMap['z']
-
-    rangesX = (0, 1)
-    rangesY = (0, 1)
-
-    # Find the dimensions of the input sets that correspond to the x and y axes
-    for set in input_sets:
-        for dim in set.dimensions:
-            if dim[0] == nameX:
-                (nameX, rangesX) = dim
-            if dim[0] == nameY:
-                (nameY, rangesY) = dim
-
-    xs = np.linspace(*rangesX, mesh)
-    ys = np.linspace(*rangesY, mesh)
-
-    X, Y = np.meshgrid(xs, ys)
-    Z = np.array([[function({nameX: x, nameY: y}) for x in xs] for y in ys])
-
-    ss = axs['A'].get_subplotspec()
-    axs['A'].remove()
-    axs['A'] = fig.add_subplot(ss, projection='3d')
-    axs['A'].plot_surface(X, Y, Z, cmap='viridis')
-    axs['A'].set_xlabel(nameX)
-    axs['A'].set_ylabel(nameY)
-    axs['A'].set_zlabel(nameZ)
-
-    countour = axs['B'].contourf(X, Y, Z, levels=contour_levels)
-    axs['B'].set_title
-    axs['B'].set_xlabel(nameX)
-    axs['B'].set_ylabel(nameY)
-
-    fig.suptitle(f"Surface and Contour plot of {nameZ}")
-    colorbar = fig.colorbar(countour, ax=axs['B'])
-
-    annotB = axs['B'].annotate("", xy=(0, 0), xytext=(10, 30),
-                               textcoords="offset points",
-                               bbox=dict(boxstyle="round", fc="w"),
-                               horizontalalignment='center',
-                               verticalalignment='center',
-                               zorder=1000,
-                               arrowprops=dict(arrowstyle="->"))
-
-    colorbar.ax.zorder = -1
-
-    def hover(event):
-        if event.inaxes == axs['B']:
-            x, y = event.xdata, event.ydata
-            z = function({nameX: x, nameY: y})
-            annotB.xy = (x, y)
-            annotB.set_text(f"(x={x:.2f}, y={y:.2f} z={z:.2f})")
-            fig.canvas.draw_idle()
-
-    fig.canvas.mpl_connect("motion_notify_event", hover)
-
-    return fig
+# In[86]:
 
 
 class FuzzySet:
@@ -133,13 +110,13 @@ class FuzzySet:
         """
         assert len(
             self.crisp_set.dimensions) == 1, "Can only calculate center of gravity for one variable"
-        (name, range) = next(iter(self.crisp_set.dimensions))
+        (name, set) = next(iter(self.crisp_set.dimensions))
 
         numX = 0
         numY = 0
         den = 0
 
-        for x in np.linspace(*range, numpoints):
+        for x in set.get_coverage(numpoints):
             y = self.function({name: x})
             numX += x*y
             numY += 0.5*y*y
@@ -166,7 +143,7 @@ class FuzzySet:
 
         places_of_max = []
 
-        for x in np.linspace(*range, numpoints):
+        for x in range.get_coverage(numpoints):
             y = self.function({name: x})
             if y > max_y:
                 max_y = y
@@ -210,19 +187,33 @@ class FuzzySet:
     def plot(self, ax):
         assert len(
             self.crisp_set.dimensions) == 1, "Can only plot fuzzy sets over one variable"
-        [name, range] = next(iter(self.crisp_set.dimensions))
-        xrange = np.linspace(*range, 1000)
+        [name, set] = next(iter(self.crisp_set.dimensions))
+        xrange = set.get_coverage(1000)
 
         for mf in self.based_on:
+            [_, mf_set] = next(iter(mf.crisp_set.dimensions))
             yh = [mf({name: x}) for x in xrange]
-            ax.plot(xrange, yh, label=mf.linguistic_term,
-                    linestyle='--', alpha=0.5, linewidth=0.5)
+
+            if mf_set.type == Set.SetType.DISCRETE:
+                total_range = max(mf_set.values) - min(mf_set.values)
+                ax.bar(xrange, yh, label=mf.linguistic_term,
+                       width=total_range/(50*len(mf_set.values)), alpha=0.5)
+            else:
+                ax.plot(xrange, yh, label=mf.linguistic_term,
+                        linestyle='--', alpha=0.5, linewidth=0.5)
 
         y = [self({name: x}) for x in xrange]
-        ax.plot(xrange, y, label=self.linguistic_term)
+
+        if set.type == Set.SetType.DISCRETE:
+            total_range = max(set.values) - min(set.values)
+            ax.bar(xrange, y, label=self.linguistic_term,
+                   width=total_range/(50*len(set.values)))
+        else:
+            ax.plot(xrange, y, label=self.linguistic_term)
 
         if len(self.based_on) > 0:
-            ax.fill_between(xrange, 0, y, alpha=0.25)
+            if set.type == Set.SetType.CONTINUOUS:
+                ax.fill_between(xrange, 0, y, alpha=0.25)
             (cog_x, cog_y) = self.defuzzyfy()
             ax.axvline(cog_x, color='black', linestyle='--')
             ax.plot([cog_x], [cog_y], marker='o', markersize=5, color="black",
@@ -254,9 +245,11 @@ class Triangle(FuzzySet):
         def function(x): return max(0, 1 - abs(x - center) / width)
         super().__init__(linguistic_term, function, is_base_set=True)
 
+    def peak(self):
+        return self.center
 
-def makeTriangle(linguistic_term, center, width):
-    return Triangle(linguistic_term, center, width)
+    def __repr__(self):
+        return f"{self.linguistic_term}: Triangle({self.center:.8f}, {self.width:.8f})"
 
 
 class Trapezoid(FuzzySet):
@@ -286,9 +279,11 @@ class Trapezoid(FuzzySet):
                                                               self.left), 1, (self.right - x) / (self.right - self.center_right)))
         super().__init__(linguistic_term, function, is_base_set=True)
 
+    def peak(self):
+        return (self.center_left + self.center_right) / 2
 
-def makeTrapezoid(linguistic_term, left, center_left, center_right, right):
-    return Trapezoid(linguistic_term, left, center_left, center_right, right)
+    def __repr__(self):
+        return f"{self.linguistic_term}: Trapezoid({self.left:.8f}, {self.center_left:.8f}, {self.center_right:.8f}, {self.right:.8f})"
 
 
 class Gaussian(FuzzySet):
@@ -307,43 +302,70 @@ class Gaussian(FuzzySet):
         def function(x): return np.exp(-0.5 * ((x - mean) / sigma) ** 2)
         super().__init__(linguistic_term, function, is_base_set=True)
 
+    def peak(self):
+        return self.mean
 
-def makeGaussian(linguistic_term, mean, sigma):
-    return Gaussian(linguistic_term, mean, sigma)
+    def __repr__(self):
+        return f"{self.linguistic_term}: Gaussian({self.mean:.8f}, {self.sigma:.8f})"
 
 
 class Sigmoid(FuzzySet):
-    def __init__(self,  linguistic_term, a, b):
+
+    def __init__(self, linguistic_term, center, width):
         """
         A class representing a sigmoid fuzzy set.
 
         linguistic_term: The name of the fuzzy set. (e.g. "young")
-        a: The slope of the sigmoid. (The steepness of the sigmoid)
-        b: The center of the sigmoid. (The point where the membership value is 0.5)
+        center: The center of the sigmoid. (The point where the membership value is 0.5)
+        width: The width of the sigmoid. (The steepness of the sigmoid)
         """
 
-        self.a = a
-        self.b = b
-        def function(x): return 1 / (1 + np.exp(-a * (x - b)))
+        self.center = center
+        self.width = width
+        def function(x): return 1 / (1 + np.exp(-width * (x - center)))
         super().__init__(linguistic_term, function, is_base_set=True)
 
+    def peak(self):
+        return np.inf if self.width > 0 else -np.inf
 
-def makeSigmoid(linguistic_term, a, b):
-    return Sigmoid(linguistic_term, a, b)
+    def __repr__(self):
+        return f"{self.linguistic_term}: Sigmoid({self.center:.8f}, {self.width:.8f})"
+
+
+class Singleton(FuzzySet):
+
+    def __init__(self, linguistic_term, value):
+        """
+        A class representing a singleton fuzzy set.
+
+        linguistic_term: The name of the fuzzy set. (e.g. "young")
+        value: The value of the singleton fuzzy set. (The point where the membership value is 1)
+        """
+
+        def function(x): return 1 if x == value else 0
+        super().__init__(linguistic_term, function, is_base_set=True)
+
+    def peak(self):
+        return self.value
+
+    def __repr__(self):
+        return f"{self.linguistic_term}: Singleton({self.value:.8f})"
+
+
+# In[88]:
 
 
 class LinguisticVariable:
-    def __init__(self, name: str, range: tuple[float, float]):
+    def __init__(self, crisp_set: CrispSet) -> None:
         """
         A class to represent a fuzzy variable.
 
         crisp_set: The name of the crisp set. (e.g. "age")
         """
-        self.crisp_set = CrispSet({(name, range)})
-        self.name = name
+        self.crisp_set = crisp_set
         self.linguistic_terms: dict[str, FuzzySet] = dict()
 
-    def addLinguisticTerm(self, fuzzySet: FuzzySet):
+    def add_linguistic_term(self, fuzzySet: FuzzySet):
         fuzzySet.crisp_set = self.crisp_set
         self.linguistic_terms[fuzzySet.linguistic_term] = fuzzySet
 
@@ -366,6 +388,54 @@ class LinguisticVariable:
 
     def __repr__(self):
         return f"FuzzyVariable({self.crisp_set}) with sets: [{', '.join(self.linguistic_terms)}]"
+
+
+def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict, mesh=15, contour_levels=30):
+    fig = plt.figure()
+    axs = fig.subplot_mosaic([['A', 'B']])
+    fig.set_size_inches(16, 6)
+
+    nameX = axesMap['x']
+    nameY = axesMap['y']
+    nameZ = axesMap['z']
+
+    setX = make_continuousSet((0, 1))
+    setX = make_continuousSet((0, 1))
+
+    # Find the dimensions of the input sets that correspond to the x and y axes
+    for set in input_sets:
+        for dim in set.dimensions:
+            if dim[0] == nameX:
+                (nameX, setX) = dim
+            if dim[0] == nameY:
+                (nameY, setY) = dim
+
+    xs = setX.get_coverage(mesh)
+    ys = setY.get_coverage(mesh)
+
+    X, Y = np.meshgrid(xs, ys)
+    Z = np.array([[function({nameX: x, nameY: y}) for x in xs] for y in ys])
+
+    ss = axs['A'].get_subplotspec()
+    axs['A'].remove()
+    axs['A'] = fig.add_subplot(ss, projection='3d')
+    axs['A'].plot_surface(X, Y, Z, cmap='viridis')
+    axs['A'].set_xlabel(nameX)
+    axs['A'].set_ylabel(nameY)
+    axs['A'].set_zlabel(nameZ)
+
+    countour = axs['B'].contourf(X, Y, Z, levels=contour_levels)
+    axs['B'].set_title
+    axs['B'].set_xlabel(nameX)
+    axs['B'].set_ylabel(nameY)
+
+    fig.suptitle(f"Surface and Contour plot of {nameZ}")
+    fig.colorbar(countour, ax=axs['B'])
+
+    return fig
+
+
+# In[94]:
 
 
 class FuzzyRule:
@@ -416,7 +486,7 @@ class FuzzySystem:
         self.rules: list[FuzzyRule] = []
         self.consequent: FuzzySet = None
 
-    def addRule(self, rule: FuzzyRule):
+    def add_rule(self, rule: FuzzyRule):
         if self.consequent is None:
             self.consequent = rule.consequent
         else:
