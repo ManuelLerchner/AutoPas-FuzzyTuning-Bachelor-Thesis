@@ -249,7 +249,7 @@ class Triangle(FuzzySet):
         return self.center
 
     def __repr__(self):
-        return f"{self.linguistic_term}: Triangle({self.center:.8f}, {self.width:.8f})"
+        return f"\"{self.linguistic_term}\": Triangle({self.center:.8f}, {self.width:.8f})"
 
 
 class Trapezoid(FuzzySet):
@@ -283,7 +283,7 @@ class Trapezoid(FuzzySet):
         return (self.center_left + self.center_right) / 2
 
     def __repr__(self):
-        return f"{self.linguistic_term}: Trapezoid({self.left:.8f}, {self.center_left:.8f}, {self.center_right:.8f}, {self.right:.8f})"
+        return f"\"{self.linguistic_term}\": Trapezoid({self.left:.8f}, {self.center_left:.8f}, {self.center_right:.8f}, {self.right:.8f})"
 
 
 class Gaussian(FuzzySet):
@@ -306,7 +306,7 @@ class Gaussian(FuzzySet):
         return self.mean
 
     def __repr__(self):
-        return f"{self.linguistic_term}: Gaussian({self.mean:.8f}, {self.sigma:.8f})"
+        return f"\"{self.linguistic_term}\": Gaussian({self.mean:.8f}, {self.sigma:.8f})"
 
 
 class Sigmoid(FuzzySet):
@@ -329,7 +329,7 @@ class Sigmoid(FuzzySet):
         return np.inf if self.width > 0 else -np.inf
 
     def __repr__(self):
-        return f"{self.linguistic_term}: Sigmoid({self.center:.8f}, {self.width:.8f})"
+        return f"\"{self.linguistic_term}\": Sigmoid({self.center:.8f}, {self.width:.8f})"
 
 
 class Singleton(FuzzySet):
@@ -349,7 +349,7 @@ class Singleton(FuzzySet):
         return self.value
 
     def __repr__(self):
-        return f"{self.linguistic_term}: Singleton({self.value:.8f})"
+        return f"\"{self.linguistic_term}\": Singleton({self.value:.8f})"
 
 
 # In[88]:
