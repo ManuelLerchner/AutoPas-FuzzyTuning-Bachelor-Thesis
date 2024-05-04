@@ -162,8 +162,7 @@ class FuzzySet:
         """
         The intersection of two fuzzy sets.
         """
-        new_linguistic_term = f"({self.linguistic_term} and {
-            other.linguistic_term})"
+        new_linguistic_term = f"({str(self)} and {str(other)})"
         new_crisp_set = self.crisp_set * other.crisp_set
         return FuzzySet(new_linguistic_term, lambda data: min(self(data), other(data)), [self, other], crisp_set=new_crisp_set)
 
@@ -171,8 +170,7 @@ class FuzzySet:
         """
         The union of two fuzzy sets.
         """
-        new_linguistic_term = f"({self.linguistic_term} or {
-            other.linguistic_term})"
+        new_linguistic_term = f"({str(self)} or {str(other)})"
         new_crisp_set = self.crisp_set * other.crisp_set
         return FuzzySet(new_linguistic_term, lambda data: max(self(data), other(data)), [self, other], crisp_set=new_crisp_set)
 
@@ -180,7 +178,7 @@ class FuzzySet:
         """
         The negation of a fuzzy set.
         """
-        new_linguistic_term = f"(not {self.linguistic_term})"
+        new_linguistic_term = f"(not {str(self)})"
         new_crisp_set = self.crisp_set
         return FuzzySet(new_linguistic_term, lambda data: 1 - self(data), [self], crisp_set=new_crisp_set)
 
@@ -217,16 +215,15 @@ class FuzzySet:
             (cog_x, cog_y) = self.defuzzyfy()
             ax.axvline(cog_x, color='black', linestyle='--')
             ax.plot([cog_x], [cog_y], marker='o', markersize=5, color="black",
-                    label=f"Center of Gravity: ({cog_x:.2f}, {cog_y:.2f})")
+                    label=f"Defuzzification: ({cog_x:.2f}, {cog_y:.2f})")
 
-        ax.set_title(f"Linguistic Term: {self.linguistic_term}")
         ax.set_xlabel(name)
         ax.set_ylabel("Membership Value")
 
         ax.legend()
 
     def __repr__(self):
-        return f"FuzzySet({self.crisp_set} -> {self.linguistic_term})"
+        return f"\"{self.linguistic_term}\""
 
 
 class Triangle(FuzzySet):
@@ -249,7 +246,10 @@ class Triangle(FuzzySet):
         return self.center
 
     def __repr__(self):
-        return f"\"{self.linguistic_term}\": Triangle({self.center:.8f}, {self.width:.8f})"
+        prefix = ""
+        if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
+            prefix = next(iter(self.crisp_set.dimensions))[0] + " is"
+        return f"{prefix}\"{self.linguistic_term}\": Triangle({self.center:.8f}, {self.width:.8f})"
 
 
 class Trapezoid(FuzzySet):
@@ -283,7 +283,10 @@ class Trapezoid(FuzzySet):
         return (self.center_left + self.center_right) / 2
 
     def __repr__(self):
-        return f"\"{self.linguistic_term}\": Trapezoid({self.left:.8f}, {self.center_left:.8f}, {self.center_right:.8f}, {self.right:.8f})"
+        prefix = ""
+        if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
+            prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
+        return f"{prefix}\"{self.linguistic_term}\": Trapezoid({self.left:.8f}, {self.center_left:.8f}, {self.center_right:.8f}, {self.right:.8f})"
 
 
 class Gaussian(FuzzySet):
@@ -306,7 +309,10 @@ class Gaussian(FuzzySet):
         return self.mean
 
     def __repr__(self):
-        return f"\"{self.linguistic_term}\": Gaussian({self.mean:.8f}, {self.sigma:.8f})"
+        prefix = ""
+        if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
+            prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
+        return f"{prefix}\"{self.linguistic_term}\": Gaussian({self.mean:.8f}, {self.sigma:.8f})"
 
 
 class Sigmoid(FuzzySet):
@@ -329,7 +335,10 @@ class Sigmoid(FuzzySet):
         return np.inf if self.width > 0 else -np.inf
 
     def __repr__(self):
-        return f"\"{self.linguistic_term}\": Sigmoid({self.center:.8f}, {self.width:.8f})"
+        prefix = ""
+        if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
+            prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
+        return f"{prefix}\"{self.linguistic_term}\": Sigmoid({self.center:.8f}, {self.width:.8f})"
 
 
 class Singleton(FuzzySet):
@@ -342,6 +351,7 @@ class Singleton(FuzzySet):
         value: The value of the singleton fuzzy set. (The point where the membership value is 1)
         """
 
+        self.value = value
         def function(x): return 1 if x == value else 0
         super().__init__(linguistic_term, function, is_base_set=True)
 
@@ -349,7 +359,10 @@ class Singleton(FuzzySet):
         return self.value
 
     def __repr__(self):
-        return f"\"{self.linguistic_term}\": Singleton({self.value:.8f})"
+        prefix = ""
+        if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
+            prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
+        return f"{prefix}\"{self.linguistic_term}\": Singleton({self.value:.8f})"
 
 
 # In[88]:
@@ -422,7 +435,6 @@ def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict,
     axs['A'].plot_surface(X, Y, Z, cmap='viridis')
     axs['A'].set_xlabel(nameX)
     axs['A'].set_ylabel(nameY)
-    axs['A'].set_zlabel(nameZ)
 
     countour = axs['B'].contourf(X, Y, Z, levels=contour_levels)
     axs['B'].set_title
@@ -459,7 +471,7 @@ class FuzzyRule:
         """
         cut = self.antecedent(data)
 
-        linguistic_term = f"{self.consequent.linguistic_term}↑{cut:.2f}"
+        linguistic_term = f"({str(self.consequent)})↑{cut:.2f}"
         crisp_set = self.consequent.crisp_set
 
         cut_consequent = FuzzySet(linguistic_term, lambda data: min(
@@ -478,19 +490,21 @@ class FuzzyRule:
         return fig
 
     def __repr__(self):
-        return f"FuzzyRule(IF {self.antecedent} THEN {self.consequent})"
+        return f"FuzzyRule(\n  IF\t {self.antecedent}\n  THEN\t {self.consequent}\n)"
 
 
 class FuzzySystem:
     def __init__(self):
         self.rules: list[FuzzyRule] = []
-        self.consequent: FuzzySet = None
+        self.consequent_name = None
 
     def add_rule(self, rule: FuzzyRule):
-        if self.consequent is None:
-            self.consequent = rule.consequent
+        if self.consequent_name is None:
+            self.consequent_name = next(
+                iter(rule.consequent.crisp_set.dimensions))[0]
         else:
-            assert self.consequent.crisp_set == rule.consequent.crisp_set, "All rules must have the same consequent type"
+            assert self.consequent_name == next(
+                iter(rule.consequent.crisp_set.dimensions))[0], "All consequents must be over the same variable"
 
         self.rules.append(rule)
 
@@ -536,4 +550,4 @@ class FuzzySystem:
 
     def __repr__(self):
         newline = "\n"
-        return f"FuzzySystem with rules:\n\n{newline.join(map(str, self.rules))}"
+        return f"FuzzySystem: {self.consequent_name}\n{newline.join(map(str, self.rules))}\n"
