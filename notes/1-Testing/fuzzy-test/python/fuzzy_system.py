@@ -88,11 +88,14 @@ class FuzzySet:
     def __call__(self, data):
         if self.is_base_set:
             # Function is a direct function of the input data
-            assert len(
-                self.crisp_set.dimensions) == 1, "Can only evaluate fuzzy sets over one variable"
-            (name, _) = next(iter(self.crisp_set.dimensions))
-            assert name in data, f"Missing input {name}"
-            return self.function(data[name])
+            try:
+                if (len(self.crisp_set.dimensions) != 1):
+                    raise ValueError(
+                        "Can only calculate membership for one variable")
+                (name, _) = next(iter(self.crisp_set.dimensions))
+                return self.function(data[name])
+            except:
+                return self.function(data)
         else:
             # Function is a function a lambda function combining other fuzzy sets
             # Pass the data down recursively
@@ -178,7 +181,7 @@ class FuzzySet:
         """
         The negation of a fuzzy set.
         """
-        new_linguistic_term = f"(not {str(self)})"
+        new_linguistic_term = f"not {str(self)}"
         new_crisp_set = self.crisp_set
         return FuzzySet(new_linguistic_term, lambda data: 1 - self(data), [self], crisp_set=new_crisp_set)
 
@@ -248,7 +251,7 @@ class Triangle(FuzzySet):
     def __repr__(self):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
-            prefix = next(iter(self.crisp_set.dimensions))[0] + " is"
+            prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
         return f"{prefix}\"{self.linguistic_term}\": Triangle({self.center:.8f}, {self.width:.8f})"
 
 
@@ -285,7 +288,7 @@ class Trapezoid(FuzzySet):
     def __repr__(self):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
-            prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
+            prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
         return f"{prefix}\"{self.linguistic_term}\": Trapezoid({self.left:.8f}, {self.center_left:.8f}, {self.center_right:.8f}, {self.right:.8f})"
 
 
@@ -337,8 +340,54 @@ class Sigmoid(FuzzySet):
     def __repr__(self):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
-            prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
+            prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
         return f"{prefix}\"{self.linguistic_term}\": Sigmoid({self.center:.8f}, {self.width:.8f})"
+
+
+class SigmoidFinite(FuzzySet):
+    def __init__(self, linguistic_term, dm, beta, dn):
+        """
+        A class representing a finite sigmoid fuzzy set.
+
+        linguistic_term: The name of the fuzzy set. (e.g. "young")
+        lower: The lower bound of the sigmoid. (The point where the membership value is 0)
+        center: The center of the sigmoid. (The point where the membership value is 0.5)
+        upper: The upper bound of the sigmoid. (The point where the membership value is 1)
+        """
+
+        self.dm = dm
+        self.beta = beta
+        self.dn = dn
+
+        invert = self.dm > self.dn
+
+        if invert:
+            dm, dn = dn, dm
+
+        def function(x):
+            if x <= dm:
+                return 0
+            if x <= beta:
+                return 2*((x-dm)/(dn-dm))**2
+            if x <= dn:
+                return 1-2*((x-dn)/(dn-dm))**2
+            return 1
+
+        if invert:
+            def func(x): return 1 - function(x)
+        else:
+            def func(x): return function(x)
+
+        super().__init__(linguistic_term, np.vectorize(func), is_base_set=True)
+
+    def peak(self):
+        return np.inf if self.dn > self.dm else -np.inf
+
+    def __repr__(self):
+        prefix = ""
+        if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
+            prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
+        return f"{prefix}\"{self.linguistic_term}\": SigmoidFinite({self.dm:.8f}, {self.beta:.8f}, {self.dn:.8f})"
 
 
 class Singleton(FuzzySet):
@@ -361,7 +410,7 @@ class Singleton(FuzzySet):
     def __repr__(self):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
-            prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
+            prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
         return f"{prefix}\"{self.linguistic_term}\": Singleton({self.value:.8f})"
 
 
@@ -416,8 +465,8 @@ def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict,
     setX = make_continuousSet((0, 1))
 
     # Find the dimensions of the input sets that correspond to the x and y axes
-    for set in input_sets:
-        for dim in set.dimensions:
+    for iset in input_sets:
+        for dim in iset.dimensions:
             if dim[0] == nameX:
                 (nameX, setX) = dim
             if dim[0] == nameY:
