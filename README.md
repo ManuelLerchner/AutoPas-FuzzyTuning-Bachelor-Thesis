@@ -3,9 +3,7 @@
 This repository contains all the collected data, scripts, and the final thesis document for my `Bachelor Thesis` at the Technical University of Munich (TUM).
 The thesis was written at the `Chair of Scientific Computing` under the supervision of [Manish Kumar Mishra](https://www.cs.cit.tum.de/en/sccs/personen/manish-kumar-mishra/) and [Samuel Newcome](https://www.cs.cit.tum.de/en/sccs/people/samuel-james-newcome).
 
-The thesis explores a novel tuning technique for molecular dynamics simulations in the [AutoPas](https://github.com/AutoPas/AutoPas) framework using fuzzy logic. AutoPas is a novel auto-tuning particle simulation library that tries to enhance the performance of molecular dynamics simulations by automatically selecting the best simulation configuration based on the current simulation state. Choosing good simulation configurations is crucial for the performance of such simulations, as the simulation performance can vary significantly depending on the chosen algorithms and data structures.
-
-The goal of this thesis is to explore the feasibility of using fuzzy logic to predict close-to-optimal simulation configurations in the AutoPas framework.
+The thesis explores a novel tuning technique for molecular dynamics simulations in the [AutoPas](https://github.com/AutoPas/AutoPas) framework. The technique is based on fuzzy logic and aims to predict close-to-optimal simulation configurations from a set of live data collected during the simulation. The goal of this thesis is to evaluate the feasibility of the fuzzy tuning technique and to compare it with existing tuning techniques.
 
 ## Table of Contents
 
@@ -15,7 +13,7 @@ TODO
 
 TODO
 
-## Paper
+## Thesis
 
 The seminar paper is available in LaTeX format in this repository. You can access the rendered version in PDF format by clicking the following link:
 
