@@ -113,13 +113,13 @@ class FuzzySet:
         """
         assert len(
             self.crisp_set.dimensions) == 1, "Can only calculate center of gravity for one variable"
-        (name, set) = next(iter(self.crisp_set.dimensions))
+        (name, cset) = next(iter(self.crisp_set.dimensions))
 
         numX = 0
         numY = 0
         den = 0
 
-        for x in set.get_coverage(numpoints):
+        for x in cset.get_coverage(numpoints):
             y = self.function({name: x})
             numX += x*y
             numY += 0.5*y*y
@@ -207,10 +207,10 @@ class FuzzySet:
 
         if set.type == Set.SetType.DISCRETE:
             total_range = max(set.values) - min(set.values)
-            ax.bar(xrange, y, label=self.linguistic_term,
+            ax.bar(xrange, y, label=str(self),
                    width=total_range/(50*len(set.values)))
         else:
-            ax.plot(xrange, y, label=self.linguistic_term)
+            ax.plot(xrange, y, label=str(self))
 
         if len(self.based_on) > 0:
             if set.type == Set.SetType.CONTINUOUS:
@@ -367,10 +367,10 @@ class SigmoidFinite(FuzzySet):
         def function(x):
             if x <= dm:
                 return 0
-            if x <= beta:
-                return 2*((x-dm)/(dn-dm))**2
-            if x <= dn:
-                return 1-2*((x-dn)/(dn-dm))**2
+            if dm <= x <= beta:
+                return 0.5*((x-dm)/(beta-dm))**2
+            if beta <= x <= dn:
+                return 1-0.5*((x-dn)/(beta-dn))**2
             return 1
 
         if invert:
