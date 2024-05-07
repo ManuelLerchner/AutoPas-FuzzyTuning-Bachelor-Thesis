@@ -5,6 +5,7 @@
 
 
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 import functools
 
@@ -452,7 +453,7 @@ class LinguisticVariable:
         return f"FuzzyVariable({self.crisp_set}) with sets: [{', '.join(self.linguistic_terms)}]"
 
 
-def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict, mesh=15, contour_levels=30):
+def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict, labelMap: dict = {}, mesh=15, contour_levels=30, fixed_values={}):
     fig = plt.figure()
     axs = fig.subplot_mosaic([['A', 'B']])
     fig.set_size_inches(16, 6)
@@ -463,6 +464,7 @@ def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict,
 
     setX = make_continuousSet((0, 1))
     setX = make_continuousSet((0, 1))
+    setY = make_continuousSet((0, 1))
 
     # Find the dimensions of the input sets that correspond to the x and y axes
     for iset in input_sets:
@@ -476,7 +478,8 @@ def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict,
     ys = setY.get_coverage(mesh)
 
     X, Y = np.meshgrid(xs, ys)
-    Z = np.array([[function({nameX: x, nameY: y}) for x in xs] for y in ys])
+    Z = np.array(
+        [[function({nameX: x, nameY: y, **fixed_values}) for x in xs] for y in ys])
 
     ss = axs['A'].get_subplotspec()
     axs['A'].remove()
@@ -485,13 +488,29 @@ def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict,
     axs['A'].set_xlabel(nameX)
     axs['A'].set_ylabel(nameY)
 
-    countour = axs['B'].contourf(X, Y, Z, levels=contour_levels)
     axs['B'].set_title
     axs['B'].set_xlabel(nameX)
     axs['B'].set_ylabel(nameY)
 
     fig.suptitle(f"Surface and Contour plot of {nameZ}")
-    fig.colorbar(countour, ax=axs['B'])
+    fig.text(0.3, 0.04, fixed_values, ha='center')
+
+    if labelMap:
+        norm_bins = sorted(labelMap.keys())
+        norm_values = [labelMap[x] for x in norm_bins]
+
+        norm = mpl.colors.BoundaryNorm(
+            norm_bins, len(norm_bins)+1, extend='max')
+
+        countour = axs['B'].pcolormesh(X, Y, Z, norm=norm, cmap='tab20')
+
+        cbar = fig.colorbar(countour, ax=axs['B'], norm=norm)
+
+        cbar.set_ticks(norm_bins)
+        cbar.ax.set_yticklabels(norm_values)
+    else:
+        countour = axs['B'].contourf(X, Y, Z, levels=contour_levels)
+        fig.colorbar(countour, ax=axs['B'])
 
     return fig
 
