@@ -253,7 +253,7 @@ class Triangle(FuzzySet):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
             prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Triangle({self.center:.8f}, {self.width:.8f})"
+        return f"{prefix}\"{self.linguistic_term}\": Triangle({self.center}, {self.width})"
 
 
 class Trapezoid(FuzzySet):
@@ -290,7 +290,7 @@ class Trapezoid(FuzzySet):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
             prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Trapezoid({self.left:.8f}, {self.center_left:.8f}, {self.center_right:.8f}, {self.right:.8f})"
+        return f"{prefix}\"{self.linguistic_term}\": Trapezoid({self.left}, {self.center_left}, {self.center_right}, {self.right})"
 
 
 class Gaussian(FuzzySet):
@@ -316,7 +316,7 @@ class Gaussian(FuzzySet):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
             prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Gaussian({self.mean:.8f}, {self.sigma:.8f})"
+        return f"{prefix}\"{self.linguistic_term}\": Gaussian({self.mean}, {self.sigma})"
 
 
 class Sigmoid(FuzzySet):
@@ -342,7 +342,7 @@ class Sigmoid(FuzzySet):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
             prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Sigmoid({self.center:.8f}, {self.width:.8f})"
+        return f"{prefix}\"{self.linguistic_term}\": Sigmoid({self.center}, {self.width})"
 
 
 class SigmoidFinite(FuzzySet):
@@ -388,7 +388,7 @@ class SigmoidFinite(FuzzySet):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
             prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
-        return f"{prefix}\"{self.linguistic_term}\": SigmoidFinite({self.dm:.8f}, {self.beta:.8f}, {self.dn:.8f})"
+        return f"{prefix}\"{self.linguistic_term}\": SigmoidFinite({self.dm}, {self.beta}, {self.dn})"
 
 
 class Singleton(FuzzySet):
@@ -412,7 +412,7 @@ class Singleton(FuzzySet):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
             prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Singleton({self.value:.8f})"
+        return f"{prefix}\"{self.linguistic_term}\": Singleton({self.value})"
 
 
 # In[88]:
