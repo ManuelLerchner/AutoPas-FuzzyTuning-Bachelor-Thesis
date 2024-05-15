@@ -10,4 +10,3 @@ Date,Iteration,Container,CellSizeFactor,Traversal,Load Estimator,Data Layout,New
 2024-05-14 02:56:03,17810,VerletListsCells,1.000000,vlc_c01,none,AoS,disabled,18453937,3342683
 2024-05-14 02:56:54,19900,VerletListsCells,1.000000,vlc_c01,none,AoS,disabled,19709868,2515472
 2024-05-14 02:57:48,21990,VerletLists,1.000000,vl_list_iteration,none,AoS,disabled,21710750,3446032
-2024-05-14 02:58:54,24080,VarVerletListsAsBuild,1.000000,vvl_as_built,none,AoS,enabled,23210097,2858984

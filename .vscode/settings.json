@@ -1,5 +1,6 @@
 {
     "python.analysis.extraPaths": [
-        "./notes/1-Testing/fuzzy-test/python"
+        "./notes/1-Testing/fuzzy-test/python",
+        "./data/analysis/rule_lib/",
     ]
 }
