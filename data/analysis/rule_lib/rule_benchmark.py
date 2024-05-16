@@ -170,27 +170,14 @@ def createFuzzySystem(inputVariableString, outputVariableString, rulesString):
 # In[19]:
 
 
-def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict[str, float]], K=2):
-    freq_correct_test = defaultdict(int)
-    freq_total_test = defaultdict(int)
+def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict[str, float]], K):
+    trainCorrect = 0
+    trainWrong = 0
 
-    freq_correct_train = defaultdict(int)
-    freq_total_train = defaultdict(int)
+    testCorrect = 0
+    testWrong = 0
 
     output_variable = fisys.consequent_name
-
-    for row in test.iterrows():
-        vals, preds = fisys.predictClosest(
-            row[1], algo_rankings[output_variable], K)
-
-        true = row[1][output_variable]
-
-        for pred in preds:
-            if pred in true:
-                freq_correct_test[pred] = freq_correct_test.get(pred, 0) + 1
-
-        for true_val in true.split(", "):
-            freq_total_test[true_val] = freq_total_test.get(true_val, 0) + 1
 
     for row in train.iterrows():
         vals, preds = fisys.predictClosest(
@@ -200,12 +187,23 @@ def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict
 
         for pred in preds:
             if pred in true:
-                freq_correct_train[pred] = freq_correct_train.get(pred, 0) + 1
+                trainCorrect += 1
+            else:
+                trainWrong += 1
 
-        for true_val in true.split(", "):
-            freq_total_train[true_val] = freq_total_train.get(true_val, 0) + 1
+    for row in test.iterrows():
+        vals, preds = fisys.predictClosest(
+            row[1], algo_rankings[output_variable], K)
 
-    return freq_correct_test, freq_total_test, freq_correct_train, freq_total_train
+        true = row[1][output_variable]
+
+        for pred in preds:
+            if pred in true:
+                testCorrect += 1
+            else:
+                testWrong += 1
+
+    return trainCorrect/(trainCorrect+trainWrong), testCorrect/(testCorrect+testWrong)
 
 
 # In[20]:
@@ -215,30 +213,15 @@ def plot_accuracy(train, test, folder, fuzzy_systems, algo_rankings, K):
     accuracies = {}
 
     for label, fisys in fuzzy_systems.items():
-
         print(f"\n{label}:")
 
-        freq_correct_test, freq_total_test, freq_correct_train, freq_total_train = calc_accuracy(train, test,
-                                                                                                 fisys, algo_rankings, K)
+        pctTrain, pctTest = calc_accuracy(train, test,
+                                          fisys, algo_rankings, K)
 
-        freq_total_test["Total"] = sum(freq_total_test.values())
-        freq_correct_test["Total"] = sum(freq_correct_test.values())
+        print(f"Train: {pctTrain}")
+        print(f"Test: {pctTest}")
 
-        freq_total_train["Total"] = sum(freq_total_train.values())
-        freq_correct_train["Total"] = sum(freq_correct_train.values())
-
-        accuracies[label] = (freq_correct_test["Total"] / freq_total_test["Total"],
-                             freq_correct_train["Total"] / freq_total_train["Total"])
-
-        print("\tTest set:")
-        for key in freq_total_test.keys():
-            print(f"\t\t{key:24}: {100*freq_correct_test[key] / (freq_total_test[key] or 1):6.2f}%\t({
-                freq_correct_test[key]}/{freq_total_test[key]})")
-
-        print("\n\tTrain set:")
-        for key in freq_total_train.keys():
-            print(f"\t\t{key:24}: {100*freq_correct_train[key] / (freq_total_train[key] or 1):6.2f}%\t({
-                freq_correct_train[key]}/{freq_total_train[key]})")
+        accuracies[label] = (pctTest, pctTrain)
 
     # create pi chart
 

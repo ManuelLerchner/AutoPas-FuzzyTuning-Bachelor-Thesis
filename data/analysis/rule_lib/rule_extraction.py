@@ -119,14 +119,16 @@ class Rule:
         self.prediction = prediction
 
     def __str__(self):
-        predictions = ""
-        for c in self.prediction.split_features():
-            predictions += str(c) + " || "
-        # remove last " || "
-        predictions = predictions[:-4]
+        # predictions = ""
+        # for c in self.prediction.split_features():
+        #     predictions += str(c) + " || "
+        # # remove last " || "
+        # predictions = predictions[:-4]
 
-        if self.prediction.negated:
-            predictions = f"!({predictions})"
+        # if self.prediction.negated:
+        #     predictions = f"!({predictions})"
+
+        predictions = str(self.prediction)
 
         return f"if {' && '.join(['(' + ' || '.join([str(c) for c in cond]) + ')' for cond in self.conditions])} then {predictions}"
 
@@ -261,7 +263,7 @@ def plut_rules_1d(df, model, encoder, inputs, used_inputs, label_name, score):
     # disable y
     ax[0].get_yaxis().set_visible(False)
 
-    ax[0].legend()
+    ax[0].legend(prop={'size': 6})
 
     plot_tree(model, ax=ax[1], feature_names=inputs,
               class_names=encoder.classes_)
@@ -312,7 +314,7 @@ def plot_rules_2d(df, model, encoder, inputs, used_inputs, label_name, score):
 
     ax[0].set_xlabel(x_name)
     ax[0].set_ylabel(y_name)
-    ax[0].legend()
+    ax[0].legend(prop={'size': 6})
 
     plot_tree(model, ax=ax[1], feature_names=inputs,
               class_names=encoder.classes_)
@@ -335,7 +337,9 @@ def plot_rules_3d(df, model, encoder, inputs, used_inputs, label_name, score):
     ax.set_xlabel(x_name)
     ax.set_ylabel(y_name)
     ax.set_zlabel(z_name)
-    ax.legend()
+
+    # legend size small
+    ax.legend(prop={'size': 6})
 
     ax = fig.add_subplot(122)
 
@@ -728,7 +732,7 @@ def create_output_membership_functions(y_train):
 
     for col in y_train.columns:
 
-        values = y_train[col].unique()
+        values = sorted(y_train[col].unique())
 
         def flatMap(f, items):
             return [item for sublist in map(f, items) for item in sublist]
@@ -736,6 +740,9 @@ def create_output_membership_functions(y_train):
         split_values = flatMap(lambda e: e.split(","), values)
         split_values = sorted(
             list(set(map(lambda e: e.strip(), split_values))))
+
+        ##
+        split_values = values
 
         base_set = Set(Set.SetType.CONTINUOUS, (0, len(split_values)-1))
         crisp_set = CrispSet({(col, base_set)})
@@ -768,7 +775,7 @@ def save_linguistic_variables(variables, filename):
             (rl, ru) = cset.values
 
             f.write(f"FuzzyVariable: domain: \"{name}\" range: ({rl}, {ru})\n")
-            for func in linguistic_var.linguistic_terms.values():
+            for func in sorted(linguistic_var.linguistic_terms.values(), key=lambda x: x.peak()):
                 func.crisp_set = None
                 f.write(f"\t{func}\n")
             f.write("\n")
