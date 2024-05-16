@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# In[1]:
-import sys
-sys.path.insert(1, '../../../notes/1-Testing/fuzzy-test/python/')
-
-# In[12]:
+if True:
+    import sys
+    sys.path.insert(1, '../../../notes/1-Testing/fuzzy-test/python/')
 
 from collections import defaultdict
 from fuzzy_system import *
@@ -16,6 +13,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
+# In[1]:
+
+
+# In[12]:
+# imports
 
 # In[13]:
 
@@ -168,7 +170,7 @@ def createFuzzySystem(inputVariableString, outputVariableString, rulesString):
 # In[19]:
 
 
-def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict[str, float]]):
+def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict[str, float]], K=2):
     freq_correct_test = defaultdict(int)
     freq_total_test = defaultdict(int)
 
@@ -178,22 +180,30 @@ def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict
     output_variable = fisys.consequent_name
 
     for row in test.iterrows():
-        val, pred = fisys.predictClosest(
-            row[1], algo_rankings[output_variable])
+        vals, preds = fisys.predictClosest(
+            row[1], algo_rankings[output_variable], K)
 
         true = row[1][output_variable]
-        if pred == true:
-            freq_correct_test[true] = freq_correct_test.get(true, 0) + 1
-        freq_total_test[true] = freq_total_test.get(true, 0) + 1
+
+        for pred in preds:
+            if pred in true:
+                freq_correct_test[pred] = freq_correct_test.get(pred, 0) + 1
+
+        for true_val in true.split(", "):
+            freq_total_test[true_val] = freq_total_test.get(true_val, 0) + 1
 
     for row in train.iterrows():
-        val, pred = fisys.predictClosest(
+        vals, preds = fisys.predictClosest(
             row[1], algo_rankings[output_variable])
 
         true = row[1][output_variable]
-        if pred == true:
-            freq_correct_train[true] = freq_correct_train.get(true, 0) + 1
-        freq_total_train[true] = freq_total_train.get(true, 0) + 1
+
+        for pred in preds:
+            if pred in true:
+                freq_correct_train[pred] = freq_correct_train.get(pred, 0) + 1
+
+        for true_val in true.split(", "):
+            freq_total_train[true_val] = freq_total_train.get(true_val, 0) + 1
 
     return freq_correct_test, freq_total_test, freq_correct_train, freq_total_train
 
@@ -201,7 +211,7 @@ def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict
 # In[20]:
 
 
-def plot_accuracy(train, test, folder, fuzzy_systems, algo_rankings):
+def plot_accuracy(train, test, folder, fuzzy_systems, algo_rankings, K):
     accuracies = {}
 
     for label, fisys in fuzzy_systems.items():
@@ -209,7 +219,7 @@ def plot_accuracy(train, test, folder, fuzzy_systems, algo_rankings):
         print(f"\n{label}:")
 
         freq_correct_test, freq_total_test, freq_correct_train, freq_total_train = calc_accuracy(train, test,
-                                                                                                 fisys, algo_rankings)
+                                                                                                 fisys, algo_rankings, K)
 
         freq_total_test["Total"] = sum(freq_total_test.values())
         freq_correct_test["Total"] = sum(freq_correct_test.values())
@@ -257,7 +267,7 @@ def plot_accuracy(train, test, folder, fuzzy_systems, algo_rankings):
 
 # In[21]:
 
-def benchmark_rules(folder, train, test):
+def benchmark_rules(folder, train, test, K=1):
 
     with open(folder+'/fuzzy-inputs.txt') as f:
         inputVariableString = f.read()
@@ -273,6 +283,6 @@ def benchmark_rules(folder, train, test):
 
     print(f"\n{folder}:")
 
-    plot_accuracy(train, test, folder, fiss, algo_ranking)
+    plot_accuracy(train, test, folder, fiss, algo_ranking, K)
 
     return fiss, algo_ranking

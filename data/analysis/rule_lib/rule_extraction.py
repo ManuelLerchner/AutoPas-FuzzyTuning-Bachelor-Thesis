@@ -92,6 +92,19 @@ class Condition:
         self.value = value
         self.negated = negated
 
+    def split_features(self):
+
+        if type(self.value) == str:
+            values = self.value.split(",")
+
+            if (len(values) > 1):
+                pass
+
+            conditions = map(lambda v: Condition(
+                self.feature, self.operator, v.strip(), False), values)
+            return list(conditions)
+        return [self]
+
     def __str__(self):
         def format_value(x): return '"' + x + '"' if isinstance(x, str) else x
 
@@ -106,7 +119,16 @@ class Rule:
         self.prediction = prediction
 
     def __str__(self):
-        return f"if {' && '.join(['(' + ' || '.join([str(c) for c in cond]) + ')' for cond in self.conditions])} then {self.prediction}"
+        predictions = ""
+        for c in self.prediction.split_features():
+            predictions += str(c) + " || "
+        # remove last " || "
+        predictions = predictions[:-4]
+
+        if self.prediction.negated:
+            predictions = f"!({predictions})"
+
+        return f"if {' && '.join(['(' + ' || '.join([str(c) for c in cond]) + ')' for cond in self.conditions])} then {predictions}"
 
 
 # # Decision Tree
@@ -706,22 +728,29 @@ def create_output_membership_functions(y_train):
 
     for col in y_train.columns:
 
-        values = sorted(y_train[col].unique())
+        values = y_train[col].unique()
 
-        base_set = Set(Set.SetType.CONTINUOUS, (0, len(values)-1))
+        def flatMap(f, items):
+            return [item for sublist in map(f, items) for item in sublist]
+
+        split_values = flatMap(lambda e: e.split(","), values)
+        split_values = sorted(
+            list(set(map(lambda e: e.strip(), split_values))))
+
+        base_set = Set(Set.SetType.CONTINUOUS, (0, len(split_values)-1))
         crisp_set = CrispSet({(col, base_set)})
 
         outputRangeMembershipFunctions[col] = LinguisticVariable(crisp_set)
 
-        for i, entry in enumerate(values):
-            spacing = (len(values)-1)/(len(values)+1)
+        for i, entry in enumerate(split_values):
+            spacing = (len(split_values)-1)/(len(split_values)+1)
             mean = (i+1)*spacing
-            std = (spacing/len(values))
+            std = (spacing/len(split_values))
             outputRangeMembershipFunctions[col].add_linguistic_term(
                 Gaussian(entry, mean, std))
 
         plot_linguistic_variable_on_data(
-            y_train, values, outputRangeMembershipFunctions[col], col)
+            y_train, split_values, outputRangeMembershipFunctions[col], col)
 
     return outputRangeMembershipFunctions
 

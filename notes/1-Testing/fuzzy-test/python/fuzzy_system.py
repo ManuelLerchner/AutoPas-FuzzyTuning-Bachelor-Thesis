@@ -102,8 +102,13 @@ class FuzzySet:
             # Pass the data down recursively
             return self.function(data)
 
-    def defuzzyfy(self, numpoints=100):
-        return self.mom(numpoints)
+    def defuzzyfy(self, method, numpoints=100, K=1):
+        if method == "mom":
+            return self.mom(numpoints, K)
+        elif method == "cog":
+            return self.cog(numpoints, K)
+        else:
+            raise ValueError("Invalid defuzzification method")
 
     def cog(self, numpoints=100):
         """
@@ -131,7 +136,7 @@ class FuzzySet:
 
         return (numX/den, numY/den)
 
-    def mom(self, numpoints=100):
+    def mom(self, numpoints=100, K=1):
         """
         Calculate the mean of maximum of the fuzzy set.
 
@@ -143,7 +148,10 @@ class FuzzySet:
             self.crisp_set.dimensions) == 1, "Can only calculate mean of maximum for one variable"
         (name, range) = next(iter(self.crisp_set.dimensions))
 
+        results = []
         max_y = 0
+
+        rolling_buffers = [[]] * K
 
         places_of_max = []
 
@@ -151,16 +159,21 @@ class FuzzySet:
             y = self.function({name: x})
             if y > max_y:
                 max_y = y
+                rolling_buffers = rolling_buffers[1:] + [places_of_max.copy()]
                 places_of_max = [x]
             elif y == max_y:
                 places_of_max.append(x)
 
         if len(places_of_max) == 0:
-            return (0, 0)
+            raise ValueError("No maximum found")
 
-        mean = sum(places_of_max) / len(places_of_max)
+        for buffer in rolling_buffers:
+            val = self.function({name: buffer[0]})
+            mean = sum(buffer) / len(buffer)
 
-        return (mean, max_y)
+            results.append((mean, val))
+
+        return results
 
     def __and__(self, other):
         """
@@ -593,7 +606,7 @@ class FuzzySystem:
 
         return union
 
-    def predict(self, data: dict):
+    def predict(self, data: dict, K=1):
         """ 
         Apply the rules to the data and return the center of gravity of the union of the consequents.
         This is also the prediction of the fuzzy system for given data
@@ -602,13 +615,16 @@ class FuzzySystem:
         """
 
         union = self.applyRules(data)
-        (cx, cy) = union.defuzzyfy()
-        return cx
+        bestKpositions = union.defuzzyfy(method="mom", K=K)
+        return list(map(lambda x: x[0], bestKpositions))
 
-    def predictClosest(self, data: dict, algo_ranking: dict[str, float]):
-        cx = self.predict(data)
+    def predictClosest(self, data: dict, algo_ranking: dict[str, float], K=1):
+        cxs = self.predict(data, K)
 
-        return cx, min(algo_ranking, key=lambda x: abs(algo_ranking[x] - cx))
+        closest = [min(algo_ranking, key=lambda x: abs(algo_ranking[x] - cx))
+                   for cx in cxs]
+
+        return cxs, closest
 
     def getInputCrispSets(self):
         inputs = set()
