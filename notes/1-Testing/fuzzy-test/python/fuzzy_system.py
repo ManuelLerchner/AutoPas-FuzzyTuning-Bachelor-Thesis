@@ -145,6 +145,7 @@ class FuzzySet:
             den += y
 
         if den == 0:
+            raise ValueError("No area under the curve")
             return (0, 0)
 
         return (numX/den, numY/den)
@@ -573,7 +574,7 @@ class FuzzyRule:
         inputs.add(self.antecedent.crisp_set)
 
         fig = plot3D_surface(inputs, self.antecedent,
-                             new_map, mesh=30, contour_levels=30)
+                             new_map, delta=0.1, contour_levels=30)
         return fig
 
     def __repr__(self):
