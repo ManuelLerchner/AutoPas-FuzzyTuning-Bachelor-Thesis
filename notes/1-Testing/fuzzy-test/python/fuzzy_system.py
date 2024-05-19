@@ -231,6 +231,7 @@ class FuzzySet:
             ax.bar(xrange, y, label=str(self),
                    width=total_range/(50*len(set.values)))
         else:
+            # self.crisp_set = None
             ax.plot(xrange, y, label=str(self))
 
         if len(self.based_on) > 0:
@@ -460,8 +461,10 @@ class LinguisticVariable:
             mf.plot(ax)
         ax.set_title(f'Linguistic Variable: {name}')
         ax.set_xlabel(name)
-        ax.set_ylabel('Membership Degree')
-        ax.legend()
+        ax.set_ylabel('Degree of Membership')
+        ax.legend(loc='lower right')
+
+        ax.axhline(0, color='black', linewidth=1)
 
     def __eq__(self, name: str):
         """
@@ -613,7 +616,7 @@ class FuzzySystem:
 
         return union
 
-    def predict(self, data: dict, delta=0.01):
+    def predict(self, data: dict, delta=0.01, method="mom"):
         """ 
         Apply the rules to the data and return the center of gravity of the union of the consequents.
         This is also the prediction of the fuzzy system for given data
@@ -622,11 +625,11 @@ class FuzzySystem:
         """
 
         union = self.applyRules(data)
-        (meanX, y) = union.defuzzyfy(method="mom", delta=delta)
+        (meanX, y) = union.defuzzyfy(method, delta=delta)
         return meanX
 
-    def predictClosest(self, data: dict, algo_ranking: dict[str, float], delta=0.001):
-        cx = self.predict(data, delta)
+    def predictClosest(self, data: dict, algo_ranking: dict[str, float], delta=0.001, method="mom"):
+        cx = self.predict(data, delta=delta, method=method)
 
         closest = min(algo_ranking, key=lambda x: abs(algo_ranking[x] - cx))
 

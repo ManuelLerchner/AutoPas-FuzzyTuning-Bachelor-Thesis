@@ -82,7 +82,7 @@ The interpretability of decision trees makes them a good choice for creating the
 
             \draw[] (2,0) node [below] {2}-- (2,2);
 
-            \node [above] at (1,3) {2};
+            \node [above] at (1,3) {1};
 
             \node [right] at (4,1) {1};
 
@@ -109,4 +109,162 @@ The interpretability of decision trees makes them a good choice for creating the
 
 Fuzzy decision trees are a generalization of classical decision trees that allow for fuzzy logic to be used in the decision-making process. This extension allows to eliminate the crisp decision boundaries of classical decision trees and instead use fuzzy sets at each node of the tree to calculate the contribution of each branch to the final decision. This allows for a more flexible decision-making process that can take into account the uncertainty of the input data and the splits.
 
-Contrary to classical decision trees, fuzzy decision trees explore all possible paths at the same time and make a final decision by aggregating the results of all paths using fuzzy logic.
+Contrary to classical decision trees, which follow a single path from the root to a leaf node, fuzzy decision trees explore all possible paths at the same time and make a final decision by aggregating the results of all paths using fuzzy logic. This is possible, as each node in a fuzzy decision tree can fuzzily assign how much each of its children should contribute to the final decision.
+
+\pgfmathdeclarefunction{sigmoid}{3}{%
+    \pgfmathparse{1/(1 + exp(-(#1-#2)*#3))}%
+}
+
+\pgfmathdeclarefunction{gaussian}{3}{%
+    \pgfmathparse{exp(-((#1-#2)^2)/(2*#3^2))}%
+}
+
+\newcommand*\calc[1]{%
+    \pgfmathparse{#1}%
+    \pgfmathprintnumber{\pgfmathresult}%
+}
+\pgfplotsset{compat=1.18}
+
+% parameers: xlabel, center
+\newcommand{\fuzzyTreeNode}[2]{
+    \begin{tikzpicture}
+        \begin{axis}%
+            [
+                title = {Split: $#1 \leq #2$},
+                width=4.5cm,
+                height=3cm,
+                axis lines=center,
+                xlabel={#1},
+                x label style={at={(axis description cs:0.9,-0.1)},anchor=north},
+                ylabel=$\mu$,
+                y label style={at={(axis description cs:0.5,1)},anchor=south},
+                xmin=-5,
+                xmax=5,
+                xtick={},
+                xticklabels= {},
+                ytick={},
+                yticklabels={},
+                extra x ticks={0},
+                extra x tick labels={#2},
+                ymax=1,
+                samples=50,
+                extra y ticks={1},
+                every axis plot/.append style={thick}
+            ]
+            \addplot[red]  {sigmoid(x,0,-1)};
+            \addplot[blue] {sigmoid(x,0,1)};
+            \node[anchor=center, red] at (axis cs:-2.9,0.6) {$\mu_{\text{#1smaller#2}}$};
+            \node[anchor=center, blue] at (axis cs:3.1,0.6) {$\mu_{\text{#1greater#2}}$};
+        \end{axis}
+
+    \end{tikzpicture}
+}
+
+\newcommand{\fuzzyTreeLeaf}[1]{
+    \begin{tikzpicture}
+        \begin{axis}%
+            [
+                title = {Class: #1},
+                width=3.25cm,
+                height=2.25cm,
+                axis lines=center,
+                xlabel={$\text{class}$},
+                x label style={at={(axis description cs:0.6,-0.3)},anchor=west},
+                ylabel=$\mu$,
+                y label style={at={(axis description cs:0.5,1)},anchor=south},
+                xmin=-5,
+                xmax=5,
+                xtick={},
+                xticklabels= {},
+                ytick={},
+                yticklabels={},
+                extra x ticks={0},
+                extra x tick labels={#1},
+                ymax=1,
+                samples=10,
+                extra y ticks={1},
+                every axis plot/.append style={thick}
+            ]
+            \addplot[black]  {gaussian(x,0,1)};
+        \end{axis}
+
+    \end{tikzpicture}
+}
+
+\begin{figure}[H] % [H] for HERE
+    \centering
+    \begin{tikzpicture}[scale=2,font=\tiny]
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt] (A) at (0,0) {
+            \fuzzyTreeNode{x}{3}
+        };
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt] (B) at (-2,-1.75) {
+            \fuzzyTreeNode{y}{2}
+        };
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt] (C) at (1.5,-1.75) {
+            \fuzzyTreeNode{y}{1}
+        };
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt] (D) at (-3,-3.5) {
+            \fuzzyTreeNode{x}{2}
+        };
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt] (E) at (-1,-3.5) {
+            \fuzzyTreeNode{x}{1}
+        };
+
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=blue!20] (F) at (-3.5,-5) {
+            \fuzzyTreeLeaf{1}
+        };
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=red!20] (G) at (-2.5,-5) {
+            \fuzzyTreeLeaf{2}
+        };
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=red!20] (H) at (-1.5,-5) {
+            \fuzzyTreeLeaf{2}
+        };
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=blue!20] (I) at (-0.5,-5) {
+            \fuzzyTreeLeaf{1}
+        };
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=blue!20] (J) at (1,-5) {
+            \fuzzyTreeLeaf{1}
+        };
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=green!20] (K) at (2,-5) {
+            \fuzzyTreeLeaf{3}
+        };
+
+
+
+        \draw[->] (A) -- (B) node [midway, left, above left] {yes};
+        \draw[->] (A) -- (C) node [midway, right, above right] {no};
+        \draw[->] (B) -- (D) node [midway, left, above left] {yes};
+        \draw[->] (B) -- (E) node [midway, right, above right] {no};
+
+        \draw[->] (C) -- (J) node [midway, left, above left] {yes};
+        \draw[->] (C) -- (K) node [midway, right, above right] {no};
+
+        \draw[->] (D) -- (F) node [midway, left, above left] {yes};
+        \draw[->] (D) -- (G) node [midway, right, above right] {no};
+
+        \draw[->] (E) -- (H) node [midway, left, above left] {yes};
+        \draw[->] (E) -- (I) node [midway, right, above right] {no};
+    \end{tikzpicture}
+
+    \caption[Example Fuzzy Decision Tree]{The fuzzy decision tree corresponding created from the decision tree in Figure~\ref{fig:decisionTreeExample}. Each internal node in the fuzzy decision tree uses two \texttt{sigmoid} membership functions (\textcolor{red}{$\mu_{\text{smaller}}$} and \textcolor{blue}{$\mu_{\text{greater}}$} with appropriate parameters) to specify to which degree the comparison is true or false. The leaf nodes use different \texttt{gaussian} membership functions centered around the class value.
+
+        Note that the individual membership functions can be chosen arbitrarily and don't have to be restricted to the ones shown here.}
+
+    \label{fig:fuzzyDecisionTreeExample}
+\end{figure}
+
+\subsubsection{Rule Extraction}
+
+Once the fuzzy decision tree has been created, the next step is to extract the fuzzy rules from the tree. This can be done by traversing the tree in a depth-first manner and collecting the correct membership functions for the path along the way. Each connection between two internal nodes in the tree corresponds to a \texttt{AND} operation, while each final connection between an internal node and a leaf node corresponds to an \texttt{IMPLIES} operation.
+
