@@ -1,3 +1,57 @@
-\chapter{Some more stuff}
+\chapter{Appendix}
 
-For everything that does not really belong in the thesis but is good to mention.
+\printglossaries
+
+\newpage
+
+\section{LiveInfoLogger Data Fields}
+\label{des:liveinfodatafields}
+
+The following fields are currently available in the LiveInfo data file, which contains information about the simulation state at each iteration. The data is collected and logged by the \texttt{LiveInfoLogger} class of the \gls{autopas} library.
+
+\begin{description}[style=multiline, leftmargin =40mm]
+    \item [Iteration] The current iteration number of the simulation.
+    \item [avgParticlesPerCell] The average number of particles per cell in the simulation domain.
+    \item [cutoff] The cutoff radius for the interaction of particles, beyond which particles do not interact.
+    \item [domainSizeX] The size of the simulation domain in the X dimension.
+    \item [domainSizeY] The size of the simulation domain in the Y dimension.
+    \item [domainSizeZ] The size of the simulation domain in the Z dimension.
+    \item [estimatedNumNeighborInteractions] The estimated number of neighbor interactions between particles.
+    \item [homogeneity] A measure of the distribution uniformity of particles across the cells. \todo{Define the metric}
+    \item [maxDensity] The maximum density of particles in any cell.
+    \item [maxParticlesPerCell] The maximum number of particles found in any single cell.
+    \item [minParticlesPerCell] The minimum number of particles found in any single cell.
+    \item [numCells] The total number of cells in the simulation domain.
+    \item [numEmptyCells] The number of cells that contain no particles.
+    \item [numHaloParticles] The number of particles in the halo region (boundary region) of the simulation domain.
+    \item [numParticles] The total number of particles in the simulation domain.
+    \item [particleSize] The size of each particle. \todo{Which unit?}
+    \item [particleSizeNeededByFunctor] The particle size required by the functor (the function used for calculating interactions).
+    \item [particlesPerBlurredCellStdDev] The standard deviation of the number of particles per blurred cell, providing a measure of particle distribution variability.
+    \item [particlesPerCellStdDev] The standard deviation of the number of particles per cell, indicating the variability in particle distribution.
+    \item [rebuildFrequency] The frequency at which the neighbor list is rebuilt.
+    \item [skin] The skin width added to the cutoff radius to create a buffer zone for neighbor lists, ensuring efficient interaction calculations.
+    \item [threadCount] The number of threads used for parallel processing in the simulation.
+\end{description}
+
+
+\section{TuninData Fields}
+\label{des:tuningdatafields}
+
+The following fields are currently available in the TuningResults data file, which contains the current performance data for a given configuration at a particular iteration. The data is collected and logged by the \texttt{TuningDataLogger} class of the \gls{autopas} library.
+
+\begin{description}[style=multiline, leftmargin =40mm]
+    \item[Date] The date and time when the data was collected.
+    \item[Iteration] The current iteration number of the simulation.
+    \item[Container] The type of container used to store the particles in the simulation (e.g., LinkedCells, VerletLists).
+    \item[CellSizeFactor] A factor that determines the size of the cells relative to the cutoff radius. \todo{check https://mediatum.ub.tum.de/doc/1518839/1518839.pdf}
+    \item[Traversal] The method used to traverse the cells and calculate interactions between particles.
+    \item[Load Estimator] The strategy used to estimate and balance the computational load across different parts of the simulation domain.
+    \item[Data Layout] The arrangement of particle data in memory (e.g., AoS for Array of Structures, SoA for Structure of Arrays).
+    \item[Newton 3] Indicates whether the Newton's third law optimization is used to reduce computation by only calculating forces once per particle pair (Yes/No).
+    \item[sample$i$] The performance data for the configuration at the $i$-th sample point. The number of total sample points per iteration can be configured via the \texttt{.yaml} configuration file.
+    \item[Reduced] The reduced performance data for all sample points, calculated by aggregating the data across all sample points. The specific aggregation method can be configured via the \texttt{.yaml} configuration file.
+    \item[Smoothed] A smoothed version of the reduced performance data.
+
+\end{description}
+

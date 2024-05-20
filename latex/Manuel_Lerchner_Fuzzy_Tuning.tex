@@ -14,13 +14,21 @@
                {scrbook}
 
 \input{settings}
+\input{glossary}
+
 \usepackage{lipsum} % for filling pages with stuff
 \usepackage{todonotes} % for todo notes
 
 \setlipsum{auto-lang=false} % to avoid babel errors
 
+
+%TODO remove
+\pdfcompresslevel=0
+\pdfobjcompresslevel=0
+
 \includeonly{
     content/4ProofOfConcept,
+    content/Appendix,
 }
 
 % -------------------------------------------------------------------------------
@@ -44,7 +52,6 @@
 \def\advisorFst{Manish Kumar Mishra, M.Sc.}
 \def\advisorSnd{Samuel Newcome, M.Sc.}
 \def\date{10.08.2024}
-
 \begin{document}
 \frontmatter
 % -------------------------------------------------------------------------------
@@ -82,15 +89,16 @@
     \huge SCHOOL OF COMPUTATION, INFORMATION AND TECHNOLOGY\\[5mm]
     \large DER TECHNISCHEN UNIVERSITÄT MÜNCHEN\\[24mm]
     {\Large \doctype in \studyProgram}\\[20mm]
-    {\LARGE\textbf{\title}}\\[10mm]
+    \todo{Remove all TODOS}  {\LARGE\textbf{\title}}\\[10mm]
     {\LARGE\textbf{\titleGer}}\\[10mm]
     \begin{tabular}{ll}
-        \Large Author:     & \Large \author     \\[2mm]
-        \Large Supervisor: & \Large \supervisor \\[2mm]
-        \Large Advisors:   & \Large \advisorFst \\[2mm]
-        \Large             & \Large \advisorSnd \\[2mm]
+        \Large Author:     & \Large \author                     \\[2mm]
+        \Large Supervisor: & \Large \supervisor                 \\[2mm]
+        \Large Advisors:   & \Large \advisorFst \nobreakspace\& \\[2mm]
+        \Large             & \Large \advisorSnd                 \\[2mm]
         \Large Date:       & \Large \date
     \end{tabular}
+
 \end{center}
 
 % undo BCOR correction
