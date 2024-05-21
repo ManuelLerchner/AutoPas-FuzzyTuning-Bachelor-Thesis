@@ -1,0 +1,60 @@
+# Running single-site MD simulation.
+
+container                        :  [LinkedCells, VerletClusterLists, VerletLists, VerletListsCells, PairwiseVerletLists]
+verlet-rebuild-frequency         :  15
+verlet-skin-radius-per-timestep  :  0.2
+fastParticlesThrow               :  false
+verlet-cluster-size              :  4
+selector-strategy                :  Fastest-Absolute-Value
+data-layout                      :  [AoS, SoA]
+traversal                        :  [lc_c01, lc_c01_combined_SoA, lc_c04, lc_c04_HCP, lc_c04_combined_SoA, lc_c08, lc_c18, lc_sliced, lc_sliced_balanced, lc_sliced_c02, ot_c01, ot_c18, vcl_c01_balanced, vcl_c06, vcl_sliced, vcl_sliced_balanced, vcl_sliced_c02, vl_list_iteration, vlc_c01, vlc_c18, vlc_sliced, vlc_sliced_balanced, vlc_sliced_c02, vlp_c01, vlp_c18, vlp_sliced, vlp_sliced_balanced, vlp_sliced_c02, vlp_c08, vvl_as_built]
+tuning-strategies                :  []
+tuning-interval                  :  2000
+tuning-samples                   :  3
+functor                          :  Lennard-Jones (12-6) AVX intrinsics
+newton3                          :  [disabled, enabled]
+cutoff                           :  2.5
+box-min                          :  [-0.75, -0.75, -0.75]
+box-max                          :  [45, 45, 45]
+cell-size                        :  [1]
+deltaT                           :  0.00182367
+sorting-threshold                :  8
+iterations                       :  30000
+boundary-type                    :  [periodic, periodic, periodic]
+Sites:                           
+  0:
+    epsilon                      :  1
+    sigma                        :  1
+    mass                         :  1
+Objects:                         
+thermostat:
+  initialTemperature             :  0.7
+  targetTemperature              :  0.7
+  deltaTemperature               :  2
+  thermostatInterval             :  10
+  addBrownianMotion              :  false
+vtk-filename                     :  SpinodalDecomposition
+vtk-write-frequency              :  1000
+checkpoint                       :  output/SpinodalDecomposition_equilibration/SpinodalDecomposition_equilibration_10000.pvtu
+use-tuning-logger                :  false
+output-suffix                    :  
+log-level                        :  info
+no-flops                         :  false
+no-end-config                    :  false
+no-progress-bar                  :  false
+load-balancer                    :  InvertedPressure
+load-balancing-interval          :  100
+subdivide-dimension              :  [true, true, true]
+
+
+Using 28 Threads
+MPI is disabled.
+[2024-05-21 17:30:35.061] [AutoPasLog] [info] [AutoPasImpl.h:65] AutoPas Version: 2.0.0-a46cd3a-dirty
+[2024-05-21 17:30:35.061] [AutoPasLog] [info] [AutoPasImpl.h:66] Compiled with  : GCC 11.2.0
+[2024-05-21 17:30:35.061] [AutoPasLog] [warning] [AutoPasImpl.h:68] Number of samples (3) is not a multiple of the rebuild frequency (15). This can lead to problems when multiple AutoPas instances interact (e.g. via MPI).
+Total number of particles at the initialization: 25417
+
+
+
+
+

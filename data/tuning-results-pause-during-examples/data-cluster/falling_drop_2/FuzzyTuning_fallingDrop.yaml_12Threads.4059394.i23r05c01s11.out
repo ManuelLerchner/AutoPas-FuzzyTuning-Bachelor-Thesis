@@ -1,0 +1,65 @@
+# Running single-site MD simulation.
+
+container                        :  [LinkedCells, VerletClusterLists, VerletLists, VerletListsCells]
+verlet-rebuild-frequency         :  10
+verlet-skin-radius-per-timestep  :  0.1
+fastParticlesThrow               :  false
+verlet-cluster-size              :  4
+selector-strategy                :  Fastest-Absolute-Value
+data-layout                      :  [AoS, SoA]
+traversal                        :  [lc_c01, lc_c08, lc_c18, lc_sliced_c02, vcl_c01_balanced, vcl_c06, vcl_cluster_iteration, vl_list_iteration, vlc_c01, vlc_c18, vlc_sliced_c02]
+tuning-strategies                :  []
+tuning-interval                  :  500
+tuning-samples                   :  3
+functor                          :  Lennard-Jones (12-6) AVX intrinsics
+newton3                          :  [disabled, enabled]
+cutoff                           :  3
+box-min                          :  [0, 0, 0]
+box-max                          :  [49.5612, 29.5612, 37.296]
+cell-size                        :  [1]
+deltaT                           :  0.0005
+sorting-threshold                :  8
+iterations                       :  30000
+boundary-type                    :  [reflective, reflective, reflective]
+Sites:                           
+  0:
+    epsilon                      :  1
+    sigma                        :  1
+    mass                         :  1
+Objects:                         
+  CubeClosestPacked:
+    0:  
+      particle-spacing           :  1.12246
+      box-length                 :  [48, 28, 10]
+      bottomLeftCorner           :  [1, 1, 1]
+      velocity                   :  [0, 0, 0]
+      particle-type-id           :  0
+  Sphere:
+    0:  
+      center                     :  [18, 15, 30]
+      radius                     :  6
+      particle-spacing           :  1.12246
+      velocity                   :  [0, 0, 0]
+      particle-type-id           :  0
+globalForce                      :  [0, 0, -12]
+vtk-filename                     :  fallingDrop
+vtk-write-frequency              :  1000000
+use-tuning-logger                :  false
+output-suffix                    :  
+log-level                        :  info
+no-flops                         :  false
+no-end-config                    :  true
+no-progress-bar                  :  false
+load-balancer                    :  InvertedPressure
+load-balancing-interval          :  100
+subdivide-dimension              :  [true, true, true]
+
+
+Using 12 Threads
+MPI is disabled.
+[2024-05-21 14:24:29.981] [AutoPasLog] [info] [AutoPasImpl.h:65] AutoPas Version: 2.0.0-a46cd3a-dirty
+[2024-05-21 14:24:29.981] [AutoPasLog] [info] [AutoPasImpl.h:66] Compiled with  : GCC 11.2.0
+[2024-05-21 14:24:29.981] [AutoPasLog] [warning] [AutoPasImpl.h:68] Number of samples (3) is not a multiple of the rebuild frequency (10). This can lead to problems when multiple AutoPas instances interact (e.g. via MPI).
+Total number of particles at the initialization: 15094
+
+
