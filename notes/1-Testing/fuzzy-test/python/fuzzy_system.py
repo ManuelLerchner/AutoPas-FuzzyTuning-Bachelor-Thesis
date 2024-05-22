@@ -233,6 +233,9 @@ class FuzzySet:
         membership_coverage = self.getIntegrationRange()
         delta_x = (e-s)/n
 
+        if delta_x == 0:
+            return
+
         for (a, b) in membership_coverage:
 
             # warning if delta_x is too large. At least 50 points per interval

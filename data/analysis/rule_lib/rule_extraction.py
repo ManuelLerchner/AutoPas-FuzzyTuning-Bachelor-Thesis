@@ -799,6 +799,8 @@ def save_fuzzy_rules(rules, filename):
     with open(filename, "w") as f:
         for rules in rule_outputs.values():
             for rule in rules:
+                if len(rule.conditions) == 0:
+                    continue
                 f.write(f"{rule}\n")
             f.write("\n")
 

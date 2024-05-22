@@ -1,0 +1,17 @@
+FuzzyVariable: domain: "Container_DataLayout" range: (0, 1)
+	"LinkedCells_AoS, VerletClusterLists_AoS": Gaussian(0.3333333333333333, 0.16666666666666666)
+	"VerletClusterLists_AoS": Gaussian(0.6666666666666666, 0.16666666666666666)
+
+FuzzyVariable: domain: "Traversal" range: (0, 7)
+	"lc_sliced_balanced, vcl_c01_balanced, vcl_c06, vcl_cluster_iteration": Gaussian(0.7777777777777778, 0.09722222222222222)
+	"vcl_c01_balanced": Gaussian(1.5555555555555556, 0.09722222222222222)
+	"vcl_c01_balanced, vcl_c06": Gaussian(2.3333333333333335, 0.09722222222222222)
+	"vcl_c01_balanced, vcl_c06, vcl_cluster_iteration": Gaussian(3.111111111111111, 0.09722222222222222)
+	"vcl_c01_balanced, vcl_cluster_iteration": Gaussian(3.888888888888889, 0.09722222222222222)
+	"vcl_c06": Gaussian(4.666666666666667, 0.09722222222222222)
+	"vcl_c06, vcl_cluster_iteration": Gaussian(5.444444444444445, 0.09722222222222222)
+	"vcl_cluster_iteration": Gaussian(6.222222222222222, 0.09722222222222222)
+
+FuzzyVariable: domain: "Newton 3" range: (0, 0)
+	"disabled": Gaussian(0.0, 0.0)
+
