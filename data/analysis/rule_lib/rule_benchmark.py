@@ -2,7 +2,10 @@
 # coding: utf-8
 if True:
     import sys
-    sys.path.insert(1, '../../../notes/1-Testing/fuzzy-test/python/')
+    import os
+    # ../../../notes/1-Testing/fuzzy-test/python/')
+    currentdir = os.path.dirname(os.path.realpath(__file__))
+    sys.path.insert(1, os.path.join(currentdir, '../../../notes/1-Testing/fuzzy-test/python/'))
 
 from collections import defaultdict
 from fuzzy_system import *
@@ -170,7 +173,7 @@ def createFuzzySystem(inputVariableString, outputVariableString, rulesString):
 # In[19]:
 
 
-def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict[str, float]], K):
+def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict[str, float]], K, n):
     trainCorrect = 0
     trainWrong = 0
 
@@ -181,7 +184,7 @@ def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict
 
     for row in train.iterrows():
         vals, preds = fisys.predictClosest(
-            row[1], algo_rankings[output_variable])
+            row[1], algo_rankings[output_variable], n=n)
 
         true = row[1][output_variable]
 
@@ -193,7 +196,7 @@ def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict
 
     for row in test.iterrows():
         vals, preds = fisys.predictClosest(
-            row[1], algo_rankings[output_variable], K)
+            row[1], algo_rankings[output_variable], n=n)
 
         true = row[1][output_variable]
 
@@ -209,14 +212,14 @@ def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict
 # In[20]:
 
 
-def plot_accuracy(train, test, folder, fuzzy_systems, algo_rankings, K):
+def plot_accuracy(train, test, folder, fuzzy_systems, algo_rankings, K, n):
     accuracies = {}
 
     for label, fisys in fuzzy_systems.items():
         print(f"\n{label}:")
 
         pctTrain, pctTest = calc_accuracy(train, test,
-                                          fisys, algo_rankings, K)
+                                          fisys, algo_rankings, K, n)
 
         print(f"Train: {pctTrain}")
         print(f"Test: {pctTest}")
@@ -250,7 +253,7 @@ def plot_accuracy(train, test, folder, fuzzy_systems, algo_rankings, K):
 
 # In[21]:
 
-def benchmark_rules(folder, train, test, K=1):
+def benchmark_rules(folder, train, test, K=1, n=100):
 
     with open(folder+'/fuzzy-inputs.txt') as f:
         inputVariableString = f.read()
@@ -266,6 +269,6 @@ def benchmark_rules(folder, train, test, K=1):
 
     print(f"\n{folder}:")
 
-    plot_accuracy(train, test, folder, fiss, algo_ranking, K)
+    plot_accuracy(train, test, folder, fiss, algo_ranking, K, n)
 
     return fiss, algo_ranking

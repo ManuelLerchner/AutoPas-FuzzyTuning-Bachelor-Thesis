@@ -1,0 +1,30 @@
+FuzzyVariable: domain: "homogeneity" range: (-0.21268548768701018, 0.8309234876870102)
+	"Extremely Low": Sigmoid(0.132, -63.829787234042556)
+	"Very Low": Gaussian(0.226, 0.094)
+	"Low": Gaussian(0.3645, 0.044499999999999984)
+	"Medium": Gaussian(0.4195, 0.01050000000000001)
+	"High": Gaussian(0.45399999999999996, 0.023999999999999994)
+	"Very High": Gaussian(0.507, 0.029000000000000026)
+	"Extremely High": Sigmoid(0.536, 206.89655172413774)
+
+FuzzyVariable: domain: "particlesPerCellStdDev" range: (-0.021502263765737713, 0.07940326376573771)
+	"Very Low": Sigmoid(0.011, -262.28934886669145)
+	"Low": Gaussian(0.014, 0.003000000000000001)
+	"Medium": Gaussian(0.025500000000000002, 0.0085)
+	"High": Gaussian(0.036500000000000005, 0.0024999999999999988)
+	"Very High": Gaussian(0.041499999999999995, 0.0024999999999999988)
+	"Extremely High": Sigmoid(0.044, 262.28934886669145)
+
+FuzzyVariable: domain: "maxDensity" range: (-0.2982760018418477, 2.8071790018418477)
+	"Low": Sigmoid(1.672, -7.5901856369652165)
+	"High": Sigmoid(1.672, 7.5901856369652165)
+
+FuzzyVariable: domain: "maxParticlesPerCell" range: (-18.304814993963628, 80.30481499396363)
+	"Low": Sigmoid(42.5, -0.2608695652173913)
+	"High": Sigmoid(42.5, 0.2608695652173913)
+
+FuzzyVariable: domain: "avgParticlesPerCell" range: (-2.5926718494620213, 10.337118849462021)
+	"Very Low": Sigmoid(3.82, -2.0286441168221767)
+	"Medium": Gaussian(4.6015, 0.7815000000000001)
+	"Very High": Sigmoid(5.383, 2.0286441168221767)
+

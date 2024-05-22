@@ -19,6 +19,7 @@ SCRIPT_TEMPLATE = """#!/bin/bash
 #SBATCH --export=NONE
 #SBATCH --time=06:00:00
 
+sleep $((RANDOM % 60))
 OMP_NUM_THREADS={{NUM_THREADS}} ./md-flexible --yaml-filename {{YAML_FILENAME}} --log-level info
 """
 

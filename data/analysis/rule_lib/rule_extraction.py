@@ -378,7 +378,7 @@ def create_auto_rules(X_train, y_train, weights, POSSIBLE_NUMBER_OF_COMBINATIONS
             for comb in itertools.combinations(cols, comb_size):
 
                 tree_fit = find_rulesNd(
-                    df_filtered, list(comb), label, weights, ccp_alpha=CCP_ALPHA[label], max_depth=MAX_DEPTH)
+                    df_filtered, list(comb), label, weights, ccp_alpha=CCP_ALPHA[label], max_depth=MAX_DEPTH, class_weight='balanced')
 
                 if label not in tree_fits:
                     tree_fits[label] = []
@@ -520,7 +520,7 @@ def plot_linguistic_variable_on_data(df, dimensionsBoundaries, linguistic_variab
     inputs = np.linspace(min_x-0.05*(max_x-min_x),
                          max_x+0.05*(max_x-min_x), 1000)
 
-    linguistic_variable.plot(ax2)
+    linguistic_variable.plot(ax2, n=800)
 
     ax1.set_xlabel(dim)
     ax1.set_ylabel("Frequency")

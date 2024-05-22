@@ -4,6 +4,7 @@
 # In[84]:
 
 
+from abc import abstractmethod
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
@@ -25,18 +26,12 @@ class Set:
         self.type = type
         self.values = values
 
-    def get_coverage(self, delta):
+    def get_coverage(self):
         if self.type.name == Set.SetType.CONTINUOUS.name:
-            numPts = int((self.values[1] - self.values[0]) / delta)
-
-            if numPts > 1000:
-                print(f"Warning: Too many points in coverage: {
-                      numPts}. Reducing to 1000")
-                delta = (self.values[1] - self.values[0]) / 1000
-
-            return np.arange(self.values[0], self.values[1], delta)
+            return (self.values[0], self.values[1])
         elif self.type.name == Set.SetType.DISCRETE.name:
-            return self.values
+            raise ValueError("Invalid Set Type")
+            return (self.values[0], self.values[-1])
         else:
             raise ValueError("Invalid Set Type")
 
@@ -115,15 +110,33 @@ class FuzzySet:
             # Pass the data down recursively
             return self.function(data)
 
-    def defuzzyfy(self, method, delta):
+    @abstractmethod
+    def getIntegrationRange(self):
+        coverage = []
+        for fs in self.based_on:
+            c = fs.getIntegrationRange()
+            coverage.extend(c)
+
+        # merge intervals
+        coverage.sort(key=lambda x: x[0])
+        merged = []
+        for c in coverage:
+            if not merged or merged[-1][1] < c[0]:
+                merged.append(list(c))
+            else:
+                merged[-1][1] = max(merged[-1][1], c[1])
+
+        return merged
+
+    def defuzzyfy(self, method, n):
         if method == "mom":
-            return self.mom(delta)
+            return self.mom(n)
         elif method == "cog":
-            return self.cog(delta)
+            return self.cog(n)
         else:
             raise ValueError("Invalid defuzzification method")
 
-    def cog(self, delta):
+    def cog(self, n):
         """
         Calculate the center of gravity of the fuzzy set.
 
@@ -138,7 +151,12 @@ class FuzzySet:
         numY = 0
         den = 0
 
-        for x in cset.get_coverage(delta):
+        (s, e) = cset.get_coverage()
+        x_range = np.linspace(s, e, n)
+
+        self.check_enough_coverage(s, e, n)
+
+        for x in x_range:
             y = self.function({name: x})
             numX += x*y
             numY += 0.5*y*y
@@ -150,7 +168,7 @@ class FuzzySet:
 
         return (numX/den, numY/den)
 
-    def mom(self, delta):
+    def mom(self, n):
         """
         Calculate the mean of maximum of the fuzzy set.
 
@@ -167,7 +185,12 @@ class FuzzySet:
 
         places_of_max = []
 
-        for x in range.get_coverage(delta):
+        (s, e) = range.get_coverage()
+        x_range = np.linspace(s, e, n)
+
+        self.check_enough_coverage(s, e, n)
+
+        for x in x_range:
             y = self.function({name: x})
             if y > max_y:
                 max_y = y
@@ -206,11 +229,29 @@ class FuzzySet:
         new_crisp_set = self.crisp_set
         return FuzzySet(new_linguistic_term, lambda data: 1 - self(data), [self], crisp_set=new_crisp_set)
 
-    def plot(self, ax):
+    def check_enough_coverage(self, s, e, n):
+        membership_coverage = self.getIntegrationRange()
+        delta_x = (e-s)/n
+
+        for (a, b) in membership_coverage:
+
+            # warning if delta_x is too large. At least 50 points per interval
+            MIN_POINTS = 10
+            if (b-a)/delta_x < MIN_POINTS:
+                print(f"Warning: Not enough points in the interval ({a}, {b})")
+                print(f"delta_x = {delta_x}, number of points = {
+                      (b-a)/delta_x}, should be at least {MIN_POINTS}")
+                # raise ValueError("Not enough points in the interval")
+
+    def plot(self, ax, n=100):
         assert len(
             self.crisp_set.dimensions) == 1, "Can only plot fuzzy sets over one variable"
         [name, set] = next(iter(self.crisp_set.dimensions))
-        xrange = set.get_coverage(0.01)
+
+        (s, e) = set.get_coverage()
+        xrange = np.linspace(s, e, n)
+
+        self.check_enough_coverage(s, e, n)
 
         for mf in self.based_on:
             [_, mf_set] = next(iter(mf.crisp_set.dimensions))
@@ -270,6 +311,9 @@ class Triangle(FuzzySet):
     def peak(self):
         return self.center
 
+    def getIntegrationRange(self):
+        return [(self.center - self.width, self.center + self.width)]
+
     def __repr__(self):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
@@ -307,6 +351,9 @@ class Trapezoid(FuzzySet):
     def peak(self):
         return (self.center_left + self.center_right) / 2
 
+    def getIntegrationRange(self):
+        return [(self.left, self.right)]
+
     def __repr__(self):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
@@ -333,6 +380,9 @@ class Gaussian(FuzzySet):
     def peak(self):
         return self.mean
 
+    def getIntegrationRange(self):
+        return [(self.mean - 3*self.sigma, self.mean + 3*self.sigma)]
+
     def __repr__(self):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
@@ -358,6 +408,9 @@ class Sigmoid(FuzzySet):
 
     def peak(self):
         return np.inf if self.width > 0 else -np.inf
+
+    def getIntegrationRange(self):
+        return [(self.center - 3*abs(self.width), self.center + 3*abs(self.width))]
 
     def __repr__(self):
         prefix = ""
@@ -402,6 +455,9 @@ class SigmoidFinite(FuzzySet):
 
         super().__init__(linguistic_term, np.vectorize(func), is_base_set=True)
 
+    def getIntegrationRange(self):
+        return [(min(self.dm, self.dn), max(self.dm, self.dn))]
+
     def peak(self):
         return np.inf if self.dn > self.dm else -np.inf
 
@@ -429,6 +485,9 @@ class Singleton(FuzzySet):
     def peak(self):
         return self.value
 
+    def getIntegrationRange(self, n):
+        return [(self.value, self.value)]
+
     def __repr__(self):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
@@ -453,12 +512,12 @@ class LinguisticVariable:
         fuzzySet.crisp_set = self.crisp_set
         self.linguistic_terms[fuzzySet.linguistic_term] = fuzzySet
 
-    def plot(self, ax):
+    def plot(self, ax, n=100):
         assert len(
             self.crisp_set.dimensions) == 1, "Can only plot fuzzy sets over one variable"
         [name, _] = next(iter(self.crisp_set.dimensions))
         for mf in self.linguistic_terms.values():
-            mf.plot(ax)
+            mf.plot(ax, n=n)
         ax.set_title(f'Linguistic Variable: {name}')
         ax.set_xlabel(name)
         ax.set_ylabel('Degree of Membership')
@@ -476,7 +535,7 @@ class LinguisticVariable:
         return f"FuzzyVariable({self.crisp_set}) with sets: [{', '.join(self.linguistic_terms)}]"
 
 
-def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict, labelMap: dict = {}, delta=0.1, contour_levels=30, fixed_values={}):
+def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict, labelMap: dict = {}, n=100, contour_levels=30, fixed_values={}):
     fig = plt.figure()
     axs = fig.subplot_mosaic([['A', 'B']])
     fig.set_size_inches(16, 6)
@@ -497,8 +556,11 @@ def plot3D_surface(input_sets: set[CrispSet], function: callable, axesMap: dict,
             if dim[0] == nameY:
                 (nameY, setY) = dim
 
-    xs = setX.get_coverage(delta)
-    ys = setY.get_coverage(delta)
+    xrange = setX.get_coverage()
+    xs = np.linspace(xrange[0], xrange[1], n)
+
+    yrange = setY.get_coverage()
+    ys = np.linspace(yrange[0], yrange[1], n)
 
     X, Y = np.meshgrid(xs, ys)
     Z = np.array(
@@ -577,7 +639,7 @@ class FuzzyRule:
         inputs.add(self.antecedent.crisp_set)
 
         fig = plot3D_surface(inputs, self.antecedent,
-                             new_map, delta=0.1, contour_levels=30)
+                             new_map, n=100, contour_levels=30)
         return fig
 
     def __repr__(self):
@@ -616,7 +678,7 @@ class FuzzySystem:
 
         return union
 
-    def predict(self, data: dict, delta=0.01, method="mom"):
+    def predict(self, data: dict, n=100, method="mom"):
         """ 
         Apply the rules to the data and return the center of gravity of the union of the consequents.
         This is also the prediction of the fuzzy system for given data
@@ -625,11 +687,11 @@ class FuzzySystem:
         """
 
         union = self.applyRules(data)
-        (meanX, y) = union.defuzzyfy(method, delta=delta)
+        (meanX, y) = union.defuzzyfy(method, n=n)
         return meanX
 
-    def predictClosest(self, data: dict, algo_ranking: dict[str, float], delta=0.001, method="mom"):
-        cx = self.predict(data, delta=delta, method=method)
+    def predictClosest(self, data: dict, algo_ranking: dict[str, float], n=100, method="mom"):
+        cx = self.predict(data, n=n, method=method)
 
         closest = min(algo_ranking, key=lambda x: abs(algo_ranking[x] - cx))
 
