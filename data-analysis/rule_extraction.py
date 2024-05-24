@@ -287,10 +287,6 @@ def plot_rules_2d(df, model, encoder, inputs, used_inputs, label_name, score):
     max_y = -np.inf
 
     for i, c in enumerate(np.unique(encoder.classes_)):
-
-        ax[0].scatter(df[x_name][df[label_name] == c], df[y_name][df[label_name] == c],
-                      label=c, marker=markers[i % len(markers)])
-
         min_x = min(min_x, df[x_name][df[label_name] == c].min())
         max_x = max(max_x, df[x_name][df[label_name] == c].max())
 
@@ -314,14 +310,18 @@ def plot_rules_2d(df, model, encoder, inputs, used_inputs, label_name, score):
     Z = model.predict(df_pred)
     Z = Z.reshape(xx.shape)
 
+    plot_tree(model, ax=ax[1], feature_names=inputs,
+              class_names=encoder.classes_)
+
     ax[0].contourf(xx, yy, Z, alpha=0.4)
+
+    for i, c in enumerate(np.unique(encoder.classes_)):
+        ax[0].scatter(df[x_name][df[label_name] == c], df[y_name][df[label_name] == c],
+                      label=c, marker=markers[i % len(markers)])
 
     ax[0].set_xlabel(x_name)
     ax[0].set_ylabel(y_name)
     ax[0].legend(prop={'size': 6})
-
-    plot_tree(model, ax=ax[1], feature_names=inputs,
-              class_names=encoder.classes_)
 
 
 def plot_rules_3d(df, model, encoder, inputs, used_inputs, label_name, score):
