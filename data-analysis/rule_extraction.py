@@ -155,7 +155,7 @@ def train_decision_tree(df, inputs, outputs, *args, **kwargs):
         ccp_alpha = ccp_alpha / (np.log(3+len(np.unique(labels_enc))))
         kwargs["ccp_alpha"] = ccp_alpha
 
-    model = DecisionTreeClassifier(random_state=1, **kwargs)
+    model = DecisionTreeClassifier(**kwargs)
 
     model.fit(df[inputs], labels_enc, *args)
 
@@ -379,15 +379,20 @@ def create_auto_rules(X_train, y_train, weights, POSSIBLE_NUMBER_OF_COMBINATIONS
             for col in exclude_columns:
                 cols.remove(col)
 
+            criterions = ['gini', 'entropy', 'log_loss']
+            splitters = ['best', 'random']
+
             for comb in itertools.combinations(cols, comb_size):
+                for criterion in criterions:
+                    for splitter in splitters:
+                        tree_fit = find_rulesNd(
+                            df_filtered, list(comb), label, weights, ccp_alpha=CCP_ALPHA[label], max_depth=MAX_DEPTH, class_weight='balanced', random_state=5,
+                            criterion=criterion, splitter=splitter)
 
-                tree_fit = find_rulesNd(
-                    df_filtered, list(comb), label, weights, ccp_alpha=CCP_ALPHA[label], max_depth=MAX_DEPTH, class_weight='balanced')
+                        if label not in tree_fits:
+                            tree_fits[label] = []
 
-                if label not in tree_fits:
-                    tree_fits[label] = []
-
-                tree_fits[label].append(tree_fit)
+                        tree_fits[label].append(tree_fit)
 
     auto_rules = {}
 

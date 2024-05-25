@@ -16,9 +16,13 @@ for filename in os.listdir(folder):
         # parse filename
         # "FuzzyTuning_fallingDrop.yaml_1Threads.4066898.i23r05c03s10"
 
-        find = re.search(r'FuzzyTuning_(.*).yaml_(\d+)Threads', filename)
-        scenario = find.group(1)
-        threads = find.group(2)
+        find = re.search(r'(.*).yaml_(\d+)Threads', filename)
+        try:
+            scenario = find.group(1)
+            threads = find.group(2)
+        except:
+            print(f"Error parsing filename {filename}")
+            raise Exception("Error parsing filename")
 
         # read file
         with open(os.path.join(folder, filename), "r") as f:
@@ -61,7 +65,7 @@ for key in out_files:
 
     scenarios[scenario][threads] += 1
 
-num_repeats = -1
+num_repeats = 1
 for scenario in scenarios:
     for threads in scenarios[scenario]:
         if scenarios[scenario][threads] > 1:
@@ -69,8 +73,8 @@ for scenario in scenarios:
                 num_repeats = scenarios[scenario][threads]
             elif num_repeats != scenarios[scenario][threads]:
                 print(f"Scenario {scenario} with {threads} has {
-                      scenarios[scenario][threads]} repeats")
-                raise Exception("Different number of repeats")
+                      scenarios[scenario][threads]} repeats. Expected {num_repeats}")
+                # raise Exception("Different number of repeats")
 
 # go through all files and copy the csv files matching to a folder with the scenario name
 # AutoPas_liveInfoLogger_Rank0_2024-05-22_21-16-57.csv
@@ -100,8 +104,8 @@ for filename in os.listdir(folder):
 # make directories
 for timestamp in out_files.keys():
     (scenario, _, _) = out_files[timestamp]
-
     for i in range(1, num_repeats + 1):
+        print(f"CREATE {folder}/{scenario}_{i}")
         if not os.path.exists(f"{folder}/{scenario}_{i}"):
             os.makedirs(f"{folder}/{scenario}_{i}")
 
@@ -109,12 +113,8 @@ for timestamp in out_files.keys():
 current_repeat: dict = defaultdict(lambda: 1)
 
 for timestamp in out_files.keys():
-    print(out_files)
     (scenario, threads, out_file) = out_files[timestamp]
     csv_files = same_time[timestamp]
-
-    print(out_file)
-    print(csv_files)
 
     # copy files to scenario_repeat folder
     for file in [out_file] + csv_files:
