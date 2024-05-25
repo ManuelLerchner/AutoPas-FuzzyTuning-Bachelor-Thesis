@@ -69,7 +69,7 @@ num_repeats = 1
 for scenario in scenarios:
     for threads in scenarios[scenario]:
         if scenarios[scenario][threads] > 1:
-            if num_repeats == -1:
+            if num_repeats == 1:
                 num_repeats = scenarios[scenario][threads]
             elif num_repeats != scenarios[scenario][threads]:
                 print(f"Scenario {scenario} with {threads} has {
