@@ -362,6 +362,66 @@ def plot_rules_Nd(df, model, encoder, inputs, used_inputs, label, score):
               class_names=encoder.classes_)
 
 
+def reduceRules(rule: Rule):
+    variable_cuts: dict[str, list[tuple[str, float]]] = {}
+
+    for andCond in rule.conditions:
+        assert len(andCond) == 1
+        condition = andCond[0]
+
+        if condition.feature not in variable_cuts:
+            variable_cuts[condition.feature] = []
+
+        variable_cuts[condition.feature].append(
+            (condition.operator, condition.value))
+
+    original_variable_cuts = variable_cuts.copy()
+
+    # combine the conditions
+    for feature in variable_cuts:
+        while True:
+            changed = False
+            for i, (op1, value1) in enumerate(variable_cuts[feature]):
+                for j, (op2, value2) in enumerate(variable_cuts[feature]):
+                    if i == j:
+                        continue
+
+                    if op1 in [">=", ">"] and op2 in [">=", ">"]:
+                       # remove old entry
+                        variable_cuts[feature].remove((op1, value1))
+                        variable_cuts[feature].remove((op2, value2))
+
+                        # add new entry
+                        variable_cuts[feature].append(
+                            (">", max(value1, value2)))
+                        changed = True
+                    elif op1 in ["<=", "<"] and op2 in ["<=", "<"]:
+                        # remove old entry
+                        variable_cuts[feature].remove((op1, value1))
+                        variable_cuts[feature].remove((op2, value2))
+
+                        # add new entry
+                        variable_cuts[feature].append(
+                            ("<", min(value1, value2)))
+                        changed = True
+
+                    if changed:
+                        break
+
+                if changed:
+                    break
+
+            if not changed:
+                break
+
+    new_conditions = []
+    for feature in variable_cuts:
+        for (op, value) in variable_cuts[feature]:
+            new_conditions.append([Condition(feature, op, value)])
+
+    return Rule(new_conditions, rule.prediction)
+
+
 # In[175]:
 
 def create_auto_rules(X_train, y_train, weights, POSSIBLE_NUMBER_OF_COMBINATIONS, CCP_ALPHA, MAX_DEPTH, TOP_K_MODELS_PER_LABEL, exclude_columns=[]):
@@ -441,7 +501,11 @@ def create_auto_rules(X_train, y_train, weights, POSSIBLE_NUMBER_OF_COMBINATIONS
     for label, rules in auto_rules.items():
         print(f"\t{label} ({len(rules)} rules)")
 
-    return auto_rules
+    reduced_rules = {}
+    for label, rules in auto_rules.items():
+        reduced_rules[label] = [reduceRules(rule) for rule in rules]
+
+    return reduced_rules
 
 # # Create Plots for Membership Functions
 #
