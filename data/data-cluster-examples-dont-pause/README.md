@@ -1,8 +1,27 @@
-# Data Cluster
+# Collected Tuning Data Cluster Pause during Examples
+
+This is a collection of `LiveInfoLogger` and `TuningDataLogger` results collected from all example scenarios of md-flexible on the CoolMUC2 cluster.
+
+All the Configurations were purely evaluated by the `Full Tuning` method, so they should be optimally suited as training data for the `Fuzzy Tuning` method.
+
+I forgot to set the `MD_FLEXIBLE_PAUSE_SIMULATION_DURING_TUNING` flag to `ON` during the data collection. This means that the simulation was not paused during the tuning phase. This might lead to inaccurate measurements, as the simulation is still running during the tuning phase. The data may still be useful tough.
 
 Each subdirectory contains the tuning results for the specific scenario using one of `[1,4,12,24,28]` threads. All SLURM jobs were created and launched with the `CoolMuc2_launch.py` script.
 
-All simulations were repeated two times.
+All simulations were repeated two times. The code was compiled with `gcc 11.2.0`.
+
+## Input Files
+
+All currently present example scenarios of md-flexible were used to collect the data.
+
+## Data collection Algorithm
+
++ Compile with `-DAUTOPAS_LOG_TUNINGDATA=ON -DAUTOPAS_LOG_LIVEINFO=ON -DAUTOPAS_MIN_LOG_LVL=TRACE -DAUTOPAS_LOG_TUNINGRESULTS=ON`. In order to pause the simulation during tuning.
+
+1. Execute the `CoolMuc2_launch.py` script to launch the SLURM jobs for the example scenarios.
+2. Wait for the simulation to finish.
+3. Copy all `Logs` from the `CoolMUC2` cluster to the local machine.
+4. Edit the `CoolMuc2_launch.py` script to add new Scenarios and repeat from step 1.
 
 ## System
 
@@ -33,7 +52,5 @@ Compilers: Intel icc, icpc, ifort 2019
 Performance libraries: MKL, TBB, IPP
 Tools for performance and correctness analysis: Intel Cluster Tools
 ```
-
-The code was compiled with `gcc 11.2.0`.
 
 See also: [CoolMUC](https://doku.lrz.de/coolmuc-2-11484376.html)

@@ -246,7 +246,7 @@ class FuzzySet:
                       (b-a)/delta_x}, should be at least {MIN_POINTS}")
                 # raise ValueError("Not enough points in the interval")
 
-    def plot(self, ax, n=100):
+    def plot(self, ax, n=100, defuzzifiationMethod="mom"):
         assert len(
             self.crisp_set.dimensions) == 1, "Can only plot fuzzy sets over one variable"
         [name, set] = next(iter(self.crisp_set.dimensions))
@@ -262,10 +262,10 @@ class FuzzySet:
 
             if mf_set.type == Set.SetType.DISCRETE:
                 total_range = max(mf_set.values) - min(mf_set.values)
-                ax.bar(xrange, yh, label=mf.linguistic_term,
+                ax.bar(xrange, yh, label=None,
                        width=total_range/(50*len(mf_set.values)), alpha=0.5)
             else:
-                ax.plot(xrange, yh, label=mf.linguistic_term,
+                ax.plot(xrange, yh, label=None,
                         linestyle='--', alpha=0.5, linewidth=0.5)
 
         y = [self({name: x}) for x in xrange]
@@ -281,10 +281,10 @@ class FuzzySet:
         if len(self.based_on) > 0:
             if set.type == Set.SetType.CONTINUOUS:
                 ax.fill_between(xrange, 0, y, alpha=0.25)
-            # (cog_x, cog_y) = self.defuzzyfy(method="mom")
-            # ax.axvline(cog_x, color='black', linestyle='--')
-            # ax.plot([cog_x], [cog_y], marker='o', markersize=5, color="black",
-            #         label=f"Defuzzification: ({cog_x:.2f}, {cog_y:.2f})")
+            (cog_x, cog_y) = self.defuzzyfy(method=defuzzifiationMethod, n=n)
+            ax.axvline(cog_x, color='black', linestyle='--')
+            ax.plot([cog_x], [cog_y], marker='o', markersize=5, color="black",
+                    label=f"Defuzzified Value: ({cog_x:.2f}, {cog_y:.2f}) [method={defuzzifiationMethod}]")
 
         ax.set_xlabel(name)
         ax.set_ylabel("Membership Value")

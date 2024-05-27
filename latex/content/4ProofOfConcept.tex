@@ -241,7 +241,10 @@ Since decision trees directly partition the input space into regions with differ
 
 Fuzzy decision trees are a generalization of classical decision trees that allow for fuzzy logic to be used in the decision-making process. This extension allows to eliminate the crisp decision boundaries of classical decision trees and instead use fuzzy sets at each node of the tree to calculate the contribution of each branch to the final decision. This allows for a more flexible decision-making process that can take into account the uncertainty of the input data and the splits. Contrary to classical decision trees, which follow a single path from the root to a leaf node, fuzzy decision trees explore all possible paths at the same time and make a final decision by aggregating the results of all paths using fuzzy logic. This is possible, as each node in a fuzzy decision tree can fuzzily assign how much each of its children should contribute to the final decision.
 
-\section{Conversion of a Decision Tree into a Fuzzy Inference System}
+\section{Converting a Decision Tree into a Fuzzy Inference System}
+
+
+In this section, we will demonstrate how to convert a classical decision tree into a fuzzy inference system using the fictional decision tree from \autoref{fig:decisionTreeExample} as an example.
 
 The conversion of a classical decision tree to a fuzzy decision tree is done by replacing the crisp decision boundaries (e.g., $x \leq 3$) at each internal node with fuzzy membership functions. Those membership functions should have the same semantics as the crisp decision boundaries, but instead of returning a binary value of wheter to continue down the left or right branch, they return a value in the range $[0,1]$ that specifies to which degree each branch should be taken. The shape of the membership functions can be chosen arbitrarily, but since the decision should be one-sided, typical choices include complementary \texttt{sigmoid}-shaped functions. This conversion process is shown in \autoref{fig:fuzzyMembershipFunctions}.
 
@@ -379,6 +382,7 @@ This process esentially mimics the decision surface seen in \autoref{fig:decisio
     \label{tab:fuzzyRulesExample}
 \end{table}
 
+\subsubsection{Fuzzy Inference System}
 
 With the linguistic variables and fuzzy rules extracted from the decision tree, we can now use them to create a fuzzy system that can predict the class of a new data point based on its features. Since the fuzzy system can be seen as a black box mapping continuous input features to continuous output classes
 (see \autoref{fig:fuzzyInferenceSystem}), it is possible to visualize the decision surface of the fuzzy system by evaluating the membership functions of the rules for each point in the input space. This decision surface can then be used to understand the decision-making process of the fuzzy system and to identify possible errors in the rules or membership functions.
@@ -433,9 +437,34 @@ With the linguistic variables and fuzzy rules extracted from the decision tree, 
     \label{fig:fuzzyInferenceSystem}
 \end{figure}
 
-\noindent The exact shape of the decision surface depends on the used defuzzification method. The most common choice is the \gls{cog} method, which calculates the $x$-position of the center of gravity of the resulting membership function.
-However, using the \gls{cog} method can lead to undesired results when using nominal \todo{check} values for the output classes, as there is no concept of ordering among the values. In such cases, the interpolation between the different classes performed by the \gls{cog} method is not meaningful. In such cases, the \gls{mom} method can be used, which calculates the mean value of the maximum membership functions. In most cases this method will return exactly the membership function with the highest value, which is the only meaningful result in this case. The decision surfaces of the fuzzy system created from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} using the \gls{cog} and \gls{mom} methods are shown in \autoref{fig:fuzzyDecisionSurfaceExampleCOG} and \autoref{fig:fuzzyDecisionSurfaceExampleMOM}. This also marks the end of the conversion process, since we now have a complete fuzzy system that can be used to predict new data points based on their features.
+\subsubsection{Choice of Defuzzification Method}
 
+The exact shape of the decision surface depends on the used defuzzification method. The most common choice is the \gls{cog} method, which calculates the $x$-position of the center of gravity of the resulting membership function.
+However, using the \gls{cog} method can lead to undesired results when using nominal \todo{check} values for the output classes, as there is no concept of ordering among the values.
+Without such an ordering, the interpolation between the different classes performed by methuds such as \gls{cog} is not meaningful and leads to bad predictions. In such cases, other methods such as the \gls{mom} method can be used instead. This method calculates the mean value of the maximum membership functions. In most cases this method will return exactly the center of the  membership function with the highest value and is therefore a good choice for nominal values. A direct comparison of the two methods on a critical datapoint is shown in \autoref{fig:fuzzySetForDataCOG} and \autoref{fig:fuzzySetForDataMOM}
+
+\begin{multicols}{2}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\columnwidth,trim={0 0 0 1cm},clip]{figures/ProofOfConcepts/fuzzy_set_for_data_cog.png}
+        \caption[Resulting Fuzzy Set after applying the Rules on specific Data, COG Method]{Resulting fuzzy set after applying the rules from \autoref{tab:fuzzyRulesExample} on the data point $(x=2.95, y=2.5)$. There are clear peaks at the class values 1 and 3. The \gls{cog} method however returns Class 2, as it lies right in between the two peaks, turing the two good predictions into a bad one.}
+        \label{fig:fuzzySetForDataCOG}
+    \end{figure}
+
+    \columnbreak
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\columnwidth,trim={0 0 0 1cm},clip]{figures/ProofOfConcepts/fuzzy_set_for_data_mom.png}
+        \caption[Resulting Fuzzy Set after applying the Rules on specific Data, MOM Method]{The \gls{mom} method returns the class value 1, as it is the mean of the two peaks at class values 1 and 3. This is a much better prediction than the one made by the \gls{cog} method.}
+
+        \label{fig:fuzzySetForDataMOM}
+    \end{figure}
+
+\end{multicols}
+
+It is also possible to calculate the whole decision surface of the fuzzy system by evaluating the membership functions of the rules for each point in the input space. Both the decision surface using the \gls{cog} and \gls{mom} defuzzification methods are shown in \autoref{fig:fuzzyDecisionSurfaceExampleCOG} and \autoref{fig:fuzzyDecisionSurfaceExampleMOM} respectively.
 
 \begin{multicols}{2}
     \begin{figure}[H]
@@ -443,16 +472,16 @@ However, using the \gls{cog} method can lead to undesired results when using nom
         \begin{tikzpicture}
             \node[anchor=south west,inner sep=0] (image) at (0,0) { \includegraphics[width=0.9\columnwidth,trim={0 0 0 1cm},clip]{figures/ProofOfConcepts/fuzzy_system_cog.png}};
             \begin{scope}[x={(image.south east)},y={(image.north west)}]
-                \draw[yellow, thin,rounded corners] (.52,.67) rectangle (.62,.95);
-                \draw[yellow, thin,rounded corners] (.56,.3) rectangle (.74,.46);
-                \node[yellow,anchor=north] (A) at (.45,.25) {\tiny{Interpolation Error}};
+                \draw[yellow, thin,rounded corners] (.55,.67) rectangle (.65,.95);
+                \draw[yellow, thin,rounded corners] (.6,.32) rectangle (.74,.48);
+                \node (A) at (.55,.56) [yellow, anchor=east] {\tiny{Interpolation Error}};
 
-                \draw[yellow, arrow] (A) -- (.52,.67);
-                \draw[yellow, arrow] (A) -- (.56,.3);
+                \draw[yellow, arrow] (A) -- (.55,.67);
+                \draw[yellow, arrow] (A) -- (.6,.48);
             \end{scope}
         \end{tikzpicture}
 
-        \caption[Decision surface of the fuzzy rules using COG method]{The decision surface of the \gls{fis} created from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} over $\mathcal{D}=[0,4]\times[0,3]$ using the \gls{cog} defuzzification method.}
+        \caption[Decision surface of the fuzzy rules using COG method]{The decision surface of the \gls{fis} created from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} over $\mathcal{D}=[0,4]\times[0,3]$ using the \gls{cog} defuzzification method. The highlighted area shows the interpolation error of the \gls{cog} method described in \autoref{fig:fuzzySetForDataCOG}.}
         \label{fig:fuzzyDecisionSurfaceExampleCOG}
     \end{figure}
 
@@ -467,6 +496,7 @@ However, using the \gls{cog} method can lead to undesired results when using nom
     \end{figure}
 \end{multicols}
 
+\noindent The choice of the defuzzification method also marks the end of the conversion process, since we now have a complete fuzzy system that can be used to predict new data points based on their features. In the next section, we use this approach to create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations.
 
 \section{Creating a Fuzzy System for \texttt{\gls{mdflexible}}}
 

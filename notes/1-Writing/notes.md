@@ -69,3 +69,9 @@
   + Just extend rule-debugger.ipynb
 
 + Make diagram of "filter" to show how the sequential tuning straegies iteratevly remove configurations
+
+## Additional Notes
+
++ Connection AutoPas and LS1Marydin
+
++ Make sections about findings of data collection
