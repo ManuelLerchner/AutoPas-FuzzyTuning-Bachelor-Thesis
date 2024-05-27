@@ -362,7 +362,7 @@ def plot_rules_Nd(df, model, encoder, inputs, used_inputs, label, score):
               class_names=encoder.classes_)
 
 
-def reduceRules(rule: Rule):
+def reduceRule(rule: Rule):
     variable_cuts: dict[str, list[tuple[str, float]]] = {}
 
     for andCond in rule.conditions:
@@ -374,8 +374,6 @@ def reduceRules(rule: Rule):
 
         variable_cuts[condition.feature].append(
             (condition.operator, condition.value))
-
-    original_variable_cuts = variable_cuts.copy()
 
     # combine the conditions
     for feature in variable_cuts:
@@ -420,6 +418,101 @@ def reduceRules(rule: Rule):
             new_conditions.append([Condition(feature, op, value)])
 
     return Rule(new_conditions, rule.prediction)
+
+
+def check_stronger(rule1: Rule, rule2: Rule):
+    # check if rule1 is stronger than rule2
+    if rule1.prediction.feature != rule2.prediction.feature:
+        return False
+
+    state_true_rule1: dict[str, list[tuple[str, float]]] = {}
+
+    for andCond in rule1.conditions:
+        assert len(andCond) == 1
+        condition = andCond[0]
+
+        if condition.feature not in state_true_rule1:
+            state_true_rule1[condition.feature] = []
+
+        state_true_rule1[condition.feature].append(
+            (condition.operator, condition.value))
+
+    ranges_rule1 = {}
+    for feature in state_true_rule1:
+        min_value = -np.inf
+        max_value = np.inf
+
+        for (op, value) in state_true_rule1[feature]:
+            if op in [">", ">="]:
+                min_value = max(min_value, value)
+            elif op in ["<", "<="]:
+                max_value = min(max_value, value)
+
+        ranges_rule1[feature] = (min_value, max_value)
+
+    state_true_rule2: dict[str, list[tuple[str, float]]] = {}
+
+    for andCond in rule2.conditions:
+        assert len(andCond) == 1
+        condition = andCond[0]
+
+        if condition.feature not in state_true_rule2:
+            state_true_rule2[condition.feature] = []
+
+        state_true_rule2[condition.feature].append(
+            (condition.operator, condition.value))
+
+    ranges_rule2 = {}
+    for feature in state_true_rule2:
+        min_value = -np.inf
+        max_value = np.inf
+
+        for (op, value) in state_true_rule2[feature]:
+            if op in [">", ">="]:
+                min_value = max(min_value, value)
+            elif op in ["<", "<="]:
+                max_value = min(max_value, value)
+
+        ranges_rule2[feature] = (min_value, max_value)
+
+    # features must be the same
+    if set(ranges_rule1.keys()) != set(ranges_rule2.keys()):
+        return False
+
+    is_stronger = True
+    for feature in ranges_rule2:
+
+        min1, max1 = ranges_rule1[feature]
+        min2, max2 = ranges_rule2[feature]
+
+        if min1 < min2 or max1 > max2:
+            is_stronger = False
+            break
+
+    return is_stronger
+
+
+def reduceRuleSet(original_rules: list[Rule]):
+    # find implications and remove them
+    reduced_rules = original_rules.copy()
+    while True:
+        changed = False
+        for i, rule1 in enumerate(reduced_rules):
+            for j, rule2 in enumerate(reduced_rules):
+                if i == j:
+                    continue
+
+                if check_stronger(rule1, rule2):
+                    reduced_rules.remove(rule2)
+                    changed = True
+                    break
+            if changed:
+                break
+
+        if not changed:
+            break
+
+    return reduced_rules
 
 
 # In[175]:
@@ -503,9 +596,13 @@ def create_auto_rules(X_train, y_train, weights, POSSIBLE_NUMBER_OF_COMBINATIONS
 
     reduced_rules = {}
     for label, rules in auto_rules.items():
-        reduced_rules[label] = [reduceRules(rule) for rule in rules]
+        reduced_rules[label] = [reduceRule(rule) for rule in rules]
 
-    return reduced_rules
+    minimized_rules = {}
+    for label, rules in reduced_rules.items():
+        minimized_rules[label] = reduceRuleSet(rules)
+
+    return minimized_rules
 
 # # Create Plots for Membership Functions
 #
@@ -614,12 +711,13 @@ def plot_linguistic_variable_on_data(df, dimensionsBoundaries, linguistic_variab
 
 # In[178]:
 
+linguisticDescriptions = ["Tiny", "Ultra Low", "Extremely Low", "Very Low", "Low", "A bit Low",
+                          "Medium", "A bit High", "High", "Very High", "Extremely High", "Ultra High", "Huge"]
+
+
 def create_rules_approach1(X_train, auto_rules):
     dimensionsBoundaries = cleanDimensionsBoundaries(auto_rules)
     inputs_approach1: dict[str, LinguisticVariable] = {}
-
-    linguisticDescriptions = ["Extremely Low", "Very Low", "Low",
-                              "Medium", "High", "Very High", "Extremely High"]
 
     N = 2
 
@@ -799,6 +897,7 @@ def create_rules_approach2(X_train, auto_rules):
 #
 
 # In[182]:
+
 
 def create_output_membership_functions(y_train):
     outputRangeMembershipFunctions: dict[str, LinguisticVariable] = {}
