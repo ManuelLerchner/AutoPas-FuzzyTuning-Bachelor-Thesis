@@ -29,4 +29,6 @@ if (("homogeneity" == "higher than 0.212")) && (("homogeneity" == "lower than 0.
 if (("homogeneity" == "higher than 0.312")) && (("avgParticlesPerCell" == "higher than 0.309")) then ("Traversal" == "lc_c04_combined_SoA")
 if (("homogeneity" == "higher than 0.255")) && (("homogeneity" == "lower than 0.271")) && (("avgParticlesPerCell" == "lower than 4803839853068288.0")) then ("Traversal" == "vvl_as_built")
 
+if (("threadCount" == "lower than 18.0")) then ("Newton 3" == "disabled")
+if (("threadCount" == "higher than 18.0")) then ("Newton 3" == "enabled")
 

@@ -898,6 +898,50 @@ def create_rules_approach2(X_train, auto_rules):
 
 # In[182]:
 
+def rules_to_table(rules, name):
+    # all params
+    all_predictors = set()
+    all_features = set()
+    for rule in rules:
+        for andCond in rule.conditions:
+            for condition in andCond:
+                all_predictors.add(condition.feature)
+
+        all_features.add(rule.prediction.feature)
+
+    all_predictors = sorted(list(all_predictors))
+    all_features = sorted(list(all_features))
+
+    rows = []
+    for rule in rules:
+        row = {}
+        for andCond in rule.conditions:
+            assert len(andCond) == 1
+            condition = andCond[0]
+            if row.get(condition.feature) is None:
+                row[condition.feature] = ""
+            row[condition.feature] += ("" if row[condition.feature] == ""
+                                       else " ∧ ") + condition.value
+
+        row[rule.prediction.feature] = rule.prediction.value
+
+        rows.append(row)
+
+    table = pd.DataFrame(rows, columns=all_predictors + all_features)
+
+    table = table.style.highlight_null(
+        props="color: transparent;")  # hide NaNs
+
+    table = table.applymap(
+        lambda x: 'background-color: rgba(125, 255, 125, 0.1)', subset=all_features)
+
+    table = table.applymap(
+        lambda x: 'background-color: rgba(125, 125, 255, 0.1)', subset=all_predictors)
+
+    table.set_caption(name)
+
+    return table
+
 
 def create_output_membership_functions(y_train):
     outputRangeMembershipFunctions: dict[str, LinguisticVariable] = {}
@@ -952,9 +996,6 @@ def save_linguistic_variables(variables, filename):
                 f.write(f"\t{func}\n")
             f.write("\n")
 
-    with open(filename, "r") as f:
-        print(f.read())
-
 
 # In[184]:
 
@@ -975,6 +1016,3 @@ def save_fuzzy_rules(rules, filename):
                     continue
                 f.write(f"{rule}\n")
             f.write("\n")
-
-    with open(filename, "r") as f:
-        print(f.read())
