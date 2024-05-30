@@ -1,18 +1,3 @@
-Comments can be made just like this
-Best thesis ever:
-@mastersthesis{gratl17task,
-  address      = {Garching},
-  author       = {Gratl, Fabio Alexander},
-  institution  = {Institut für Informatik 5, Technische Universität München},
-  month        = nov,
-  organization = {Institut für Informatik 5, Technische Universität München},
-  school       = {Institut für Informatik 5, Technische Universität München},
-  title        = {Task Based Parallelization of the Fast Multipole Method implementation of ls1-mardyn via QuickSched},
-  type         = {Master's thesis},
-  year         = {2017},
-  url          = {https://www5.in.tum.de/pub/Gratl_MA_TaskBasedFMM.pdf}
-}
-
 @article{CROCKETT20062809,
   title    = {On constructing a fuzzy inference framework using crisp decision trees},
   journal  = {Fuzzy Sets and Systems},
@@ -35,4 +20,48 @@ Best thesis ever:
   isbn      = {0262018020},
   publisher = {The MIT Press},
   abstract  = {Today's Web-enabled deluge of electronic data calls for automated methods of data analysis. Machine learning provides these, developing methods that can automatically detect patterns in data and then use the uncovered patterns to predict future data. This textbook offers a comprehensive and self-contained introduction to the field of machine learning, based on a unified, probabilistic approach. The coverage combines breadth and depth, offering necessary background material on such topics as probability, optimization, and linear algebra as well as discussion of recent developments in the field, including conditional random fields, L1 regularization, and deep learning. The book is written in an informal, accessible style, complete with pseudo-code for the most important algorithms. All topics are copiously illustrated with color images and worked examples drawn from such application domains as biology, text processing, computer vision, and robotics. Rather than providing a cookbook of different heuristic methods, the book stresses a principled model-based approach, often using the language of graphical models to specify models in a concise and intuitive way. Almost all the models described have been implemented in a MATLAB software package--PMTK (probabilistic modeling toolkit)--that is freely available online. The book is suitable for upper-level undergraduates with an introductory-level college math background and beginning graduate students.}
+}
+@article{GRATL2022108262,
+  author   = {Gratl, Fabio Alexander and Seckler, Steffen and Bungartz, Hans-Joachim and Neumann, Philipp},
+  title    = {N Ways to Simulate Short-Range Particle Systems: Automated Algorithm Selection with the Node-Level Library AutoPas},
+  journal  = {Computer Physics Communications},
+  year     = {2021},
+  volume   = {273},
+  month    = {},
+  number   = {},
+  pages    = {108262},
+  issn     = {},
+  doi      = {10.1016/j.cpc.2021.108262},
+  language = {en},
+  abstract = {AutoPas is an open-source C++ library delivering optimal node-level performance by providing the ideal algorithmic configuration for an arbitrary scenario in a given short-range particle simulation. It acts as a black-box container, internally implementing an extensive set of algorithms, parallelization strategies, and optimizations that are combined dynamically according to the state of the simulation via auto-tuning. This paper gives an overview of the high-level user perspective, as well as the internal view, covering the implemented techniques and features. The library is showcased by incorporating it into the codes LAMMPS and ls1 mardyn, and by investigating various applications. We further outline node-level shared-memory performance and scalability of our auto-tuning software which is comparable to LAMMPS.},
+  keywords = {HPC; N-Body Simulation; Molecular Dynamics; Auto-Tuning; Automatic Algorithm Selection; Dynamic Tuning},
+  note     = {},
+  url      = {https://www.researchgate.net/publication/357143093_N_Ways_to_Simulate_Short-Range_Particle_Systems_Automated_Algorithm_Selection_with_the_Node-Level_Library_AutoPas}
+}
+
+@article{VICCIONE2008625,
+  author   = {Viccione, G. and Bovolin, V. and Carratelli, E. Pugliese},
+  title    = {Defining and optimizing algorithms for neighbouring particle identification in SPH fluid simulations},
+  journal  = {International Journal for Numerical Methods in Fluids},
+  volume   = {58},
+  number   = {6},
+  pages    = {625-638},
+  keywords = {SPH, Lagrangian methods, Verlet list, cell-linked list},
+  doi      = {https://doi.org/10.1002/fld.1761},
+  url      = {https://onlinelibrary.wiley.com/doi/abs/10.1002/fld.1761},
+  eprint   = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/fld.1761},
+  abstract = {Abstract Lagrangian particle methods such as smoothed particle hydrodynamics (SPH) are very demanding in terms of computing time for large domains. Since the numerical integration of the governing equations is only carried out for each particle on a restricted number of neighbouring ones located inside a cut-off radius rc, a substantial part of the computational burden depends on the actual search procedure; it is therefore vital that efficient methods are adopted for such a search. The cut-off radius is indeed much lower than the typical domain's size; hence, the number of neighbouring particles is only a little fraction of the total number. Straightforward determination of which particles are inside the interaction range requires the computation of all pair-wise distances, a procedure whose computational time would be unpractical or totally impossible for large problems. Two main strategies have been developed in the past in order to reduce the unnecessary computation of distances: the first based on dynamically storing each particle's neighbourhood list (Verlet list) and the second based on a framework of fixed cells. The paper presents the results of a numerical sensitivity study on the efficiency of the two procedures as a function of such parameters as the Verlet size and the cell dimensions. An insight is given into the relative computational burden; a discussion of the relative merits of the different approaches is also given and some suggestions are provided on the computational and data structure of the neighbourhood search part of SPH codes. Copyright © 2008 John Wiley \& Sons, Ltd.},
+  year     = {2008}
+}
+
+@inproceedings{GRATL2019748,
+  author    = {Gratl, Fabio Alexander and Seckler, Steffen and Tchipev, Nikola and Bungartz, Hans-Joachim and Neumann, Philipp},
+  booktitle = {2019 IEEE International Parallel and Distributed Processing Symposium Workshops (IPDPSW)},
+  title     = {AutoPas: Auto-Tuning for Particle Simulations},
+  year      = {2019},
+  volume    = {},
+  number    = {},
+  pages     = {748-757},
+  keywords  = {Force;Heuristic algorithms;Computational modeling;Dynamics;Optimization;Software algorithms;Adaptation models;HPC;Molecular Dynamics;Auto-Tuning;Automatic Algorithm Selection;Dynamic Tuning},
+  doi       = {10.1109/IPDPSW.2019.00125}
 }

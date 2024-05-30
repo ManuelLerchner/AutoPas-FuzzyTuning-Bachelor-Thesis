@@ -5,10 +5,11 @@
     ],
     "latex-workshop.latex.recipes":[
         {
-            "name": "pdflatexdraft, makeglossaries, pdflatexdraft, pdflatex",
+            "name": "pdflatexdraft, makeglossaries, bibtex, pdflatexdraft, pdflatex",
             "tools": [
                 "pdflatexdraft",
                 "makeglossaries",
+                "bibtex",
                 "pdflatexdraft",
                 "pdflatex"
             ]
@@ -23,6 +24,7 @@
             "-draftmode",
             "-interaction=nonstopmode",
             "-file-line-error",
+            "-lualatex",
             "%DOC%"
             ]
         },
@@ -31,6 +33,13 @@
             "command": "makeglossaries",
             "args": [
               "%DOCFILE%"
+            ]
+        },
+        {
+            "name": "bibtex",
+            "command": "bibtex",
+            "args": [
+                "%DOCFILE%"
             ]
         },
         {

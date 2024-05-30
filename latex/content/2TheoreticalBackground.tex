@@ -2,5 +2,110 @@
 \label{sec:theoretical_background}
 
 
+\section{Molecular Dynamics}
 
-\section{A}
+% simulation loop
+
+
+\section{AutoPas}
+
+AutoPas is an open-source library designed to achive optimal performance at the node level for short-range particle simulations. On a high level, AutoPas can be seen as a black-box performing arbitrary N-body simulations with short-range particle interactions. The main goal of AutoPas is to provide a high-level interface for the user to perform simulations without having to worry about the low-level details of the simulation. This is achieved by providing a high-level interface for the user to interact with the library, while the library itself takes care of the low-level details of the force calculations
+
+AutoPas provides many different algorithmic implementations for the problem of N-body simulations each with different trade-offs in terms of performance and memory usage. There is no single implementation that is optimal for all simulation scenarios \todo{find reference}, as the optimal implementation depends on the current simulation state.
+AutoPas is designed to be adaptive and is capable of periodically switching between different implementations to achieve the best performance for the current simulation state. This is achieved by allowing AutoPas to automatically tune its internal parameters to find the best implementation for the current simulation state.
+
+
+Since AutoPas just provides a high-level interface to allow for short-range N-body simulations, the user is responsible for specifying the acting forces between the particles and has full control over the simulation loop. Fortunately AutoPas also provides \texttt{\gls{mdflexible}} which is an example implementation of a typical molecular dynamics simulation.
+
+\section{Autotuning in AutoPas}
+
+AutoPas currently provides k \todo{count how many} tunable parameters which can mostly\footnote{There are some exceptions as some choices of parameters are not compatible with each other.} be combined freely with each other. The parameters can be roughly divided into the following categories:
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+      \item \textbf{Container Options:} \\
+            The container options are related to the data structure used to store the particles. The most important categories of data structures in this section are:
+            \begin{enumerate}
+                  \item \textbf{DirectSum} \\
+                        DirectSum does not use any additional data structures to store the particles. Instead, it simply holds a list of all particles and performs a brute-force calculation of the forces between all pairs of particles. This results in a complexity of $O(N^2)$ distance checks in each iteration. This method is simple and does not require any additional data structures but has a very poor complexity, making it completly unsuitable for larger simulations. \textit{Generally shouldn't be used except for very small systems or demonstration purposes.~\cite{VICCIONE2008625}}
+                  \item \textbf{LinkedCells} \\
+                        LinkedCells segments the domain into a regular cell grid and only considers interactions between particles from neighboring cells. This results in the trade-off of that particles further away than the cutoff radius are not considered for the force calculation. In practice this is not a big issue as all short-range forces drop off quickly with distance anyway. Additionally, LinkedCells provides a high cache hit rate as particles inside the same cell can be stored contiguously in memory. Typically, the cell size is chosen to be equal to the cutoff radius $r_c$, meaning that each particle only needs to check the forces with particles inside the $3\times3\times3$ cell grid around it as all other particles are guaranteed to be further away than the cutoff radius. This reduction in possible interactions can result in a complexity of just $O(N)$ distance checks in each iteration. However, there is still room for improvement as constant factors can be quite high. This is especially obvious, as most of the remaining distance checks performed by LinkedCells still do not contribute to the force calculation~\cite{GRATL2019748}. This trend can be explained due to the uneven scaling sphere and cube volumes especially for higher dimensions. For example, in 3D the ratio of the volume of a sphere with radius $r_c$ to the volume of a cube with side length $3r_c$ is given by:
+
+                        \begin{equation}
+                              \frac{\text{Interaction Volume}}{\text{Search Volume}} =
+                              \frac{V_{sphere}(r_c)}{V_{cube}(3r_c)} = \frac{\frac{4}{3}\pi r_c^3}{(3r_c)^3} = \frac{4}{81}\pi \approx 0.155
+                        \end{equation}
+
+                        This means that only about 15.5\% of all particles present in the $3\times3\times3$ cell grid around a particle are actually within the cutoff radius. By choosing smaller cell sizes, this ratio can be increased, reducing the number of unnecessary distance checks, but the performance gain is quickly offset by the increased overhead of managing more cells. \todo{find reference}
+                        \textit{However, still generally good for large, homogeneous\footnote{Homogeneous in this context means that the particles are distributed evenly across the domain. If many particles are concentrated in a small area, the behavior of LinkedCells can quickly resemble that of DirectSum.} systems.}
+
+                  \item \textbf{VerletLists} \\
+                        VerletLists is another approach to create neighbor lists for the particles. Contrary to LinkedCells, VerletLists does not rely on a regular grid but instead uses a spherical region around each particle to determine its relevant neighbors.
+                        The algorithm creates and maintains a list of all particles present in a sphere within radius $r_c \cdot s$ around each particle, where $r_c$ is the cutoff radius and $s>1$ is the skin factor allowing for a buffer zone around the cutoff radius.
+                        By chosing a suitable buffer zone, such that no fast moving particle can enter the cutoff radius unnoticed, it is possible to only recalculate the neighbor list every $n$ iterations. This approach can be beneficial for systems with high particle density and frequent interactions, as the neighbor list only needs to be updated every $n$ iterations. This results in a complexity of $O(N)$ distance checks in each iteration.
+                        We can repeate the calculation from above to determine the ratio of the interaction volume to the search volume for VerletLists:
+
+                        \begin{equation}
+                              \frac{\text{Interaction Volume}}{\text{Search Volume}} =
+                              \frac{V_{sphere}(r_c)}{V_{sphere}(r_c \cdot s)} = \frac{\frac{4}{3}\pi r_c^3}{\frac{4}{3}\pi (r_c \cdot s)^3} = \frac{1}{s^3}
+                        \end{equation}
+
+                        This time the ratio can be adjusted by changing the skin factor $s$.         Ideally, the skin factor should be chosen such that the ratio is close to 1. This however reduces the buffer zone around the cutoff radius which means that the neighbor list needs to be updated more frequently. We conclude that choosing a skin factor that is too small can result in particles entering the cutoff radius unnoticed, which can lead to incorrect results, while choosing a skin factor that is too large can result in unnecessary distance checks.
+
+                        Compared to LinkedCells, VerletLists can be constructed such that there are very few unnecessary distance checks. However, the construction of the neighbor list is quite memory intensive and can result in a high memory overhead. Additionally, the neighbor list needs to be updated every $n$ iterations, which can result in a performance overhead.
+
+                        \textit{\todo{when to use VerletLists}}
+
+                        There are again several different implementations of VerletLists in AutoPas, each with different trade-offs in terms of performance and memory usage.
+
+            \end{enumerate}
+
+      \item \textbf{Traversal Options:} \\
+            These options are related to the traversal algorithm used to calculate the forces between the particles given a specific container. There are many different traversal algorithms available in AutoPas, each with different trade-offs in terms of performance and optimization potential. In the following we will discuss the most interesting traversal categories:
+
+            \begin{enumerate}
+
+                  \item \textbf{LinkedCells Colored Traversal} \\
+                        Since LinkedCells only considers interactions with particles from neighboring cells, it is possible to parallelize the force calculation by calculating forces for particles in different cells in parallel, as long as the particles don't share common neighbors. This parallelization strategy gives rise to many different traversal algorithms, each with different trade-offs in terms of performance and optimization potential. Some important traversal algorithms for LinkedCells are:
+
+                        \todo{add}
+
+                  \item \textbf{VerletLists Traversal} \\
+                        Most of the traversal algorithms for VerletLists are based on the same principle of the respective LinkedCells traversal algorithms. The main difference is that the neighbor list is used to determine the particles that need to be considered for the force calculation. Some important traversal algorithms for VerletLists are:
+
+
+                        \todo{add}
+            \end{enumerate}
+
+
+
+
+      \item \textbf{Data Layout Options:} \\
+            The Data Layout Options are related to the way the particles are stored in memory. The two possible data layouts are:
+            \begin{enumerate}
+                  \item \textbf{SoA} \\
+                        The SoA (Structure of Arrays) data layout stores the properties of all the particles separate arrays. For example, the x- ,y- and z-coordinates of all particles are stored in separate arrays. This data layout is beneficial for vectorization as the properties of the particles are stored contiguously in memory. This allows for efficient vectorization of the force calculations as the properties of the particles can be loaded into vector registers in a single instruction. \todo{find reference}
+
+                  \item \textbf{AoS} \\
+                        The AoS (Array of Structures) data layout stores all particle properties in a big array consisting of structures. This allows for efficient cache utilization as the properties of the same particle are close to each other in memory. However, this data layout is not beneficial for vectorization as the properties of the particles are not stored contiguously in memory. This means that the properties of the particles need to be loaded into vector registers one by one, which can result in inefficient vectorization of the force calculations. \todo{find reference}
+            \end{enumerate}
+
+
+
+      \item \textbf{Newton 3 Options:} \\
+            The Newton 3 Options are related to the way the forces between the particles are calculated. The Newton 3 law states that for every action there is an equal and opposite reaction \todo{cite}. This means that the force between two particles is the same, regardless of which particle is considered the source and which particle is considered the target. In Molecular Dynamics simulations, this rule can be exploited to reduce the number of distance checks needed to calculate the forces between all pairs of particles by a factor of 2. The two possible Newton 3 options are:
+            \begin{enumerate}
+                  \item \textbf{Newton3 Off} \\
+                        If Newton 3 is turned off, the forces between all pairs of particles are calculated twice, once for each particle. This results in a constant overhead of factor 2.
+
+                  \item \textbf{Newton3 On} \\
+                        If Newton 3 is turned on, the forces between all pairs of particles are calculated only once. There is no more overhead due to recalculating the forces twice, but turing on Newton 3 requires additional bookkeeping especially in multi-threaded environments, as there can occur race conditions when updating the forces of the particles. \todo{find reference}
+                        \textit{Generally should be turned on, \todo{find reference}}
+            \end{enumerate}
+
+\end{enumerate}
+
+\section{Fuzzy Logic}
+
+\section{Fuzzy Tuning}
+
+
