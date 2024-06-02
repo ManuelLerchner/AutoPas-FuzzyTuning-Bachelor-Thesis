@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
+from tqdm import tqdm
 if True:
     import sys
     import os
@@ -173,7 +174,7 @@ def createFuzzySystem(inputVariableString, outputVariableString, rulesString):
 # In[19]:
 
 
-def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict[str, float]], K, n):
+def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict[str, float]], K, n, suitability, method="mom"):
     trainCorrect = 0
     trainWrong = 0
 
@@ -182,78 +183,114 @@ def calc_accuracy(train, test, fisys: FuzzySystem, algo_rankings: dict[str, dict
 
     output_variable = fisys.consequent_name
 
-    for row in train.iterrows():
-        vals, preds = fisys.predictClosest(
-            row[1], algo_rankings[output_variable], n=n)
+    if suitability:
+        error_train = 0
+        error_test = 0
 
-        true = row[1][output_variable]
+        for row in tqdm(train.iterrows(), total=len(train)):
+            pred = fisys.predict(
+                row[1], n=n, method=method)
 
-        for pred in preds:
-            if pred in true:
-                trainCorrect += 1
-            else:
-                trainWrong += 1
+            true = row[1]["speedup"]
 
-    for row in test.iterrows():
-        vals, preds = fisys.predictClosest(
-            row[1], algo_rankings[output_variable], n=n)
+            error_train += abs(pred-true)
 
-        true = row[1][output_variable]
+        for row in tqdm(test.iterrows(), total=len(test)):
+            pred = fisys.predict(
+                row[1], n=n, method=method)
 
-        for pred in preds:
-            if pred in true:
-                testCorrect += 1
-            else:
-                testWrong += 1
+            true = row[1]["speedup"]
 
-    return trainCorrect/(trainCorrect+trainWrong), testCorrect/(testCorrect+testWrong)
+            error_test += abs(pred-true)
+
+        return error_train/len(train), error_test/len(test)
+
+    else:
+        for row in tqdm(train.iterrows(), total=len(train)):
+            vals, preds = fisys.predictClosest(
+                row[1], algo_rankings[output_variable], n=n, method=method)
+
+            true = row[1][output_variable]
+
+            for pred in preds:
+                if pred in true:
+                    trainCorrect += 1
+                else:
+                    trainWrong += 1
+
+        for row in tqdm(test.iterrows(), total=len(test)):
+            vals, preds = fisys.predictClosest(
+                row[1], algo_rankings[output_variable], n=n, method=method)
+
+            true = row[1][output_variable]
+
+            for pred in preds:
+                if pred in true:
+                    testCorrect += 1
+                else:
+                    testWrong += 1
+
+        return trainCorrect/(trainCorrect+trainWrong), testCorrect/(testCorrect+testWrong)
 
 
 # In[20]:
 
 
-def plot_accuracy(train, test, folder, fuzzy_systems, algo_rankings, K, n):
+def plot_accuracy(train, test, folder, fuzzy_systems, algo_rankings, K, n, suitability, method):
     accuracies = {}
 
     for label, fisys in fuzzy_systems.items():
         print(f"\n{label}:")
 
         pctTrain, pctTest = calc_accuracy(train, test,
-                                          fisys, algo_rankings, K, n)
+                                          fisys, algo_rankings, K, n, suitability, method)
 
         print(f"Train: {pctTrain}")
         print(f"Test: {pctTest}")
 
         accuracies[label] = (pctTest, pctTrain)
 
-    # create pi chart
+    if suitability:
+        fig, ax = plt.subplots(1, 1, figsize=(16, 5))
 
-    fig, ax = plt.subplots(1, len(accuracies), figsize=(16, 5))
+        ax.set_title(
+            f"Mean absolute error of the fuzzy system on the test set for {folder}")
+        ax.bar(accuracies.keys(), [x[0] for x in accuracies.values()])
 
-    fig.suptitle(f"Accuracy of the fuzzy system on the test set for {folder}")
+        plt.show()
 
-    for i, (label, (test, train)) in enumerate(accuracies.items()):
-        ax[i].set_title(label)
-        ax[i].pie([test, 1-test], labels=["Correct",
-                                          "Incorrect"], autopct='%1.1f%%', startangle=90, colors=['green', 'red'])
+    else:
 
-    plt.show()
+        # create pi chart
 
-    fig, ax = plt.subplots(1, len(accuracies), figsize=(16, 5))
+        fig, ax = plt.subplots(1, len(accuracies), figsize=(16, 5))
 
-    fig.suptitle(f"Accuracy of the fuzzy system on the train set for {folder}")
+        fig.suptitle(
+            f"Accuracy of the fuzzy system on the test set for {folder}")
 
-    for i, (label, (test, train)) in enumerate(accuracies.items()):
-        ax[i].set_title(label)
-        ax[i].pie([train, 1-train], labels=["Correct",
-                                            "Incorrect"], autopct='%1.1f%%', startangle=90, colors=['darkgreen', 'darkred'])
+        for i, (label, (test, train)) in enumerate(accuracies.items()):
+            ax[i].set_title(label)
+            ax[i].pie([test, 1-test], labels=["Correct",
+                                              "Incorrect"], autopct='%1.1f%%', startangle=90, colors=['green', 'red'])
 
-    plt.show()
+        plt.show()
+
+        fig, ax = plt.subplots(1, len(accuracies), figsize=(16, 5))
+
+        fig.suptitle(
+            f"Accuracy of the fuzzy system on the train set for {folder}")
+
+        for i, (label, (test, train)) in enumerate(accuracies.items()):
+            ax[i].set_title(label)
+            ax[i].pie([train, 1-train], labels=["Correct",
+                                                "Incorrect"], autopct='%1.1f%%', startangle=90, colors=['darkgreen', 'darkred'])
+
+        plt.show()
 
 
 # In[21]:
 
-def benchmark_rules(folder, train, test, K=1, n=100):
+def benchmark_rules(folder, train, test, K=1, n=100, suitability=False, method="mom"):
 
     with open(folder+'/fuzzy-inputs.txt') as f:
         inputVariableString = f.read()
@@ -269,6 +306,7 @@ def benchmark_rules(folder, train, test, K=1, n=100):
 
     print(f"\n{folder}:")
 
-    plot_accuracy(train, test, folder, fiss, algo_ranking, K, n)
+    plot_accuracy(train, test, folder, fiss,
+                  algo_ranking, K, n, suitability, method)
 
     return fiss, algo_ranking

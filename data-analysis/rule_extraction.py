@@ -517,7 +517,7 @@ def reduceRuleSet(original_rules: list[Rule]):
 
 # In[175]:
 
-def create_auto_rules(X_train, y_train, weights, POSSIBLE_NUMBER_OF_COMBINATIONS, CCP_ALPHA, MAX_DEPTH, TOP_K_MODELS_PER_LABEL, exclude_columns=[]):
+def create_auto_rules(X_train, y_train, weights, POSSIBLE_NUMBER_OF_COMBINATIONS, CCP_ALPHA, MAX_DEPTH, TOP_K_MODELS_PER_LABEL, exclude_columns=[], plot=True):
     df_filtered = pd.concat([X_train, y_train], axis=1)
 
     print(f"Training on {df_filtered.shape[0]} samples")
@@ -574,18 +574,22 @@ def create_auto_rules(X_train, y_train, weights, POSSIBLE_NUMBER_OF_COMBINATIONS
 
             used_inputs = get_split_dimensions(model, inputs)
 
-            if (len(used_inputs) == 1):
-                plut_rules_1d(df_filtered, model, encoder,
-                              inputs, used_inputs, label, score)
-            elif (len(used_inputs) == 2):
-                plot_rules_2d(df_filtered, model, encoder,
-                              inputs, used_inputs, label, score)
-            elif (len(used_inputs) == 3):
-                plot_rules_3d(df_filtered, model, encoder,
-                              inputs, used_inputs, label, score)
+            if (plot):
+                if (len(used_inputs) == 1):
+                    plut_rules_1d(df_filtered, model, encoder,
+                                  inputs, used_inputs, label, score)
+                elif (len(used_inputs) == 2):
+                    plot_rules_2d(df_filtered, model, encoder,
+                                  inputs, used_inputs, label, score)
+                elif (len(used_inputs) == 3):
+                    plot_rules_3d(df_filtered, model, encoder,
+                                  inputs, used_inputs, label, score)
+                else:
+                    plot_rules_Nd(df_filtered, model, encoder,
+                                  inputs, used_inputs, label, score)
+
             else:
-                plot_rules_Nd(df_filtered, model, encoder,
-                              inputs, used_inputs, label, score)
+                print(f"{label}: {inputs} (score={score:.2f})")
 
             auto_rules[label].extend(rules)
 
