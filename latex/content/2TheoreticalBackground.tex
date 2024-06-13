@@ -41,7 +41,7 @@ AutoPas currently provides k \todo{count how many} tunable parameters which can 
                   \item \textbf{VerletLists} \\
                         VerletLists is another approach to create neighbor lists for the particles. Contrary to LinkedCells, VerletLists does not rely on a regular grid but instead uses a spherical region around each particle to determine its relevant neighbors.
                         The algorithm creates and maintains a list of all particles present in a sphere within radius $r_c \cdot s$ around each particle, where $r_c$ is the cutoff radius and $s>1$ is the skin factor allowing for a buffer zone around the cutoff radius.
-                        By chosing a suitable buffer zone, such that no fast moving particle can enter the cutoff radius unnoticed, it is possible to only recalculate the neighbor list every $n$ iterations. This approach can be beneficial for systems with high particle density and frequent interactions, as the neighbor list only needs to be updated every $n$ iterations. This results in a complexity of $O(N)$ distance checks in each iteration.
+                        By chosing a suitable buffer zone, such that no fast moving particle can enter the cutoff radius unnoticed, it is possible to only recalculate the neighbor list every few iterations. This approach can be beneficial for systems with high particle density and frequent interactions, as the neighbor list only needs to be updated every $n$ iterations. This results in a complexity of $O(N)$ distance checks in each iteration.
                         We can repeate the calculation from above to determine the ratio of the interaction volume to the search volume for VerletLists:
 
                         \begin{equation}
@@ -51,32 +51,47 @@ AutoPas currently provides k \todo{count how many} tunable parameters which can 
 
                         This time the ratio can be adjusted by changing the skin factor $s$.         Ideally, the skin factor should be chosen such that the ratio is close to 1. This however reduces the buffer zone around the cutoff radius which means that the neighbor list needs to be updated more frequently. We conclude that choosing a skin factor that is too small can result in particles entering the cutoff radius unnoticed, which can lead to incorrect results, while choosing a skin factor that is too large can result in unnecessary distance checks.
 
-                        Compared to LinkedCells, VerletLists can be constructed such that there are very few unnecessary distance checks. However, the construction of the neighbor list is quite memory intensive and can result in a high memory overhead. Additionally, the neighbor list needs to be updated every $n$ iterations, which can result in a performance overhead.
+                        Compared to LinkedCells, VerletLists can be constructed such that there are very few unnecessary distance checks. However, the construction of the neighbor list is quite memory intensive and can result in a high memory overhead. Additionally, the neighbor list needs to be updated every few iterations, which can result in a performance overhead.
 
-                        \textit{\todo{when to use VerletLists}}
+                        \textit{Generally good for large systems with high particle density.}
 
-                        There are again several different implementations of VerletLists in AutoPas, each with different trade-offs in terms of performance and memory usage.
+                  \item \textbf{VerletClusterLists} \\
+                        VerletClusterLists differ from regular VerletLists in the way the neighbor lists are stored. Instead of storing the neighbor list for each particle separately, $n_{cluster}$ particles are grouped together into a so called \emph{cluster} and a single neighbor list is created for each cluster. This results in a reduced memory overhead as the neighbor list only needs to be stored once for each cluster. Whenever two clusters are close to each other, all interactions between the particles in the two clusters are calculated. This also results in a complexity of $O(N)$ distance checks in each iteration.
+
+                        The main advantage of VerletClusterLists is the reduced memory overhead compared to regular VerletLists. However, the construction of the neighbor list is still quite memory intensive and can result in a high memory overhead.
+
+                        \textit{Generally good for large systems with high particle density}
 
             \end{enumerate}
 
       \item \textbf{Traversal Options:} \\
-            These options are related to the traversal algorithm used to calculate the forces between the particles given a specific container. There are many different traversal algorithms available in AutoPas, each with different trade-offs in terms of performance and optimization potential. In the following we will discuss the most interesting traversal categories:
+            These options are related to the traversal algorithm used to calculate the forces between the particles given a specific container. The different traversal options provide a efficient way to prevent race conditions when using multiple threads and allow for load balancing at the node level ~\cite{SECKLER2021101296}.
+
+            There are many different traversal algorithms available in AutoPas, each with different trade-offs in terms of performance and optimization potential. In the following we will discuss the most interesting traversal categories:
+
+            \todo{see https://mediatum.ub.tum.de/doc/1735578/1735578.pdf}
 
             \begin{enumerate}
 
-                  \item \textbf{LinkedCells Colored Traversal} \\
-                        Since LinkedCells only considers interactions with particles from neighboring cells, it is possible to parallelize the force calculation by calculating forces for particles in different cells in parallel, as long as the particles don't share common neighbors. This parallelization strategy gives rise to many different traversal algorithms, each with different trade-offs in terms of performance and optimization potential. Some important traversal algorithms for LinkedCells are:
+                  \item \textbf{Colored Traversal} \\
+                        Since both LinkedCells and VerletLists only consider interactions with particles from neighboring cells / particles, it is possible to parallelize the force calculation by calculating forces for particles in different cells in parallel. This is however only possible if all simultaneously calculated particles don't share common neighbors as this would introduce data races when updating the forces of the particles. This is where the concept of coloring comes into play. Coloring is a way to assign a color to each cell such that cells with the same color do not share common neighbors. This allows for the force calculation of particles in cells with the same color to be parallelized trivially, as data races are impossible.
 
-                        \todo{add}
+                        There are many different ways to color the domain. Some of the most interesting coloring options are:
+                        \begin{itemize}
+                              \item \textbf{C01} \\
+                                    The C01 traversal is the simplest way of coloring the domain as all cells get just colored the same way. This means that all cells can be perfectly parallelized (embarrassingly parallel) as long as Newton 3 is disabled. This however also means that all forces are calculated twice, once for each of the two particles involved.
 
-                  \item \textbf{VerletLists Traversal} \\
-                        Most of the traversal algorithms for VerletLists are based on the same principle of the respective LinkedCells traversal algorithms. The main difference is that the neighbor list is used to determine the particles that need to be considered for the force calculation. Some important traversal algorithms for VerletLists are:
+                              \item \textbf{C18} \\
+                                    The C18 traversal is a more sophisticated way of coloring the domain. The domain is divided into 18 different colors such that no two neighboring cells share the same color. This method also utilizes the Newton 3 law to reduce the number of force calculations. This is achieved by only computing the forces with forward neighbors (neighbors with grater index.) ~\cite{GRATL2022108262}
+
+                        \end{itemize}
+
+                  \item \textbf{Sliced Traversal} \\
+                        Sliced Traversal is a way to parallelize the force calculation by dividing the domain into different slices and calculating the forces for particles in different slices in parallel. It makes use of locks to prevent data-races ~\cite{GRATL2022108262}.
 
 
-                        \todo{add}
+
             \end{enumerate}
-
-
 
 
       \item \textbf{Data Layout Options:} \\
@@ -98,14 +113,256 @@ AutoPas currently provides k \todo{count how many} tunable parameters which can 
                         If Newton 3 is turned off, the forces between all pairs of particles are calculated twice, once for each particle. This results in a constant overhead of factor 2.
 
                   \item \textbf{Newton3 On} \\
-                        If Newton 3 is turned on, the forces between all pairs of particles are calculated only once. There is no more overhead due to recalculating the forces twice, but turing on Newton 3 requires additional bookkeeping especially in multi-threaded environments, as there can occur race conditions when updating the forces of the particles. \todo{find reference}
-                        \textit{Generally should be turned on, \todo{find reference}}
+                        If Newton 3 is turned on, the forces between all pairs of particles are calculated only once. There is no more overhead due to recalculating the forces twice, but turing on Newton 3 requires additional bookkeeping especially in multi-threaded environments. This results in more complicated traversal algorithms and can therefore also result in a performance overhead.
+                        \textit{Generally should be turned on whenever available.}
             \end{enumerate}
 
 \end{enumerate}
 
 \section{Fuzzy Logic}
 
-\section{Fuzzy Tuning}
+Fuzzy Logic is a mathematical framework that allows for reasoning under uncertainty. It is an extension of classical logic and extends the concept of binary truth values (false/0 and true/ 1) to a continuous range of truth values in the interval $[0, 1]$. This allows for a more nuanced representation of the truth values of statements, which can be beneficial when dealing with imprecise or uncertain information. Instead of just having true or false statements, it is now possible for statements to be for example 40\% true.
+
+This concept is especially useful when modeling human language as the words tend to be unprecise. For example, the word "hot" can mean different things to different people. For some people, a temperature of 30 degrees Celsius might be considered hot, while for others a temperature of 40 degrees Celsius might be considered hot. There is no clear boundary between what is considered hot and what is not, but rather a gradual transition between the two. Fuzzy Logic allows for the modeling of such gradual transitions by assigning a degree of truth to each statement.
+
+\todo{make image}
 
 
+\subsection{Fuzzy Sets}
+
+Mathematically the concept of Fuzzy Logic is based on Fuzzy Sets. A Fuzzy Set is a generalization of a classical set where a element can lie somewhere between being a member of the set and not being a member of the set. Instead of having a binary membership function that assigns a value of 1 to elements that are members of the set and 0 to elements that are not members of the set, elements in a fuzzy set have a certain degree of membership in the set. This degree of membership is a value in the interval $[0, 1]$ that represents the degree to which the element is a member of the set, with 0 meaning that the element is not a member of the set at all and 1 meaning that the element is a full member of the set.
+
+
+Formally a fuzzy set $\tilde{A}$ over a crisp/standard set $X$ is defined by a membership function
+\begin{equation}
+      \mu_{\tilde{A}}: X \rightarrow [0, 1]
+\end{equation}
+that assigns each element $x \in X$ a value in the interval $[0, 1]$ that represents the degree to which $x$ is a member of the set $\tilde{A}$.
+
+The shape of the function can be chosen freely and depend on the specific application, but typical choices involve triangular, gaussian or sigmoid shaped functions.
+
+\todo{insert image}
+
+
+\subsection{Fuzzy Logic Operations}
+
+Fuzzy Sets are a generalization of classical sets and as such they also support the classical set operations of union, intersection and complement. However, the way these operations are defined is different from the classical case as the membership functions are continuous and can take on any value in the interval $[0, 1]$.
+
+The extension of classical sets makes use of so called De Morgan Triplets. Such a triplet $(\top, \bot, \neg)$ consists of a t-norm $\top : [0, 1] \times [0, 1] \rightarrow [0, 1]$, a t-conorm $\bot : [0, 1] \times [0, 1] \rightarrow [0, 1]$ and a strong complement operator $\neg : [0, 1] \rightarrow [0, 1]$. Those operators generalize the classical logical operators which are only defined on the binary truth values $\{0, 1\}$ to values from the continuous interval $[0, 1]$. $\top$ can be thought of as a generalization of the logical AND operator to fuzzy sets, while $\bot$  and $\neg$ can generalize the logical OR and NOT operators respectively. The binary operators $\top$ and $\bot$ are often written in infix notation as $a \; \top \; b$ and $a \; \bot \; b$ similar to the way classical logical operators are written.
+
+
+For the t-norm $\top$ to be valid, it needs to satisfy the following properties:
+
+\begin{align*}
+      a \; \top \; b                & = b \; \top \; a                                              & \quad \text{//Commutativity}    \\
+      a \; \bot \; b                & \leq c \; \top \; d  \quad \text{if }  a\leq b \land b \leq d & \quad \text{//Monotonicity}     \\
+      a \; \top \; (b \; \top \; c) & = (a \; \top \; b) \; \top \; c                               & \quad \text{//Associativity}    \\
+      a \; \top \; 1                & = a                                                           & \quad \text{//Identity Element}
+\end{align*}
+
+The complement operator $\neg$ needs to satisfy the following properties:
+
+\begin{align*}
+      \neg 0             & = 1                       & \quad \text{//Boundary Conditions} \\
+      \neg 1             & = 0                       & \quad \text{//Boundary Conditions} \\
+      \neg y \leq \neg x & \quad \text{if } x \leq y & \quad \text{//Monotonicity}
+\end{align*}
+
+Additionally it is called a strong complement operator if it satisfies the following property:
+
+\begin{align}
+      \neg \neg x = x & \quad \text{//Involution}                                       \\
+      \neg y < \neg x & \quad \text{if } x < y    & \quad \text{ //Strong Monotonicity}
+\end{align}
+
+
+The standard negation operator $\neg x = 1 - x$ is a strong complement operator as it satisfies all the properties above and is the most common choice for the negation operator in practice.
+
+Some common choices for t-norms and t-conorms used in practice are shown in Table~\ref{tab:tnorms}.
+
+\begin{table}[H]
+      \centering
+      {\renewcommand{\arraystretch}{1.2}
+            \begin{tabular}{|c|c|c|c|}
+                  \hline
+                  T-Norm Name & T-Norm   $a \top b$                                                                              & Corresponding T-Conorm      $a \bot b$                                                           \\
+                  \hline
+                  Minimum     & $\min(a, b)$                                                                                     & $\max(a, b)$                                                                                     \\
+                  Product     & $a \cdot b$                                                                                      & $a + b - a \cdot b$                                                                              \\
+                  Lukasiewicz & $\max(0, a + b - 1)$                                                                             & $\min(1, a + b)$                                                                                 \\
+                  Drastic     & $\begin{cases} b & \text{if } a = 1 \\ a & \text{if } b = 1 \\ 0 & \text{otherwise} \end{cases}$ & $\begin{cases} b & \text{if } a = 0 \\ a & \text{if } b = 0 \\ 1 & \text{otherwise} \end{cases}$ \\
+                  Einstein    & $\frac{a \cdot b}{2 - (a + b - a \cdot b)}$                                                      & $\frac{a + b}{1 + a \cdot b}$                                                                    \\
+
+                  \hline
+            \end{tabular}
+      }
+      \caption{Common T-Norms and corresponding T-Conorms with respect to the standard negation operator $\neg x = 1 - x$
+            for $a, b \in [0, 1]$}
+      \label{tab:tnorms}
+\end{table}
+
+In this work we will only consider the standard negation operator and the minimum t-norm and maximum t-conorm as they are the most common choices in practice in fuzzy logic systems.
+
+
+With these choices of t-norms, t-conorms and negation operators, it is possible to define the classical set operations of union, intersection and complement for fuzzy sets. The operations are defined as follows:
+
+
+\begin{itemize}
+
+      \item \textbf{Intersection} \\
+            The intersection $\tilde{C} = \tilde{A} \cap \tilde{B}$ of two fuzzy sets $\tilde{A}$ and $\tilde{B}$ both defined over the same crisp set $X$ is defined by the new membership function
+            \begin{equation}
+                  \mu_{\tilde{C}}(x) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))
+            \end{equation}
+            This means that the degree of membership of an element $x$ in the intersection set $\tilde{C}$ is just the minimum of the degrees of membership of $x$ in the sets $\tilde{A}$ and $\tilde{B}$.
+
+      \item \textbf{Union} \\
+            The union $\tilde{C} = \tilde{A} \cup \tilde{B}$ of two fuzzy sets $\tilde{A}$ and $\tilde{B}$ both defined over the same crisp set $X$ is defined by the new membership function
+            \begin{equation}
+                  \mu_{\tilde{C}}(x) = \max(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))
+            \end{equation}
+            This means that the degree of membership of an element $x$ in the union set $\tilde{C}$ is just the maximum of the degrees of membership of $x$ in the sets $\tilde{A}$ and $\tilde{B}$.
+
+      \item \textbf{Complement} \\
+            The complement $\tilde{C} = \neg \tilde{A}$ of a fuzzy set $\tilde{A}$ defined over the crisp set $X$ is defined by the standard negation operator
+            \begin{equation}
+                  \mu_{\tilde{C}}(x) = 1 - \mu_{\tilde{A}}(x)
+            \end{equation}
+            This means that the degree of membership of an element $x$ in the complement set $\tilde{C}$ is the complement of the degree of membership of $x$ in the set $\tilde{A}$.
+\end{itemize}
+
+\todo{add grafical representation of the operations}
+
+\subsection{Linguistic Variables}
+
+Linguistic variables collect multiple fuzzy sets defined over the same crisp set $X$ into a single object. This variable then allows to reason about the possible states of the variable in a more natural way.
+
+For example, the linguistic variable "temperature" might have the linguistic terms "cold", "warm" and "hot" each of which is defined by a fuzzy set. This representation is very natural as it abstracts away the specific values of the temperature and allows to reason about the temperature in a more human-like way.
+
+All the underlying fuzzy sets can be chosen arbitrarily can also overlap with each other.
+
+\todo{add grafical representation of the linguistic variable}
+
+\subsection{Fuzzy Logic Rules}
+
+Fuzzy Logic Rules are a way to encode expert knowledge into a Fuzzy Logic system. The rules specify the relationship between input and output variables of the system and therefore are the backbone of fuzzy logic systems.
+The rules are typically encoded in a human-readable way and often have the form "$\text{IF} \; \text{antecedent} \; \text{THEN} \; \text{consequent}$" where both the antecedent and the consequent are fuzzy sets. The antecedent is a condition that needs to be satisfied for the rule to be applied, while the consequent is the action that is taken if the rule is applied. Since we are not dealing with binary truth values, the antecedent can be only partially satisfied and as consequence the rule is only partially applied.
+
+The antecedent can be arbitrary complicated and can involve multiple fuzzy sets and logical operators. The consequent is typically a single fuzzy set that is modified by the rule but could theoretically also be arbitrarily complicated. In this work we allow rules folowing the grammar defined below:
+
+%makro for fuzzy set
+\newcommand{\fuzzyset}{\langle \text{fuzzy set} \rangle}
+
+\newcommand{\fuzzyrule}{\langle \text{rule} \rangle}
+
+
+\begin{align*}
+      \fuzzyrule  ::= & \ \ \text{IF} \ \fuzzyset \ \text{THEN} \ \fuzzyset & \text { //Rule}        \\[10pt]
+      \fuzzyset  ::=  & \ \ \fuzzyset \ \text{AND}  \ \fuzzyset             & \text { //Conjunction} \\
+                      & |  \ \fuzzyset \ \text{OR} \  \fuzzyset             & \text { //Disjunction} \\
+                      & |  \ \text{NOT} \ \fuzzyset                         & \text { //Negation}    \\
+                      & |  \ (\; \fuzzyset \;)                              & \text { //Parentheses} \\
+                      & |  \ \tilde{A} \ =\ a                               & \text { //Selection}   \\
+\end{align*}
+
+The boolean operators AND, OR and NOT represent the set operations of intersection, union and complement respectively.
+
+
+Using this grammar a typical rule might look like this:
+
+\begin{equation}
+      \text{IF} \;( \tilde{A} = a \; \text{AND} \; \tilde{B} = b )\; \text{THEN} \; \tilde{C} = c
+\end{equation}
+
+This rule states that if the state of the linguistic variable $A$ is $a$ and the state of the linguistic variable $B$ is $b$, then the state of the linguistic variable $C$ should be $c$. But contrary to classical logic, the rule does not have to activate fully, but can have a degree of activation in the interval $[0, 1]$. Should the antecedent be only partially true (for example if $\mu_{\tilde{A}}(a) = 0.8$ and $\mu_{\tilde{B}}(b) = 0.6$), the rule is only partially applied and the effect of adapting the consequent is reduced accordingly. In the example above, the degree of activation of the rule would be $\min(0.8, 0.6) = 0.6$.
+
+The inference step can be seen as an extension of the boolean implication operator
+
+\[\text{IF} \; \text{antecedent} \; \text{THEN} \; \text{consequent} \iff \text{antecedent} \implies \text{consequent}\]
+
+and could be deduced from the choice of the t-norm and t-conorm operators and would lead to $(a \implies b) = \neg a \lor b = \max(1-a,b)$. In practice however the Mamdani implication is typcally used, which is just defined as the AND operation $\min(a,b)$. In a logiccal point of view this choice is counter intuitive as it clearly violates the standart defintion, but in the context of fuzzy systems its a very good choice for computing the degree of validity for a rule.~\cite{BouchonMeunier1995}. In practice wer are not interested in the resulting fuzzy set of the implication, but rather to which extend the consequent should be adapted therefore we introduce a slightly different infernence algorithm:
+
+\vspace{1em}
+
+Consider the rule $\text{IF} \; \tilde{A} = a \; \text{THEN} \; \tilde{C} = c$
+
+\begin{enumerate}
+      \item Obtain the input values $(x_1, x_2, \ldots, x_n) \in X_{A}$ occuring in the crisp set of the antecedent.
+      \item Evaluate the degree of membership $\mu$ those input values have in the antecedent. This is the degree to which the antecedent is satisfied and the rule is activated.
+      \item Define a new fuzzy set $R=\tilde{C}\uparrow \mu$ where $\uparrow$ is the cut operator.
+            This operator is defined as $\mu_{R}(x) = \min(\mu_{\tilde{C}}(x), \mu)$ which means that it cuts off all membership values of the fuzzy set $\tilde{C}$ that are above the degree of activation $\mu$. This resulting set $R$ contains the information to which extend the consequent should be adapted. We see that in the extreme cases where $\mu = 0$ the set $R$ is also empty and has therefore no effect on further computations. If $\mu = 1$ the rule activated fully and the set $R$ is equal to $\tilde{C}$. In all other cases the set $R$ is trimmed down to the extend of the activation.
+\end{enumerate}
+
+\subsection{Defuzzification}
+
+The final step in a Fuzzy Logic system is the defuzzification step. In this step the fuzzy output of the system is converted back into a crisp value that can be used to control real world systems. The first step in the defuzzification process is to collect all the rules operating on the same output variable and combine their trimed consequents into a single fuzzy set. This is done by just taking the fuzzy union of all those consequence which results in a new fuzzy set that represents the combined effect of all the rules on the output variable. Using a defuzzification method, this fuzzy set can then be converted back into a single crisp value that represents some aspect of the fuzzy set.
+
+There are many different ways to defuzzify a fuzzy set. Some of the most common methods are:
+
+\begin{itemize}
+      \item \textbf{Centroid} \\
+            The Centroid method calculates the center of mass of the fuzzy set and returns this value as the crisp output. This method is very intuitive as it tries to find a weighted interpolation of all the activated fuzzy sets. It is defined as:
+
+            \begin{equation}
+                  \text{Centroid} = \frac{\int_X x \cdot \mu_{\tilde{C}}(x) \, dx}{\int_X \mu_{\tilde{C}}(x) \, dx}
+            \end{equation}
+
+      \item \textbf{Mean of Maximum} \\
+            The Mean of Maximum method calculates all the input values that result in the maximum membership value of the fuzzy set and returns the average of these values as the crisp output. In the case where there is just one maximum value, this meathod can be thought of as just returning the x-poisition of the most likely value.
+
+            It is defined as follows:
+
+            \begin{equation}
+                  \text{Mean of Maximum} = \frac{\int_{X'} x \, dx}{\int_{X'}  \, dx}
+            \end{equation}
+            where $X' = \{x \in X \, | \, \mu_{\tilde{C}}(x) = \max(\mu_{\tilde{C}}(x))\}$ is the set of all input values that result in the maximum membership value of the fuzzy set.
+
+
+
+      \item \textbf{Weighted Average} \\
+            The Weighted Average method calculates the average of all the input values weighted by their membership values. Contrary to the Centroid method which integrates over the whole domain, the Weighted Average method only considers a the singular point from each membership function where the membership value is maximal. This can be seen as a simplification of the Centroid method and is defined as:
+
+            \begin{equation}
+                  \text{Weighted Average} = \frac{\sum_{x \in X'} x \cdot \mu_{\tilde{C}}(x)}{\sum_{x \in X'} \mu_{\tilde{C}}(x)}
+            \end{equation}
+            where $X'$ is the set of all input values that result in the maximum membership value of their fuzzy set.
+\end{itemize}
+
+Also here there are many other methods to defuzzify a fuzzy set, but the ones mentioned above are the most common choices in practice. This thesis just focuses on the Centroid and the Mean of Maximum methods.
+
+
+\subsection{Structure of creating a Fuzzy Logic System}
+
+All the building blocks of a Fuzzy Logic System have been introduced in the previous sections and can now be combined to create a complete Fuzzy Logic System. The general structure of a Fuzzy Logic System is as follows:
+
+\begin{enumerate}
+      \item \textbf{Fuzzification} \\
+            The first step in a Fuzzy Logic System is to convert the crisp input values into fuzzy sets. This is done by evaluating the membership functions of the fuzzy sets at the crisp input values. This results in a bunch of membership values which can the be used to calculate the boolean operations of the antecedents of the rules.
+
+      \item \textbf{Inference} \\
+            The next step is to apply the fuzzy logic rules to the fuzzy input values. This is done by using the degree of membership of the input values in the antecedents of the rules to calculate the degree of activation of each rule. The consequent of each rule is then cut by the degree of activation of the rule to determine the effect of the rule on the output variable. This results in a bunch of fuzzy sets that represent all the active effects on the output variable.
+
+      \item \textbf{Aggregation} \\
+            The fuzzy sets resulting from the inference step are then combined into a single fuzzy set that represents conatins the combined effect of all the rules on the output variable. This is done by taking the fuzzy union of all the fuzzy sets.
+
+      \item \textbf{Defuzzification} \\
+            The final step is to convert the fuzzy output value into a crisp value that can be used to control real world systems. This is done by applying a defuzzification method to the fuzzy set that represents the combined effect of all the rules on the output variable.
+\end{enumerate}
+
+
+If the system is finished it can be seen as a black box that takes crisp input values and returns crisp output values similar to a function $f: X \rightarrow \mathbb{R}$. 
+
+
+Using such a system however requires a lot of expert knowledge as the rules and the membership functions of the fuzzy sets need to be defined by hand. This can be quite time consuming and in some cases even impossible if the system is too complex. Luckiliy there exist other methods which attempt to automate the process of defining the parameters of the fuzzy logic system. Some common methods are:
+
+\begin{itemize}
+      \item \textbf{Genetic Algorithms} \\
+            Genetic Algorithms are a class of optimization algorithms that are inspired by the process of natural selection. They work by maintaining a population of candidate solutions to a problem and iteratively improving the solutions by applying genetic operators such as mutation and crossover. Genetic Algorithms can be used to optimize the parameters of a fuzzy logic system by treating the parameters as the genes of an individual and the performance of the system as the fitness of the individual. By iteratively evolving the population of individuals, it is possible to find a set of parameters that optimizes the performance of the fuzzy logic system.
+
+      \item \textbf{Data Driven Methods} \\
+            Data Driven Methods are a class of optimization algorithms that work by using data to optimize the parameters of a fuzzy logic system. Those methods are often based on machine learning algorithms such as decision trees. They work by trying to find some interpretable representation of the data that can be used to define concrete rules for the fuzzy logic system.
+
+      \item \textbf{Fuzzy Clustering} \\
+            Fuzzy Clustering is a class of clustering algorithms that work by assigning each data point to a cluster with a certain degree of membership. It can be used to optimize the parameters of a fuzzy logic system by treating the data points as the input values of the system and the clusters as the fuzzy sets of the system. By iteratively updating the clusters to better fit the data points, it is possible to find a set of parameters that optimizes the performance of the fuzzy logic system.
+            \todo{find sources for all of them}
+\end{itemize}
