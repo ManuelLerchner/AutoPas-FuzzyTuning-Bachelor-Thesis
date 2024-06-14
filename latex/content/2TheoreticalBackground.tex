@@ -4,10 +4,104 @@
 
 \section{Molecular Dynamics}
 
+Molecular Dynamics (MD) is a computational method used to simulate the behavior of atoms and molecules over time. In recent years, MD simulations have become an important tool in many scientific fields, including chemistry, physics, biology, and materials science as they allow getting insights into the behavior of complex systems which may be difficult or impossible to study experimentally. Using the power of computer simulations, where properties of the model can be changed by just adjusting some formulas and thermodynamic parameters allows reasearches to study a vast variety of systems and conditions wich would be completly infeasible to reproduce in a laboratory setting.
+
 % simulation loop
+% https://link.springer.com/content/pdf/10.1007/978-3-319-16375-8.pdf HIV virus
+% https://www.sciencedirect.com/science/article/pii/S000634950878301X protein folding
+%some applications of molecular dynamics
+\todo{add images}
+
+Our current knowledge of physics suggests that the behavior of atoms and molecules is governed by the laws of quantum mechanics, where particles are described by wave functions and probabilities that evolve over time. The physisicst Erwin Schrödinger first formulated a mathematical model describing this phenomenon back in 1926 \todo{cite} which has gotten wide spread acceptance and is now known widely as the Schrödinger equation. The Schrödinger equation is a partial differential equation that describes how the wave function of a physical system evolves over time. Its typically written as:
+
+\begin{equation}
+      i \hbar \frac{\partial \Psi}{\partial t} = \hat{H} \Psi
+\end{equation}
+
+where $\Psi$ is the wave function of the system, $\hat{H}$ is the Hamiltonian operator describing the energy of the system. $t$ is the time, and $\hbar$ is the reduced Planck constant.
+
+Using the Schrödinger Equation it is possible to describe the future behavior of systems of molecules. Benedict Leimkuhler et al.~\cite{Leimkuhler2015} gave an example describing the behavior of a single water molecule consisting of three nuclei (two hydrogen atoms and one oxygen atom) and 10 electrons (2 from the hydrogen atoms and 8 from the oxygen atom) in the introductary chapter of their book. Since all of those 13 objects are characterized by their position in 3D space, the wave function of the system is a function of 39 variables and can be written as:
+
+\begin{equation}
+      \Psi = \Psi(x_1, y_1, z_1, x_2, y_2, z_2, \ldots, x_{13}, y_{13}, z_{13}, t)
+\end{equation}
+
+by plugging this wave function into the Schrödinger equation we get the following partial differential equation:
+
+\begin{equation}
+      i \hbar \frac{\partial \Psi}{\partial t} = -\hbar^2 \sum_{i=1}^{13} \frac{\nabla_i^2 \Psi}{2m_i} + U_p \Psi
+\end{equation}
+
+where $m_i$ is the mass of the $i$-th object, $\nabla_i^2$ is the Laplace operator describing the kinetic energy of the $i$-th object and $U_p$ is the atomic potential energy fuinction describing the interaction forces between the objects.
+
+As the Schrödinger equation is a partial differential equation, it is very costly to solve it numerically for systems with many particles and we are quickly limited by the curse of dimensionality. Using the Born-Oppenheimer approximatio, the problem can be simplified to a classical mechanics problem by exploiting the fact that out of the perspective of the fast moving electrons the nuclei appear to be stationary which drastically limits their kinetic energy impact on the system. Nuclei on the other hand are much slower and can be treated as classical particles. This allows us to integrate out the electronic degrees of freedom and derive a new energy function $U$ that only depends on the positions of the nuclei. The new energy function $U$ is typically derived from quantum mechanical calculations or empirical data and can be quite complex depending on the system being studied. Yet this model is still just a very crude approximation of the real system and can lacks many quantum mechanical effects and therfore chemical behaviors relying on them.
+However, it is still a very powerful tool to study the behavior of complex systems as it allows for simulating them in the first place.
+
+The resulting classical equations of motion for the nuclei are given by: \todo{ask kunal to check this}
+
+\begin{equation}
+      m_i \frac{d^2 \vec{r}_i}{dt^2} = -\nabla_i U
+\end{equation}
+
+where $\vec{r}_i$ is the position of the $i$-th object and $m_i$ is its mass. The force acting on the $i$-th object is given by the gradient of the energy function $U$.
+
+This change turned the Schrödinger equation (which is a partial differential equation) into a nonelinear system of ordinary differential equations which can surprisingly be easier delt with numerically. Even for systems with many particles.
+
+In practice there exist many potential energy functions $U$ each designed to solve a specific problem. Many Potentials rely on a mixture of 2-body, 3-body and 4-body interactions between the particles to describe the behavior of the system. The 2-body interactions describe the effect of Pauli repulsion, atomic bonds and coulomb interactions while higher order interactions model the potentially assymetric wave function ~\cite{Leimkuhler2015}. Partical simulation often use the Lennard-Jones potential to describe the 2-body interactions between the particles. The Lennard-Jones potential is a simple and lightweight model that can describe the behavior of many systems quite well \todo{cite tgus}. It is given by:
+
+\begin{equation}
+      U_{LJ}(r) = 4 \epsilon \left[ \left( \frac{\sigma}{r} \right)^{12} - \left( \frac{\sigma}{r} \right)^6 \right]
+\end{equation}
+
+where $r$ is the distance between the particles, $\epsilon$ is the depth of the potential well and $\sigma$ is the distance at which the potential is zero.
+
+Hovever the Lennard-Jones potential is not suitable for all systems and many other potentials exist to tackle those problems. In this work we will however only work with types of simulations that can be accurately described by the Lennard-Jones potential and therfore will not go into further detail about other potentials.
+
+Since the simulation domain potentially consists of a huge number of particles all interacting with each other, it is generally not possible to solve the equations of motion analytically. This problem is known under the name N-body problem and it can be shown that there are no general solutions for systems with more than 2 particles \todo{cite this}. We can however solve the equations of motion numerically using numerical integration methods. The most common method to solve the equations of motion numerically is the Verlet algorithm which is a symplectic integrator that is energy conserving and has good long-term stability properties \todo{cite this}. This integration scheme is derived from the Taylor expansion of the position of the $i$-th object $\vec{r}_i$ at time $t - \Delta t$ and $t + \Delta t$ and is given by:
+
+\begin{equation}
+      \vec{r}_i(t + \Delta t) = 2 \vec{r}_i(t) - \vec{r}_i(t - \Delta t) + \vec{a}_i(t) \Delta t^2
+\end{equation}
+
+where $\vec{a}_i(t)$ is the acceleration of the $i$-th object at time $t$ and can be calculated from the particle mass and the acting forces using Newton's second law of motion $\vec{a}_i(t) =\frac{F_i}{m_i}= \frac{-\nabla_i U}{m_i}$.
+
+
+Using the methods described above, it is possible to simulate the behavior of a system of particles over time. The general simulation loop for a molecular dynamics simulation can be described as follows:
+
+\begin{enumerate}
+      \item \textbf{Initialization} \\
+            The simulation starts by initializing the positions and velocities of the particles. The initial positions and velocities can be chosen randomly or based on experimental data. Additionally, the simulation parameters such as the time step $\Delta t$, the number of integration steps and the potential energy function $U$ need to be set.
+
+      \item \textbf{Update Positions} \\
+            In this step, the positions of the particles are updated using the Verlet algorithm. The new positions are calculated based on the current positions, velocities and accelerations of the particles.
+
+      \item \textbf{Calculate Forces} \\
+            The forces acting on the particles are calculated based on the current positions of the particles. The forces are typically calculated using the gradient of the potential energy function $U$. The forces are then used to calculate the accelerations of the particles.
+
+      \item \textbf{Update Velocities and Accelerations} \\
+            The velocities and accelerations of the particles are updated based on the forces acting on the particles. The new velocities are calculated based on the current velocities, accelerations and forces of the particles.
+
+      \item \textbf{Apply Outside Effects}
+            In this step, the simulation can be modified by applying external forces or constraints to the particles. In this stage it is possible to introduce boundary conditions, temperature control or other effects to the simulation.
+
+      \item \textbf{Update Time and Repeat} \\
+            The simulation time is updated by advancing it by the time step $\Delta t$. The simulation loop then returns to step 2 and repeats until the desired number of integration steps is reached.
+\end{enumerate}
+
+
+\todo{check this}
+
+This simulation loop can be repeated many times to simulate behavior of the system over time. The evolution of the system can then be analyzed using various statistical methods to extract information about the system and deduce properties not directly observable.
+
+Many different sofware packages exist to perform such types of simulations. Some widely used examples of such systems are LAAMPS\footnote{\url{https://lammps.sandia.gov/}} and GROMACS\footnote{\url{https://www.gromacs.org/}}. Both of them implement a efficient way to solve the underlying N-body problem and provide the user with a high-level interface to specify the simulation parameters. \todo{check this}
+There exist many different approaches to efficiently solve the N-body problem, and there is no single best approach that works well for all systems as the optimal implementation heaviliy depends on the simulation state and the capabilities of the hardware used to perform the simulation. Both LAAMPS and GROMACS however use a single implementations and are therefore not capable of adapting to the current simulation state.
+
+In the following section we will introduce AutoPas which is a library designed to efficently deal with changing simulation states and is capable of automatically adapting to the current simulation state to achieve optimal performance.
 
 
 \section{AutoPas}
+
+
 
 AutoPas is an open-source library designed to achive optimal performance at the node level for short-range particle simulations. On a high level, AutoPas can be seen as a black-box performing arbitrary N-body simulations with short-range particle interactions. The main goal of AutoPas is to provide a high-level interface for the user to perform simulations without having to worry about the low-level details of the simulation. This is achieved by providing a high-level interface for the user to interact with the library, while the library itself takes care of the low-level details of the force calculations
 
@@ -137,7 +231,7 @@ Formally a fuzzy set $\tilde{A}$ over a crisp/standard set $X$ is defined by a m
 \begin{equation}
       \mu_{\tilde{A}}: X \rightarrow [0, 1]
 \end{equation}
-that assigns each element $x \in X$ a value in the interval $[0, 1]$ that represents the degree to which $x$ is a member of the set $\tilde{A}$.
+that assigns each element $x \in X$ a value in the interval $[0, 1]$ that represents the degree to which $x$ is a member of the set $\tilde{A}$. The classical counterpart is classically written using the element operator $\in_A : X \rightarrow \{true,false\}$.
 
 The shape of the function can be chosen freely and depend on the specific application, but typical choices involve triangular, gaussian or sigmoid shaped functions.
 
@@ -201,7 +295,7 @@ Some common choices for t-norms and t-conorms used in practice are shown in Tabl
       \label{tab:tnorms}
 \end{table}
 
-In this work we will only consider the standard negation operator and the minimum t-norm and maximum t-conorm as they are the most common choices in practice in fuzzy logic systems.
+In the following sections we will only consider the standard negation operator, the minimum t-norm and maximum t-conorm as they are the most common choices in practice in fuzzy logic systems. However the exact choices can be easily exchanged for other t-norms and t-conorms if needed.
 
 
 With these choices of t-norms, t-conorms and negation operators, it is possible to define the classical set operations of union, intersection and complement for fuzzy sets. The operations are defined as follows:
@@ -215,7 +309,6 @@ With these choices of t-norms, t-conorms and negation operators, it is possible 
                   \mu_{\tilde{C}}(x) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))
             \end{equation}
             This means that the degree of membership of an element $x$ in the intersection set $\tilde{C}$ is just the minimum of the degrees of membership of $x$ in the sets $\tilde{A}$ and $\tilde{B}$.
-
       \item \textbf{Union} \\
             The union $\tilde{C} = \tilde{A} \cup \tilde{B}$ of two fuzzy sets $\tilde{A}$ and $\tilde{B}$ both defined over the same crisp set $X$ is defined by the new membership function
             \begin{equation}
@@ -228,8 +321,39 @@ With these choices of t-norms, t-conorms and negation operators, it is possible 
             \begin{equation}
                   \mu_{\tilde{C}}(x) = 1 - \mu_{\tilde{A}}(x)
             \end{equation}
-            This means that the degree of membership of an element $x$ in the complement set $\tilde{C}$ is the complement of the degree of membership of $x$ in the set $\tilde{A}$.
+            Again this means that the degree of membership of an element $x$ in the complement set $\tilde{C}$ is just $1$ minus the degree of membership of $x$ in the set $\tilde{A}$.
 \end{itemize}
+
+Those definitions arise naturally by extending the classical set operations into the realm of fuzzy sets. The similarity between the classical and fuzzy set operations are depicted in Table~\ref{tab:fuzzy_logic_operations}.
+
+\begin{table}
+      \centering
+      \begin{tabular}{|c|c|}
+            \hline
+            Classical Set Operation                                & Fuzzy Set Operation                                                                            \\
+            \hline
+            $x \in A \cap B \iff x \in A \land x \in B$            &
+            \parbox{6cm}{    \begin{align*}
+                                         \mu_{\tilde{A} \cap \tilde{B}}(x) & = \mu_{\tilde{A}}(x) \land \mu_{\tilde{B}}(x)  \\
+                                                                           & = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))
+                                   \end{align*}} \\
+            \hline
+            $x \in A \cup B \iff x \in A \lor x \in B$             &
+            \parbox{6cm}{    \begin{align*}
+                                         \mu_{{\tilde{A} \cup  \tilde{B}}}(x) & = \mu_{\tilde{A}}(x) \lor \mu_{\tilde{B}}(x)   \\
+                                                                              & = \max(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))
+                                   \end{align*}}           \\
+            \hline
+            $x \in \bar{A} \iff x \notin A  \iff \neg ({x \in A})$ &
+            \parbox{6cm}{    \begin{align*}
+                                         \mu_{\neg \tilde{A}}(x) & = \neg \mu_{\tilde{A}}(x) \\
+                                                                 & = 1 - \mu_{\tilde{A}}(x)
+                                   \end{align*}}                                                        \\
+            \hline
+      \end{tabular}
+      \caption{Similarities between classical and fuzzy set operations}
+      \label{tab:fuzzy_logic_operations}
+\end{table}
 
 \todo{add grafical representation of the operations}
 
@@ -258,10 +382,10 @@ The antecedent can be arbitrary complicated and can involve multiple fuzzy sets 
 
 \begin{align*}
       \fuzzyrule  ::= & \ \ \text{IF} \ \fuzzyset \ \text{THEN} \ \fuzzyset & \text { //Rule}        \\[10pt]
-      \fuzzyset  ::=  & \ \ \fuzzyset \ \text{AND}  \ \fuzzyset             & \text { //Conjunction} \\
+      \fuzzyset  ::=  & \ \ (\; \fuzzyset \;)                               & \text { //Parentheses} \\
+                      & |  \ \fuzzyset \ \text{AND}  \ \fuzzyset            & \text { //Conjunction} \\
                       & |  \ \fuzzyset \ \text{OR} \  \fuzzyset             & \text { //Disjunction} \\
                       & |  \ \text{NOT} \ \fuzzyset                         & \text { //Negation}    \\
-                      & |  \ (\; \fuzzyset \;)                              & \text { //Parentheses} \\
                       & |  \ \tilde{A} \ =\ a                               & \text { //Selection}   \\
 \end{align*}
 
@@ -350,7 +474,7 @@ All the building blocks of a Fuzzy Logic System have been introduced in the prev
 \end{enumerate}
 
 
-If the system is finished it can be seen as a black box that takes crisp input values and returns crisp output values similar to a function $f: X \rightarrow \mathbb{R}$. 
+If the system is finished it can be seen as a black box that takes crisp input values and returns crisp output values similar to a function $f: X \rightarrow \mathbb{R}$.
 
 
 Using such a system however requires a lot of expert knowledge as the rules and the membership functions of the fuzzy sets need to be defined by hand. This can be quite time consuming and in some cases even impossible if the system is too complex. Luckiliy there exist other methods which attempt to automate the process of defining the parameters of the fuzzy logic system. Some common methods are:
