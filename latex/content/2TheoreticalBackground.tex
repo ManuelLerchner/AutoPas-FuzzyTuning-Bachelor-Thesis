@@ -113,7 +113,17 @@ Since AutoPas just provides a high-level interface to allow for short-range N-bo
 
 \section{Autotuning in AutoPas}
 
-AutoPas currently provides k \todo{count how many} tunable parameters which can mostly\footnote{There are some exceptions as some choices of parameters are not compatible with each other.} be combined freely with each other. The parameters can be roughly divided into the following categories:
+AutoPas internaly alternates between two phases of operation. The first phase is the \emph{tuning phase} where AutoPas tries to find the best configuration of parameters with regard to a chosen performance metric. This optimal configuration is then used in the following \emph{simulation phase} with the assumption that the optimal configuration found in the tuning phase still performs reasonabley well during the consequent simulation phase. Obviously as the simulation progresses, and the characteristics of the system change, the previously chosen configuration can drift arbitrarily far from the actual optimal configuration. To counteract this, AutoPas periodically alternate between tuning and simulation phases to ensure that the used configuration is reasonably close to the optimal configuration.
+During the simulation phase, AutoPas just acts as a black-box solving the force calculations for the underlying N-body problem.
+
+
+The power of AutoPas comes from its vast amount of tunable parameters and therefore enourmous search space. As mentioned previously, other software packages like LAAMPS and GROMACS are limited by their design to just one particular implementation and can therefore operate outside of the theoretical
+optimal performance regime. In the following we will discuss the tunable parameters in AutoPas and the different tuning strategies available to find the best configuration of parameters for the current simulation state.
+
+
+\subsection*{Tunable Parameters}
+
+AutoPas currently provides 6 tunable parameters which can mostly\footnote{There are some exceptions as some choices of parameters are not compatible with each other.} be combined freely with each other. A collection of parameters is called a \emph{Configuration} and the set of all possible configurations is called the \emph{Search Space}. A configuration consists of the following parameters:
 
 \begin{enumerate}[label=\textbf{\arabic*.}]
       \item \textbf{Container Options:} \\
@@ -129,7 +139,8 @@ AutoPas currently provides k \todo{count how many} tunable parameters which can 
                               \frac{V_{sphere}(r_c)}{V_{cube}(3r_c)} = \frac{\frac{4}{3}\pi r_c^3}{(3r_c)^3} = \frac{4}{81}\pi \approx 0.155
                         \end{equation}
 
-                        This means that only about 15.5\% of all particles present in the $3\times3\times3$ cell grid around a particle are actually within the cutoff radius. By choosing smaller cell sizes, this ratio can be increased, reducing the number of unnecessary distance checks, but the performance gain is quickly offset by the increased overhead of managing more cells. \todo{find reference}
+                        This means that only about 15.5\% of all particles present in the $3\times3\times3$ cell grid around a particle are actually within the cutoff radius.
+
                         \textit{However, still generally good for large, homogeneous\footnote{Homogeneous in this context means that the particles are distributed evenly across the domain. If many particles are concentrated in a small area, the behavior of LinkedCells can quickly resemble that of DirectSum.} systems.}
 
                   \item \textbf{VerletLists} \\
@@ -157,6 +168,9 @@ AutoPas currently provides k \todo{count how many} tunable parameters which can 
                         \textit{Generally good for large systems with high particle density}
 
             \end{enumerate}
+
+      \item \textbf{Load Estimator Options:} \\
+            The Load Estimator Options are related to the way the simulation is parallelized. The Load Estimator is responsible for estimating the computational load of each MPI rank and affects how the work is distributed among the ranks. In this thesis we will however not go into further detail about the Load Estimator Options as we primarily focus on the tuning aspect of AutoPas.
 
       \item \textbf{Traversal Options:} \\
             These options are related to the traversal algorithm used to calculate the forces between the particles given a specific container. The different traversal options provide a efficient way to prevent race conditions when using multiple threads and allow for load balancing at the node level ~\cite{SECKLER2021101296}.
@@ -211,7 +225,52 @@ AutoPas currently provides k \todo{count how many} tunable parameters which can 
                         \textit{Generally should be turned on whenever available.}
             \end{enumerate}
 
+      \item \textbf{Cell Size Factor:} \\
+            The Cell Size Factor is a parameter that is used to determine the size of the cells in the LinkedCells-Container\footnote{The option is also relevant for other containers such as VerletLists those configurations internally also build their neighborlists using a Cell Grid }. The cell size factor is typically chosen to be equal to the cutoff radius $r_c$, meaning that each particle only needs to check the forces with particles inside the $3\times3\times3$ cell grid around it as all other particles are guaranteed to be further away than the cutoff radius. We saw in the previous section that this can result in a high number of unnecessary distance checks as only about 15.5\% of all particles present in the $3\times3\times3$ cell grid around a particle are actually within the cutoff radius. By choosing smaller cell sizes, this ratio can be increased, reducing the number of unnecessary distance checks. However, the performance gain is quickly offset by the increased overhead of managing more cells. \todo{find reference}
+
 \end{enumerate}
+
+\subsection*{Tuning Strategies}
+
+Tuning strategies are the heart of AutoPas. They implement the key functionality of the dynamic tuning aspect of AutoPas. The main goal of the tuning strategies is to find the best configuration of parameters for the current simulation state which then can be used for the following simulation-phase.
+
+The default tuning strategy in AutoPas is to use a brute-force approach to find the best parameters for the current simulation state by trying out all possible combinations of parameters and choosing the one that optimizes the chosen performance metric (e.g. time, energy usage). This approach is called \emph{Full Search} and is guaranteed to find the best parameters for the current simulation state, but is typically very costly in terms of time and resources as it has to spend a lot of time measuring bad parameter combinations. \todo{find refernece as to how bad those are} This is a big issue as the number of possible parameter combinations can potentially grow exponentially with the number of parameters. This makes the full search approach infeasible, especially if more tunable parameters are added to AutoPas.
+
+To overcome this issue, AutoPas provides a couple of different tuning strategies that can be used to reduce the number of parameter combinations that need to be tested. This is generally achieved by allowing the tuning strategy to modify the set of parameters that need to be tested hereby reducing the total number of configurations that need to be tested. It is therfore of great interest to develop tuning strategies that can effectively prune the search space as this can result in a significant speedup of the tuning process. \todo{find refenrence to how bad this is}
+
+In the following we will briefly discuss the basic tuning strategies available in AutoPas:
+
+\begin{enumerate}
+      \item \textbf{Full Search} \\
+            The Full Search strategy is the default tuning strategy in AutoPas. It tries out all possible combinations of parameters and chooses the one that optimizes the chosen performance metric. It is guaranteed to find the best parameters for the current simulation state, but as mentioned before, very costly.
+
+      \item \textbf{Random Search} \\
+            The Random Search strategy is a simple tuning strategy that randomly samples a given number of configurations from the search space and chooses the one that optimizes the chosen performance metric. This approach is faster than the Full Search strategy as it does not need to test all possible combinations of parameters. However, it is not guaranteed to find the best parameters for the current simulation state and could result in suggesting a bad configuration.
+
+      \item \textbf{Predictive Tuning} \\
+            The Predictive Tuning strategy attempts to extrapolate previous measurements to predict how the configuration would perform in the current simulation state. The it prunes the search space only keeping configurations that are predicted to perform reasonably well. The extrapolations is accomplished using methods such as linear regression or constructing polynomial functions through the data points. The method generally works well, it is however very sensitive to timing fluctuations.
+
+      \item \textbf{Bayesian Search} \\
+            There exist two implementations of bayesian tuning in AutoPas. Those methods apply bayesian optimization techniques to predict good configurations using performance evidence from previous measurements.
+
+      \item \textbf{Rule Based Tuning} \\
+            The Rule Based Tuning strategy uses a set of predefined rules to automatically filter out configurations that will perform poorly. The rules are built up using configuration order of the form:
+            \begin{small}
+                  \begin{verbatim}
+            if numParticles < lowNumParticlesThreshold:
+                  [dataLayout="AoS"] >= [dataLayout="SoA"] with same 
+                        container, newton3, traversal, loadEstimator;
+            endif
+            \end{verbatim}
+            \end{small}
+            To state that the dataLayout "AoS" is generally better than "SoA" if the number of particles is below a certain threshold. The rule based method can be generally very effective as expert knowledge can be encoded into the rules, which is unfortunately also its biggest drawback as it is not trivial to create a good set of rules.
+\end{enumerate}
+
+
+The topic of this thesis is to extend these tuning strategies with a new approach based on Fuzzy Logic. Conceptually this new Fuzzy Logic based tuning strategy is very similar to the Rule Based Tuning strategy as it also uses expert knowledge in the form of fuzzy rules to prune the search space. However contrary to classical rules, fuzzy logic can deal with imprecise and uncertain information which allows it to only partially activate rules and assign a degree of activation to each rule. All the rules can then be combined based on their degree of activation rather than just following the binary true/false logic. This allows for a more nuanced approach and allows the tuning strategy to interpolate the effect of many different rules to chose the best possible configuration, even if there is no direct rule for this specific case.
+
+Such a fuzzy logic based approaches can be especially beneficial when dealing with complex systems \todo{cite} as they allow for a more nuanced approach to the problem. In the following section we will introduce the basic concepts of fuzzy logic and how it is used to create a new tuning strategy for AutoPas.
+
 
 \section{Fuzzy Logic}
 
