@@ -22,6 +22,7 @@ for filename in os.listdir(folder):
             threads = find.group(2)
         except:
             print(f"Error parsing filename {filename}")
+            continue
             raise Exception("Error parsing filename")
 
         # read file
