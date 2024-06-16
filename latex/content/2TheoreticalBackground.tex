@@ -173,7 +173,8 @@ AutoPas currently provides 6 tunable parameters which can mostly\footnote{There 
             The Load Estimator Options are related to the way the simulation is parallelized. The Load Estimator is responsible for estimating the computational load of each MPI rank and affects how the work is distributed among the ranks. In this thesis we will however not go into further detail about the Load Estimator Options as we primarily focus on the tuning aspect of AutoPas.
 
       \item \textbf{Traversal Options:} \\
-            These options are related to the traversal algorithm used to calculate the forces between the particles given a specific container. The different traversal options provide a efficient way to prevent race conditions when using multiple threads and allow for load balancing at the node level ~\cite{SECKLER2021101296}.
+            These options are related to the traversal algorithm used to calculate the forces between the particles. The traversal determines the order in which the particles are visited and the way the forces are calculated.
+            The different traversal options provide a efficient way to prevent race conditions when using multiple threads and allow for load balancing at the node level ~\cite{SECKLER2021101296}.
 
             There are many different traversal algorithms available in AutoPas, each with different trade-offs in terms of performance and optimization potential. In the following we will discuss the most interesting traversal categories:
 
