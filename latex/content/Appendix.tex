@@ -55,3 +55,121 @@ The following fields are currently available in the TuningResults data file, whi
 
 \end{description}
 
+
+\section{ANTLR4 Rule Parser Grammar}
+
+The following is the grammar for the domain-specific language used by the Rule Parser to parse the rule base supplied by the user. The grammar is defined using the ANTLR4 parser generator.
+
+
+\lstset{
+    backgroundcolor=\color{gray!10},
+    framexleftmargin=5pt,
+    framextopmargin=5pt,
+    numbers=left,
+}%
+
+% Applies only when you use it
+\lstdefinestyle{MyLang}{
+    basicstyle=\small\ttfamily,%
+    breaklines=true,%                                      
+    moredelim=[s][\color{green!50!black}\ttfamily]{'}{'},
+    commentstyle={\color{gray}\itshape},%                  
+    morecomment=[l]{//},
+    morekeywords={rule_file, settings, linguistic_variable, fuzzy_term, function, fuzzy_rule, fuzzy_set, output_mapping, output_entry, pattern_mapping, config_pattern},
+    keywordstyle={\color{red!90!black!70}\bfseries},%
+    emph={STRING, NUMBER, IDENTIFIER, WS, COMMENT, INT, EXP, EOF},
+    emphstyle={\color{blue}\ttfamily},
+}
+
+
+\begin{lstlisting}[style=MyLang, caption={ANTLR4 Rule Parser Grammar}, label={lst:antlr4grammar}]
+grammar FuzzyLanguage;
+
+// Rule File
+rule_file           : settings linguistic_variable* 
+                      output_mapping fuzzy_rule* EOF
+                    ;
+
+// Settings as key-value pairs
+settings            : 'FuzzySystemSettings' ':'
+                    (IDENTIFIER ':' STRING)*
+                    ;
+
+// Fuzzy Variable
+linguistic_variable
+                    : 'FuzzyVariable' ':' 'domain' ':' STRING 
+                        'range' ':' '(' NUMBER ',' NUMBER ')' 
+                       fuzzy_term+
+                    ;
+
+fuzzy_term
+                    : STRING ':' function
+                    ;
+
+function
+                    : IDENTIFIER '(' NUMBER (',' NUMBER)* ')'
+                    ;
+
+// Fuzzy Rule
+fuzzy_rule
+                    : 'if' fuzzy_set 'then' fuzzy_set
+                    ;
+
+fuzzy_set
+                    : '(' fuzzy_set ')'         # Brackets
+                    | fuzzy_set '&&' fuzzy_set  # And
+                    | fuzzy_set '||' fuzzy_set  # Or
+                    | '!' fuzzy_set             # Negate
+                    | STRING '==' STRING        # Select
+                    ;
+
+// Output Mapping
+output_mapping
+                    : 'OutputMapping' ':'
+                       output_entry+
+                    ;
+
+output_entry
+                    : STRING ':' pattern_mapping+
+                    ;
+
+pattern_mapping
+                    : NUMBER '=>' 
+                        config_pattern (',' config_pattern)*
+                    ;
+
+config_pattern
+                    : '[' (IDENTIFIER '=' STRING) 
+                          (',' IDENTIFIER '=' STRING)* ']'
+                    ;
+
+// Lexer Rules
+WS
+                    : [ \t\n\r\f]+ -> skip
+                    ;
+
+COMMENT             : '#' .*? '\r'? '\n' -> skip
+                    ;
+
+STRING
+                    : '"' (~["\r\n] | '""')* '"'
+                    {setText(getText().substr(1, getText().size()-2));}
+                    ;
+
+NUMBER
+                    : '-'? INT ('.' [0-9]+)? EXP?
+                    ;
+
+fragment INT
+                    : '0'
+                    | [1-9] [0-9]*
+                    ;
+
+fragment EXP
+                    : [Ee] [+-]? [0-9]+
+                    ;
+
+IDENTIFIER
+                    : [a-zA-Z0-9_]+
+                    ;
+\end{lstlisting}
