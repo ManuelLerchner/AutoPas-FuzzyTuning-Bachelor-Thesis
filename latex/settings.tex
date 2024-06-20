@@ -142,3 +142,23 @@
 \makeglossaries
 
 \usepackage{enumitem}
+
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codepurple}{rgb}{0.8,0.2,0.22}
+\lstdefinelanguage{FuzzyLanguage}{
+  language=[Sharp]C,
+  basicstyle=\tiny\ttfamily,
+  keywordstyle=\color{blue},
+  keywordstyle = [2]{\color{orange}},
+  commentstyle=\color{codegreen},
+  stringstyle=\color{red},
+  frame=single,
+  captionpos=b,
+  breaklines=true,
+  breakatwhitespace=false,
+  morekeywords=     {if, then, FuzzyVariable,OutputMapping, FuzzySystemSettings  },
+  morekeywords = [2]{Gaussian, SigmoidFinite},
+  stringstyle=\color{codepurple},
+  showstringspaces=false,
+}

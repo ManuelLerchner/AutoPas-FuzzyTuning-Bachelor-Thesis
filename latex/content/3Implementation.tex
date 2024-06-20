@@ -9,20 +9,20 @@ The implementation of the Fuzzy Tuning technique in AutoPas is designed to be as
 The Fuzzy Tuning framework implements the mathematical foundation of the Fuzzy Tuning technique. It consists of several components that work together to apply the Fuzzy Rules to the input variables and generate the output variables. The components of the Fuzzy Tuning framework are as follows:
 
 \begin{itemize}
-    \item \textbf{Crisp Set:} The Crisp Set is used to model k-cells used as the underlying sets over which the Fuzzy Sets are defined. A k-cell is a hyperrectangle in the k-dimensional space constructed from the Cartesian product of k intervals $I = I_1 \times I_2 \times \ldots \times I_k$ where $I_i = [x_{low}, x_{high}] \subset \mathbb{R} $ is an interval in the real numbers. They are used to define the underlying sets over which the corresponding fuzzy set is defined and can be thought of as the parameter space of the input variable.
+  \item \textbf{Crisp Set:} The Crisp Set is used to model k-cells used as the underlying sets over which the Fuzzy Sets are defined. A k-cell is a hyperrectangle in the k-dimensional space constructed from the Cartesian product of k intervals $I = I_1 \times I_2 \times \ldots \times I_k$ where $I_i = [x_{low}, x_{high}] \subset \mathbb{R} $ is an interval in the real numbers. They are used to define the underlying sets over which the corresponding fuzzy set is defined and can be thought of as the parameter space of the input variable.
 
 
-    \item \textbf{Fuzzy Set:} A fuzzy set consists of a membership function that assigns a degree of membership to each element of the Crisp Set. There are two types of membership functions: The \texttt{BaseMembershipFunction} and the \texttt{CompositeMembershipFunction}. The \texttt{BaseMembershipFunction} implement a function $f: \mathbb{R} \rightarrow [0, 1]$ that directly maps the crisp value to the degree of membership. The \texttt{CompositeMembershipFunction} is used to create new fuzzy sets by recursively combining existing fuzzy sets and their membership functions with generic functions. This helps to split up the complex fuzzy sets of the rule base into smaller, more manageable parts. Lets say we have a fuzzy set $\tilde{A}$ defined over the Crisp Set $X$ and a fuzzy set $\tilde{B}$ defined over the Crisp Set $Y$. Both membership functions are functions mapping the respective Crisp Set to the degree of membership ($\mu_{\tilde{A}}: X \rightarrow [0, 1]$ and $\mu_{\tilde{B}}: Y \rightarrow [0, 1]$). Since both membership functions directly map the Crisp Set to the degree of membership, they are considered \texttt{BaseMembershipFunction}s. When we want to create a new fuzzy set $\tilde{C} = \tilde{A} \cap \tilde{B}$ this new fuzzy set is defined over the Crisp Set $X \times Y$  and thus needs to provide a membership function $\mu_{\tilde{C}}: X \times Y \rightarrow [0, 1]$. As described in \todo{add chcpter} this membership function is defined as $\mu_{\tilde{C}}(x, y) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(y))$, which can be thought of as recursively combining the membership functions of $\tilde{A}$ and $\tilde{B}$ with the minimum function.
+  \item \textbf{Fuzzy Set:} A fuzzy set consists of a membership function that assigns a degree of membership to each element of the Crisp Set. There are two types of membership functions: The \texttt{BaseMembershipFunction} and the \texttt{CompositeMembershipFunction}. The \texttt{BaseMembershipFunction} implement a function $f: \mathbb{R} \rightarrow [0, 1]$ that directly maps the crisp value to the degree of membership. The \texttt{CompositeMembershipFunction} is used to create new fuzzy sets by recursively combining existing fuzzy sets and their membership functions with generic functions. This helps to split up the complex fuzzy sets of the rule base into smaller, more manageable parts. Lets say we have a fuzzy set $\tilde{A}$ defined over the Crisp Set $X$ and a fuzzy set $\tilde{B}$ defined over the Crisp Set $Y$. Both membership functions are functions mapping the respective Crisp Set to the degree of membership ($\mu_{\tilde{A}}: X \rightarrow [0, 1]$ and $\mu_{\tilde{B}}: Y \rightarrow [0, 1]$). Since both membership functions directly map the Crisp Set to the degree of membership, they are considered \texttt{BaseMembershipFunction}s. When we want to create a new fuzzy set $\tilde{C} = \tilde{A} \cap \tilde{B}$ this new fuzzy set is defined over the Crisp Set $X \times Y$  and thus needs to provide a membership function $\mu_{\tilde{C}}: X \times Y \rightarrow [0, 1]$. As described in \todo{add chcpter} this membership function is defined as $\mu_{\tilde{C}}(x, y) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(y))$, which can be thought of as recursively combining the membership functions of $\tilde{A}$ and $\tilde{B}$ with the minimum function.
 
-          This way of combining fuzzy sets builds a tree structure where the leafs calculate a direct membership value and the inner nodes combine the membership values of their children and pass them up to their parent.
+        This way of combining fuzzy sets builds a tree structure where the leafs calculate a direct membership value and the inner nodes combine the membership values of their children and pass them up to their parent.
 
-          \todo{add image}
+        \todo{add image}
 
-    \item \textbf{Linguistic Variable:} A linguistic variable is a variable whose values are terms in a natural language. Each term is associated with a fuzzy set that defines its concept using the language of fuzzy logic. The linguistic variables can then be used to express rules in a human-readable way.
+  \item \textbf{Linguistic Variable:} A linguistic variable is a variable whose values are terms in a natural language. Each term is associated with a fuzzy set that defines its concept using the language of fuzzy logic. The linguistic variables can then be used to express rules in a human-readable way.
 
-    \item \textbf{Fuzzy Rule:} A fuzzy rule is a conditional statement that describes the relationship between input- and output variables. It consists of an antecedent and a consequent both of which are fuzzy sets. During the evaluation of the rule, the antecedent is evaluated to determine the degree to which the rule is satisfied and thus the effect of the rule can be reduced accordingly.
+  \item \textbf{Fuzzy Rule:} A fuzzy rule is a conditional statement that describes the relationship between input- and output variables. It consists of an antecedent and a consequent both of which are fuzzy sets. During the evaluation of the rule, the antecedent is evaluated to determine the degree to which the rule is satisfied and thus the effect of the rule can be reduced accordingly.
 
-    \item \textbf{Fuzzy Control System:} The Fuzzy Control System combines all the concepts described above to create a system that can evaluate a set of fuzzy rules and generate an output based on the input variables. Such a control system acts like a black box $f: \mathbb{R}^n \rightarrow \mathbb{R}$ that takes a set of crisp input variables and returns the predicted value.
+  \item \textbf{Fuzzy Control System:} The Fuzzy Control System combines all the concepts described above to create a system that can evaluate a set of fuzzy rules and generate an output based on the input variables. Such a control system acts like a black box $f: \mathbb{R}^n \rightarrow \mathbb{R}$ that takes a set of crisp input variables and returns the predicted value.
 \end{itemize}
 
 
@@ -38,38 +38,11 @@ The Rule Parser is responsible for parsing the rule base supplied by the user an
 Appart from the obvious grammar rules for the fuzzy sets and rules, the language encompasses a few additional constructs to allow for the connection to the AutoPas simulation. This is a crucial part of the tuning framework as the continuous outputs of the Fuzzy Control Systems need to be mapped to the discrete configuration space of the AutoPas simulation. We chose a approach inspired by Mohammed
 et al.~\cite{Mohammed2022}'s work on scheduling algorithms and used a ranking system that embeds all available configurations in the continuous output space of the Fuzzy Control System. The Tuning Strategy then selects the configuration closest to the predicted value.
 
-\todo{chose other example}
-For a linguistic variable \emph{Container DataLayout} such a mapping could look like this:
-\begin{verbatim}
-OutputMapping:
-  "Container_DataLayout":
-    0.666 => [container="LinkedCells", dataLayout="SoA"], 
-             [container="VerletClusterLists", dataLayout="SoA"],
-             [container="VerletListsCells", dataLayout="AoS"]
-    1.333 => [container="LinkedCells", dataLayout="SoA"], 
-             [container="VerletClusterLists", dataLayout="SoA"],
-             [container="VerletListsCells", dataLayout="AoS"], 
-             [container="VerletListsCells", dataLayout="SoA"]
-    2.0   => [container="LinkedCells", dataLayout="SoA"], 
-             [container="VerletClusterLists", dataLayout="SoA"],
-             [container="VerletListsCells", dataLayout="AoS"],
-             [container="VerletListsCells", dataLayout="SoA"],
-             [container="VerletLists", dataLayout="SoA"]
-    2.666 => [container="VerletClusterLists", dataLayout="SoA"],
-             [container="VerletListsCells", dataLayout="AoS"]
-    3.333 => [container="VerletClusterLists", dataLayout="SoA"],
-             [container="VerletListsCells", dataLayout="AoS"],
-             [container="VerletListsCells", dataLayout="SoA"]
-\end{verbatim}
-
-This mapping states that AutoPas should prefer all configurations matching one of the patterns \texttt{[container="VerletClusterLists", dataLayout="SoA"]} and \texttt{[container="VerletListsCells", dataLayout="AoS"]} if the output of the Fuzzy Control System is close to 2.666.
-
-
 \todo{Add example image}
 
+An example of a rule file making use of this construct is described in \autoref{lst:parametertuningapproach}.
 
-The full grammar specification can be found in \autoref{lst:antlr4grammar}.
-
+The full grammar specification of the language can be found in \autoref{lst:antlr4grammar}.
 
 \section{Tuning Strategy}
 
@@ -80,9 +53,93 @@ It does this by evaluating all Fuzzy Systems present in the rule file with the c
 
 Currently two different modes of interpreting the rules are implementet:
 
-\subsection*{Suitability Approach}
+\subsection{Configuration Suitability Approach}
+
+The Suitability Approach is designed to tackle rule bases that try to directly predict a suitability value for \emph{each} configurations. This means that the rule file needs to define $\#Containers \cdot \#Traversals \cdot \#DataLayouts \cdot \#Newton3\_options$ different Fuzzy Control Systems. One for each possible configuration of those parameters. As a result, we receive a direct ranking (lets say from 0 to 100\% applicability) for each configuration. The Tuning Strategy then selects all configurations within a certain threshold of the highest ranking configuration and rewrites the queue of configurations with these selected configurations.
+
+This method is a natural choice for rule bases as its style closely relates to the idea of Fuzzy Control Systems. It is possible to make full use of the continuous output space of the Fuzzy Control Systems and the method provides a straight forward mapping to the discrete AutoPas configuration space.
+
+The huge downside of this approach is the need to define massive amount of Fuzzy Control Systems and rules in the rule file. This leads to a very big rule file which quickly becomes infeasible to maintain by hand. The code snippet in \autoref{lst:suitabilityapproach} shows a small excerpt of a rule file using the Suitability Approach.
 
 
+\begin{lstlisting}[language=FuzzyLanguage, caption={Rule snippet depicting the Suitability Approach}, label={lst:suitabilityapproach}]
+FuzzySystemSettings:
+    defuzzificationMethod: "CoG"
+    interpretOutputAs: "Suitability"
 
-\subsection*{Individual Tuning Approach}
+// Input Variables
+FuzzyVariable: domain: "threadCount" range: (-20.34, 49.34)
+    "higher than 18.0":   SigmoidFinite(39.38, 18.0, -3.23)
+    ...
 
+FuzzyVariable: domain: "particlesPerCellStdDev" range: (-0.017, 0.07)
+    "lower than 0.029":   SigmoidFinite(0.055, 0.029, 0.004)
+    ...
+
+//Define Suitability Variable for a specific configuration
+FuzzyVariable: domain: "Suitability LinkedCells_AoS_lc_c01_disabled" range: (0, 1)
+    "terrible":           Gaussian(0.125, 0.018)
+    "rubbish":            Gaussian(0.25,  0.018)
+    "bad":                Gaussian(0.375, 0.018)
+    "medium":             Gaussian(0.5,   0.018)
+    "ok":                 Gaussian(0.625, 0.018)
+    "good":               Gaussian(0.75,  0.018)
+    "excellent":          Gaussian(0.875, 0.018)
+
+...
+
+// A rule describing the suitability of a specific configuration under certain conditions
+if ("threadCount" == "higher than 18.0") && ("particlesPerCellStdDev" == "lower than 0.029")
+  then ("Suitability_LinkedCells_AoS_lc_c01_disabled" == "bad")
+
+...
+\end{lstlisting}
+
+
+\subsection{Parameter Tuning Approach}
+
+A more lightweight approach is the Parameter Tuning Approach. This approach creates a single Fuzzy Control System for each tunable parameter. All Fuzzy Control Systems then attempt to independently predict the optimal value for their respective parameter. Using this approach, the rule file only needs to define $\#Parameters$ Fuzzy Control Systems which is much more manageable. The drawback of this approach is that the continuous output space of the Fuzzy Control Systems needs to be directly translated to discrete values, which is a non-trivial task. The main problem lies in the fact that the tunable parameters are nominal values and thus have no natural order. This means that the interpolation between different linguistic terms, which is naturally performed by the Fuzzy Control Systems, is not meaningful in this context. To avoid this problem, we can however use a defuzzification method that does not rely on performing some kind of interpolation. One such method is the \gls{som} method which selects the smallest $x$-value for which the membership function is maximal. By using this method there is only a discrete set of possible outputs which can be directly mapped to the nominal values of the tunable parameters by making use of the OutputMapping construct of the Rule Parser. Since there is no interpolation between the linguistic terms, the order of the terms in the OutputMapping can be chosen arbitrarily.
+
+\todo{find citations for fuzzy rules for nominal values}
+
+The code snippet in \autoref{lst:parametertuningapproach} shows a small excerpt of a rule file using the Parameter Tuning Approach. In this rule file both the \emph{container} and the \emph{dataLayout} parameter are predicted together as they are very related anyway.
+
+\todo{maybe rename individual systems}
+\begin{lstlisting}[language=FuzzyLanguage, caption={Rule snippet depicting the Parameter Tuning Approach}, label={lst:parametertuningapproach}]
+FuzzySystemSettings:
+    defuzzificationMethod: "SoM"
+    interpretOutputAs: "IndividualSystems"
+
+// Input Variables
+FuzzyVariable: domain: "threadCount" range: (-20.34, 49.34)
+    "lower than 18.0":    SigmoidFinite(39.34, 18.0, -3.34)
+    ...
+
+FuzzyVariable: domain: "homogeneity" range: (-0.024, 0.156)
+    "lower than 0.049":   SigmoidFinite(0.093, 0.049, 0.005)
+    ...
+
+//Define a variable with nominal values
+FuzzyVariable: domain: "Container_DataLayout" range: (0, 4)
+  "LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS":                       Gaussian(0.666, 0.133)
+  "LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS, VerletListsCells_SoA": Gaussian(1.333, 0.133)
+
+...
+
+// Define how the defuzzified output should be mapped to AutoPas configurations
+OutputMapping:
+  "Container_DataLayout":
+    0.666 =>  [container="LinkedCells", dataLayout="SoA"],
+              [container="VerletClusterLists", dataLayout="SoA"],
+              [container="VerletListsCells", dataLayout="AoS"]
+    1.333 =>  [container="LinkedCells", dataLayout="SoA"],
+              [container="VerletClusterLists", dataLayout="SoA"],
+
+    ...
+
+// A rule describing the optimal configuration under certain conditions
+if ("homogeneity" == "lower than 0.049") && ("threadCount" == "lower than 18.0")
+  then ("Container_DataLayout" == "VerletClusterLists_SoA, VerletListsCells_AoS")
+
+...
+\end{lstlisting}
