@@ -3,23 +3,6 @@
 
 % -------------------------------------------------------------------------------
 
-\pgfmathdeclarefunction{step}{3}{%
-    \pgfmathparse{#1 * #3<= #2 ? 0 : 1}%
-}
-
-\pgfmathdeclarefunction{sigmoid}{3}{%
-    \pgfmathparse{1/(1 + exp(-(#1-#2)*#3))}%
-}
-
-\pgfmathdeclarefunction{gaussian}{3}{%
-    \pgfmathparse{exp(-((#1-#2)^2)/(2*#3^2))}%
-}
-
-\newcommand*\calc[1]{%
-    \pgfmathparse{#1}%
-    \pgfmathprintnumber{\pgfmathresult}%
-}
-
 % parameers: xlabel, center
 \newcommand{\fuzzyTreeNode}[2]{
     \begin{tikzpicture}

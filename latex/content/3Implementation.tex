@@ -14,9 +14,7 @@ The Fuzzy Tuning framework implements the mathematical foundation of the Fuzzy T
 
   \item \textbf{Fuzzy Set:} A fuzzy set consists of a membership function that assigns a degree of membership to each element of the Crisp Set. There are two types of membership functions: The \texttt{BaseMembershipFunction} and the \texttt{CompositeMembershipFunction}. The \texttt{BaseMembershipFunction} implement a function $f: \mathbb{R} \rightarrow [0, 1]$ that directly maps the crisp value to the degree of membership. The \texttt{CompositeMembershipFunction} is used to create new fuzzy sets by recursively combining existing fuzzy sets and their membership functions with generic functions. This helps to split up the complex fuzzy sets of the rule base into smaller, more manageable parts. Lets say we have a fuzzy set $\tilde{A}$ defined over the Crisp Set $X$ and a fuzzy set $\tilde{B}$ defined over the Crisp Set $Y$. Both membership functions are functions mapping the respective Crisp Set to the degree of membership ($\mu_{\tilde{A}}: X \rightarrow [0, 1]$ and $\mu_{\tilde{B}}: Y \rightarrow [0, 1]$). Since both membership functions directly map the Crisp Set to the degree of membership, they are considered \texttt{BaseMembershipFunction}s. When we want to create a new fuzzy set $\tilde{C} = \tilde{A} \cap \tilde{B}$ this new fuzzy set is defined over the Crisp Set $X \times Y$  and thus needs to provide a membership function $\mu_{\tilde{C}}: X \times Y \rightarrow [0, 1]$. As described in \todo{add chcpter} this membership function is defined as $\mu_{\tilde{C}}(x, y) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(y))$, which can be thought of as recursively combining the membership functions of $\tilde{A}$ and $\tilde{B}$ with the minimum function.
 
-        This way of combining fuzzy sets builds a tree structure where the leafs calculate a direct membership value and the inner nodes combine the membership values of their children and pass them up to their parent.
-
-        \todo{add image}
+        This way of combining fuzzy sets builds a tree structure where the leafs calculate a direct membership value and the inner nodes combine the membership values of their children and pass them up to their parent. \autoref{fig:modularfuzzysetconstruction} shows an example of how a complex fuzzy set can be constructed from simpler fuzzy sets using this method.
 
   \item \textbf{Linguistic Variable:} A linguistic variable is a variable whose values are terms in a natural language. Each term is associated with a fuzzy set that defines its concept using the language of fuzzy logic. The linguistic variables can then be used to express rules in a human-readable way.
 
@@ -25,9 +23,153 @@ The Fuzzy Tuning framework implements the mathematical foundation of the Fuzzy T
   \item \textbf{Fuzzy Control System:} The Fuzzy Control System combines all the concepts described above to create a system that can evaluate a set of fuzzy rules and generate an output based on the input variables. Such a control system acts like a black box $f: \mathbb{R}^n \rightarrow \mathbb{R}$ that takes a set of crisp input variables and returns the predicted value.
 \end{itemize}
 
-
-
 \todo {Add UML Diagram}
+
+
+
+
+\newcommand{\fuzzySetNodeOneD}[4]{
+  \begin{tikzpicture}
+    \begin{axis}%
+      [
+        width=4.5cm,
+        height=3cm,
+        axis lines=center,
+        xlabel={#1},
+        x label style={at={(axis description cs:0.9,0.25)},anchor=north},
+        ylabel=$\mu$,
+        y label style={at={(axis description cs:0.5,1)},anchor=south},
+        xmin=-6,
+        xmax=6,
+        ytick={},
+        yticklabels={},
+        extra x ticks={0},
+        extra x tick labels={#3},
+        ymax=1,
+        samples=25,
+        extra y ticks={1},
+        every axis plot/.append style={thick}
+      ]
+      \addplot[red]  {#4};
+    \end{axis}
+    \node[above,font=\large\bfseries,inner sep=5pt] at (current bounding box.north) {#2};
+  \end{tikzpicture}
+}
+
+\newcommand{\fuzzySetNodeTwoD}[4]{
+  \begin{tikzpicture}
+    \begin{axis}%
+      [
+        width=5.5cm,
+        height=4cm,
+        axis lines=center,
+        xlabel={#1},
+        x label style={at={(axis description cs:0.1,0.4)},anchor=north},
+        ylabel={#2},
+        y label style={at={(axis description cs:0.4,-0.15)},anchor=south},
+        zlabel=$\mu$,
+        z label style={at={(axis description cs:0.5,0.95)},anchor=south},
+        xmin=-6,
+        xmax=6,
+        colormap/viridis,
+        view={10}{40},
+        ymin=-6,
+        ymax=6,
+        zmin=0,
+        zmax=1,
+      ]
+      \addplot3 [
+        domain=-6:6,
+        samples = 20,
+        surf,
+      ]{#4};
+    \end{axis}
+    \node[above,font=\large\bfseries,inner sep=5pt] at (current bounding box.north) {#3};
+  \end{tikzpicture}
+}
+
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[scale=2,font=\tiny]
+
+
+    \node [rectangle,rounded corners,draw,inner sep=2pt] (A) at (0,0) {
+      \fuzzySetNodeTwoD{x}{y}{$(x=low \lor y=big) \land \neg (x = high)$}{min(max(trapezoid(x,-10,-10,-2,0), trapezoid(y,1,2,10,10)),1-gaussian(x,2,1))}
+    };
+
+    \node [rectangle,rounded corners,draw,inner sep=5pt, inner ysep=10pt,fill=blue!30] (X) at (0,-1.5) {
+      $\min$
+    };
+
+
+    \node [rectangle,rounded corners,draw,inner sep=2pt] (B) at (-2,-2.5) {
+      \fuzzySetNodeTwoD{x}{y}{$x=low \lor y=big$}{max(trapezoid(x,-10,-10,-2,0), trapezoid(y,1,2,10,10))}
+    };
+
+    \node [rectangle,rounded corners,draw,inner sep=2pt] (C) at (2,-2.5) {
+      \fuzzySetNodeOneD{x}{$\neg (x = high)$}{0}{1-gaussian(x,2,1)}
+    };
+
+
+    \node [rectangle,rounded corners,draw,inner sep=5pt, inner ysep=10pt,fill=blue!30] (Y) at (-2,-4) {
+      $\max$
+    };
+
+    \node [rectangle,rounded corners,draw,inner sep=5pt, inner ysep=10pt,fill=blue!30] (Z) at (2,-3.75) {
+      $1 - \cdot$
+    };
+
+
+    \node [rectangle,rounded corners,draw,inner sep=2pt] (D) at (-3.5,-5) {
+      \fuzzySetNodeOneD{x}{$x = low$}{0}{trapezoid(x,-10,-10,-2,0)}
+    };
+
+    \node [rectangle,rounded corners,draw,inner sep=2pt] (E) at (-0.5,-5) {
+      \fuzzySetNodeOneD{y}{$y = big$}{0}{trapezoid(x,1,2,10,10)}
+    };
+
+    \node [rectangle,rounded corners,draw,inner sep=2pt] (F) at (2,-5) {
+      \fuzzySetNodeOneD{x}{$x = high$}{0}{gaussian(x,2,1)}
+    };
+
+
+
+    \node [rectangle,rounded corners,draw,inner sep=5pt, inner ysep=10pt,fill=red!30] (G) at (-3.5,-6.5) {
+      \large $f_{trapezoid}$
+    };
+
+    \node [rectangle,rounded corners,draw,inner sep=5pt, inner ysep=10pt,fill=red!30] (H) at (-0.5,-6.5) {
+      \large $f_{trapezoid}$
+    };
+
+    \node [rectangle,rounded corners,draw,inner sep=5pt, inner ysep=10pt,fill=red!30] (I) at (2,-6.5) {
+      \large $f_{gaussian}$
+    };
+
+
+    \draw[->,ultra thick,draw = blue] (A) -- (X);
+    \draw[->,ultra thick,draw = blue] (X) -- (B);
+    \draw[->,ultra thick,draw = blue] (X) -- (C);
+
+
+    \draw[->,ultra thick,draw = blue] (B) -- (Y);
+    \draw[->,ultra thick,draw = blue] (Y) -- (D);
+    \draw[->,ultra thick,draw = blue] (Y) -- (E);
+
+    \draw[->,ultra thick,draw = blue] (C) -- (Z);
+    \draw[->,ultra thick,draw = blue] (Z) -- (F);
+
+    \draw[->,ultra thick,draw = red] (D) -- (G);
+    \draw[->,ultra thick,draw = red] (E) -- (H);
+    \draw[->,ultra thick,draw = red] (F) -- (I);
+  \end{tikzpicture}
+
+  \caption[Example of modular fuzzy set construction]{Using the linguistic variables $x$ with the terms $\{low, high\}$ and $y$ with the terms $\{big, small\}$ we can construct the fuzzy set $(x=low \lor y=big) \land \neg (x = high)$ by combining the fuzzy sets $x=low \lor y=big$ and $\neg (x = high)$. Those fuzzy sets are again constructed from the simpler fuzzy sets $x=low$, $y=big$ and $x=high$.
+
+    The fuzzy sets at the leaf level can be directly constructed using predefined \textcolor{red}{\texttt{BaseMembershipFunctions}} while all other fuzzy sets are created from other fuzzy sets using \textcolor{blue}{\texttt{CompositeMembershipFunctions}}.}
+  \label{fig:modularfuzzysetconstruction}
+\end{figure}
 
 
 
