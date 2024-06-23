@@ -508,6 +508,12 @@ To verify the sanity of the collected data, we can make plots about the distribu
     \label{fig:inputAnalysisBoxplot}
 \end{figure}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=5cm,trim={0cm 0 2cm 0cm},clip]{figures/DataAnalytics/correlation_matrix.png}
+    \caption[Correlation Matrix of the collected Dataset]{The correlation matrix shows the correlation between the different parameters of the collected dataset. We can see many of the collected parameters are slighly positively correlated with each other. \texttt{particlesPerCellStdDev} is negatively correlated with \texttt{avgParticlesPerCell} and \texttt{maxParticlesPerCell} which is also expected, as a higher standard deviation of the particles per cell should lead to unbalanced cells.}
+    \label{fig:corrMatrix}
+\end{figure}
 
 \begin{figure}[H]
     \centering
@@ -519,33 +525,40 @@ To verify the sanity of the collected data, we can make plots about the distribu
 We can also do a more detailed analysis of the average performance of the different configuration options. As we froze the simulation during the tuning process, we can safely use the runtime of each iteration as a performance metric to compare all the tested configurations. For each tuning phase there is a unique ranking of all the configurations based on their runtime which we can use to calculate the relative speedup of each configuration compared to the best configuration. The formula for the relative speedup is given by:
 
 \begin{equation}
-    \text{Relative Speedup} = \frac{\text{Best Configuration Runtime}}{\text{Configuration Runtime}}
+    {\text{speedup}^{(i)}_{\text{config}}}= \frac{t_{\text{best}}^{(i)}}{t_{\text{config}}^{(i)}}
 \end{equation}
 
-This means that all relative speedup values are going to be in the range $[0,1]$, with 1 being the best possible value. We can then make plots of the distribution of the relative speedup values for each configuration option to see how they affect the performance of the simulation. The density plots in \autoref{fig:inputAnalysisDensityNewton3}, \autoref{fig:inputAnalysisDensityTraversal}, \autoref{fig:inputAnalysisDensityDatalayout} and \autoref{fig:inputAnalysisDensityConfigurations} show the distribution of the relative speedup values for the Newton3, Traversal, Container-Datalayout and some complete configurations respectively. We can see that the Newton3 option generally leads to a higher relative speedup, while the Traversal option does not show a clear trend. The Datalayout option shows that the VerletListCells\_AoS option is generally the best option, while the configuration VerletListCells\_AoS\_vlc\_spliced\_balanced\_enabled is the best configuration in most cases on the Dataset we collected.
+where $t_{\text{best}}^{(i)}$ is the runtime of the best configuration during the $i$-th tuning phase and $t_{\text{config}}^{(i)}$ is the runtime of the configuration we are interested in.
 
-\begin{figure}[h]
+This means that all relative speedup values are going to be in the range $[0,1]$, with 1 being the best possible value only achieved by configurations performing optimally and 0 being the worst possible value only achieved by configurations performing \emph{infinitely} worse than the best configuration.
+
+We can then make plots of the distribution of the relative speedup values for each configuration option to see how they affect the performance of the simulation. The density plots in \autoref{fig:inputAnalysisDensityNewton3}, \autoref{fig:inputAnalysisDensityTraversal}, \autoref{fig:inputAnalysisDensityDatalayout} and \autoref{fig:inputAnalysisDensityConfigurations} show the distribution of the relative speedup values for the Newton3, Traversal, Container-Datalayout and some complete configurations respectively. We can see that the Newton3 option generally leads to a higher relative speedup, while the Traversal option does not show a clear trend. The Datalayout option shows that the VerletListCells\_AoS option is generally the best option, while the configuration VerletListCells\_AoS\_vlc\_spliced\_balanced\_enabled is the best configuration in most cases on the Dataset we collected.
+
+The ordering of the different parameters in the dataset matches the intuition we have about the different implementations and we can be confidently proceed with the creation of the fuzzy system.
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_Newton 3.png}
     \caption[Speedup density plot of Newton 3 option]{Density plot showing the distribution of the Newton3 options with respect to their relative speedup compared to the best configuration during each tuning phase. We can clearly see the two peaks wheter Newton3 is enabled or disabled. It is also very obvious that Newton3=enabled is the better option as it generally allows for a higher relative speedup. It is interesting to note that all performances having relative speedups of at least 80\% make use of the Newton3 optimization. Therefore we can confirm that Newton3 is generally a good option to enable.}
     \label{fig:inputAnalysisDensityNewton3}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_Traversal.png}
     \caption[Speedup density plot of Traversal option]{The density plot shows the distribution of the Traversal option with respect to the relative speedup compared to the best configuration during each tuning phase. There are no clear peaks in the data, but we can see that the vlc\_sliced\_balanced option generally performed better than the other options with an expeced relative speedup of 66\% compared to the best configuration.}
     \label{fig:inputAnalysisDensityTraversal}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_ContainerDataLayout.png}
     \caption[Speedup density plot of Configuration-Datalayout option]{Density plot showing the distribution of the container-datalayout option with respect to the relative speedup compared to the best configuration during each tuning phase. The VerletListCells\_AoS container-data-layout is the best configuration in most cases with 68\% of the runtime as the best configuration on average.}
     \label{fig:inputAnalysisDensityDatalayout}
 \end{figure}
 
-\begin{figure}[h]
+
+\begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_density_configurations.png}
     \caption[Speedup density plot of configurations]{The density plot shows the distribution of the collected configurations with respect to the relative speedup compared to the best configuration during each tuning phase. The VerletListCells\_AoS\_vlc\_spliced\_balanced\_enabled configuration is the best configuration in most cases with 94\% of the runtime as the best configuration on average.}
@@ -557,9 +570,124 @@ This means that all relative speedup values are going to be in the range $[0,1]$
 By using the decision tree approach described in the previous sections, we can create a fully automated system to transform the collected data into rulefiles. The process is as follows:
 
 \begin{enumerate}
-    \item Collect the data from the simulation runs using the \texttt{LiveInfoLogger} and \texttt{TuningDataLogger}.
-    \item Train a decision tree on the collected data using a machine learning algorithm.
+    \item Load the colelcted data from the \texttt{LiveInfoLogger} and \texttt{TuningDataLogger} of all evaluated scenarios and threadscounts.
+    \item Preprocess the data and remove any outliers and values occuring very infrequently.
+    \item Train decision trees on the preprocessed data trying to predict a certain metrics and prune the tree to avoid overfitting. (The value to predict is different in both Suited and Individual Tuning Approach. See the respective sections for more information)
+    \item Select the best decision trees based on the performance of the predictions.
     \item Convert the decision tree into a fuzzy decision tree using the method described in the previous sections.
-    \item Extract the fuzzy rules from the fuzzy decision tree.
-    \item Create the fuzzy system using the extracted rules and membership functions.
+    \item Extract the fuzzy rules from the fuzzy decision, create the linguistic variables and export the rules to a rulefile.
 \end{enumerate}
+
+The resulting rulefile can then be loaded into AutoPas and defines the Fuzzy System used for the prediction of the optimal configuration parameters.
+
+\subsection{Individual Tuning Approach}
+
+This approach is used to create different fuzzy systems for each of the tunable paramters of the simulation. In our case this means that we want to create systems for \texttt{ContainerDataLayout}, \texttt{Traversal} and \texttt{Newton3}.
+
+To accomplish this we first filter the collected data to only include configurations performing better than a certain threshold as we only want the best configurations to be included in the training data. We chose to include all configurations that have a relative speedup of at least 70\% as seen in \autoref{fig:speedup}. Afterward we group together all configurations that have been evaluated in the same tuning phase and aggregate all the present tunable parameters into a single string representing good values to be chosen for this tuning phase. As we have frozen the simulation during the tuning process, we can savely asume that all tesed configurations are evaluated under the same conditions.
+
+The resulting training data is shown in \autoref{tab:trainingDataIndividual} and can be used to train the decision trees. After transforming the decision trees into fuzzy decision trees, we can extract the fuzzy rules and end up with rules shown in \autoref{tab:fuzzyRulesIndividual}.
+
+Finally these rules need to be exported to a rulefile together with suitable linguistic variables and linguistic terms. This concludes the creation of the fuzzy system for the Individual Tuning Approach.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup.png}
+    \caption[Speedup density plot of all configurations]{The density plot shows the distribution of all the collected configurations with respect to the relative speedup compared to the best configuration during each tuning phase. This distribution shows that the average tested configuration performs just 50\% with some of them also being 10 times slower than the best configuration. It is therfore of great importance to effectively find good configurations.}
+    \label{fig:speedup}
+\end{figure}
+
+
+\begin{table}[h]
+    \footnotesize
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+        \hline
+        \textbf{\#Phase}       &
+        \textbf{LiveInfo Data} & \textbf{Container\_DataLayout} & \textbf{Traversal} & \textbf{Newton3}          \\
+        \hline
+        1                      & \makecell{(0.905797,	0.055112,                                                   \\	0.297891,	15,	0.015171,	4) }                                                                                                              & \makecell{"LinkedCells\_SoA,                                                \\ VerletClusterLists\_SoA, \\ VerletListsCells\_AoS"} & \makecell{"lc\_sliced,\\ lc\_sliced\_balanced,\\ lc\_sliced\_c02,\\ lc\_c04"} & "enabled"          \\
+        \hline
+        2                      & \makecell{(0.944637,	0.084061,                                                   \\	0.673320,                                                                                                                                                                                                   	25,	0.039916, 24) }                                                                                                               & \makecell{"LinkedCells\_SoA,                                                \\ VerletClusterLists\_SoA, \\ VerletListsCells\_AoS"} & \makecell{"lc\_c04,\\ lc\_c08,\\ lc\_sliced,\\ lc\_sliced\_balanced"} &  \makecell{"disabled,\\enabled"}         \\
+        \hline
+        3                      & \makecell{(0.905797,	0.041394,                                                   \\	0.336900,                                                                                                                                                                                                   	20,	0.013546, 24) }                                                                                                               & \makecell{"VerletClusterLists\_SoA,                                         \\ VerletListsCells\_AoS"} & \makecell{"vcl\_c06,\\ vlc\_c01,\\ vlc\_c18,\\ vlc\_sliced\_c02"} &  \makecell{"disabled,\\enabled"}         \\
+        \hline
+
+        \vdots                 & \vdots                         & \vdots             & \vdots           & \vdots \\
+        \hline
+    \end{tabular}
+    \caption[Prepared training data for the Individual Tuning Approach]{Selection of the prepared training data for the Individual Tuning Approach. The table shows the liveinfo data and the corresponding top preforming values for the tunable parameters \texttt{ContainerDataLayout}, \texttt{Traversal} and \texttt{Newton3} for each tuning phase.}
+    \label{tab:trainingDataIndividual}
+\end{table}
+
+
+
+
+\definecolor{LightCyan}{rgb}{0.88,1,1}
+\newcolumntype{g}{>{\columncolor{LightCyan}}c}
+
+\begin{table}[h]
+    \footnotesize
+    \centering
+    \begin{tabular}{|c|c|c|c|g|}
+        \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                    \\
+        \hline
+        \textbf{avgParticlesPC}                         & \textbf{homogeneity}                                & \textbf{particlesPCStdDev}                        & \textbf{threadCount}      & \textbf{ContainerDataLayout}                     \\
+
+        \hline
+        \texttt{lower than 3.454}                       & \texttt{lower than 0.05}                            &                                                   & \texttt{lower than 18.0}  & \tabularCenterstack{c}{"VerletClusterLists\_SoA, \\
+        VerletListsCells\_AoS"}                                                                                                                                                                                                                  \\
+        \hline
+        \texttt{lower than 3.454}                       & \texttt{higher than 0.05}                           & \texttt{lower than 0.024}                         & \texttt{higher than 18.0} & \tabularCenterstack{c}{"LinkedCells\_SoA,        \\ VerletClusterLists\_SoA,\\ VerletListsCells\_AoS"}  \\
+        \hline
+        \vdots                                          & \vdots                                              & \vdots                                            & \vdots                    & \vdots                                           \\
+        \hline
+
+        \multicolumn{5}{c}{ }                                                                                                                                                                                                                    \\
+
+
+        \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                    \\
+
+        \hline
+        \textbf{avgParticlesPC}                         & \textbf{homogeneity}                                & \textbf{particlesPCStdDev}                        & \textbf{threadCount}      & \textbf{Traversal}                               \\
+
+        \hline
+
+        \texttt{lower than 1.553}                       & \texttt{higher than 0.047}                          & \texttt{lower than 0.023	}                         & \texttt{higher than 2.5}  & \tabularCenterstack{c}{"lc\_sliced,              \\ vlc\_c18,\\ lc\_sliced\_c02"}
+        \\
+        \hline
+
+                                                        & \texttt{lower than 0.037}                           & \texttt{lower than 0.023	}                         & \texttt{lower than 26.0}  & \tabularCenterstack{c}{"vcl\_c06,                \\ vlc\_c18,\\ vlc\_sliced\_c02"}                                                          \\
+
+
+        \hline
+        \vdots                                          & \vdots                                              & \vdots                                            & \vdots                    & \vdots                                           \\
+        \hline
+
+
+        \multicolumn{5}{c}{ }                                                                                                                                                                                                                    \\
+
+
+        \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                    \\
+
+        \hline
+        \textbf{avgParticlesPC}                         & \textbf{homogeneity}                                & \textbf{particlesPCStdDev}                        & \textbf{threadCount}      & \textbf{Newton 3}                                \\
+
+        \hline
+
+                                                        &                                                     & \texttt{higher than 0.03}                         & \texttt{higher than 18.0} & \tabularCenterstack{c}{"disabled,                \\enabled"}
+        \\
+        \hline
+
+                                                        &                                                     & \tabularCenterstack{c}{\texttt{higher than 0.023}                                                                                \\ $\land$ \texttt{lower than 0.037	}} &  \tabularCenterstack{c}{\texttt{lower than 18.0}\\ $\land$ \texttt{higher than 8.0	}} & \tabularCenterstack{c}{"enabled"}                \\
+
+
+        \hline
+        \vdots                                          & \vdots                                              & \vdots                                            & \vdots                    & \vdots                                           \\
+        \hline
+    \end{tabular}
+
+    \caption[Extracted fuzzy rules for the Individual Tuning Approach]{Extracted fuzzy rules for the Individual Tuning Approach. The table shows a selection of the rules extracted from the decision trees trained on the training data in \autoref{tab:trainingDataIndividual}. The rules are in the format: $\textbf{IF} \text{ Antecedent } \textbf{THEN} \text{ Consequent }$ where all conditions in the antecedent are connected with an \texttt{AND} operation.}
+    \label{tab:fuzzyRulesIndividual}
+\end{table}
