@@ -32,6 +32,7 @@ The Fuzzy Tuning framework implements the mathematical foundation of the Fuzzy T
   \begin{tikzpicture}
     \begin{axis}%
       [
+        axis line style={black},
         width=4.5cm,
         height=3cm,
         axis lines=center,
@@ -52,7 +53,7 @@ The Fuzzy Tuning framework implements the mathematical foundation of the Fuzzy T
       ]
       \addplot[red]  {#4};
     \end{axis}
-    \node[above,font=\large\bfseries,inner sep=5pt] at (current bounding box.north) {#2};
+    \node[above,font=\large\bfseries,inner sep=5pt] at (current bounding box.north) {\shortstack{FuzzySet\\#2}};
   \end{tikzpicture}
 }
 
@@ -84,7 +85,7 @@ The Fuzzy Tuning framework implements the mathematical foundation of the Fuzzy T
         surf,
       ]{#4};
     \end{axis}
-    \node[above,font=\large\bfseries,inner sep=5pt] at (current bounding box.north) {#3};
+    \node[above,font=\large\bfseries,inner sep=5pt] at (current bounding box.north) { \shortstack{FuzzySet\\#3}};
   \end{tikzpicture}
 }
 
@@ -167,7 +168,8 @@ The Fuzzy Tuning framework implements the mathematical foundation of the Fuzzy T
 
   \caption[Example of modular fuzzy set construction]{Using the linguistic variables $x$ with the terms $\{low, high\}$ and $y$ with the terms $\{big, small\}$ we can construct the fuzzy set $(x=low \lor y=big) \land \neg (x = high)$ by combining the fuzzy sets $x=low \lor y=big$ and $\neg (x = high)$. Those fuzzy sets are again constructed from the simpler fuzzy sets $x=low$, $y=big$ and $x=high$.
 
-    The fuzzy sets at the leaf level can be directly constructed using predefined \textcolor{red}{\texttt{BaseMembershipFunctions}} while all other fuzzy sets are created from other fuzzy sets using \textcolor{blue}{\texttt{CompositeMembershipFunctions}}.}
+    The fuzzy sets at the leaf level can be directly constructed using predefined \textcolor{red}{\texttt{BaseMembershipFunctions}} (e.g. trapezoid, sigmoid, gaussian \dots) and provide the foundation for the more complex fuzzy sets
+    All other fuzzy sets are created by combining other fuzzy sets using \textcolor{blue}{\texttt{CompositeMembershipFunctions}}. The logical operators $\min$, $\max$ and $1 - \cdot$ are implemented this way, as they directly act on top of other fuzzy sets.}
   \label{fig:modularfuzzysetconstruction}
 \end{figure}
 
