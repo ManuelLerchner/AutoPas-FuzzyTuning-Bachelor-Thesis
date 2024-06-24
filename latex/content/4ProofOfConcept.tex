@@ -229,10 +229,19 @@ Fuzzy decision trees are a generalization of classical decision trees that allow
 
 In this section, we will demonstrate how to convert a classical decision tree into a fuzzy inference system using the fictional decision tree from \autoref{fig:decisionTreeExample} as an example.
 
-The conversion of a classical decision tree to a fuzzy decision tree is done by replacing the crisp decision boundaries (e.g., $x \leq 3$) at each internal node with fuzzy membership functions. Those membership functions should have the same semantics as the crisp decision boundaries, but instead of returning a binary value of wheter to continue down the left or right branch, they return a value in the range $[0,1]$ that specifies to which degree each branch should be taken. The shape of the membership functions can be chosen arbitrarily, but since the decision should be one-sided, typical choices include complementary \texttt{sigmoid}-shaped functions. This conversion process is shown in \autoref{fig:fuzzyMembershipFunctions}.
+The conversion of a classical decision tree to a fuzzy decision tree is done by replacing the crisp decision boundaries (e.g., $x \leq 3$) at each internal node with fuzzy membership functions. Those membership functions should have the same semantics as the crisp decision boundaries, but instead of returning a binary value of wheter to continue down the left or right branch, they return a value in the range $[0,1]$ that specifies to which degree each branch should be taken. The shape of the membership functions can be chosen arbitrarily, but since the decision should be one-sided, typical choices include complementary \texttt{sigmoid}-shaped functions.
+An obvious choice for the membership functions is to use \texttt{sigmoid} functions with a center at the crisp decision boundary as this maintains the semantics of the branch. Crockett et al.~\cite{CROCKETT20062809} suggested defining symetric sigmoid functions on the interval $[t-n\cdot \sigma, t+n\cdot \sigma]$ where $t$ is the crisp decision boundary, $\sigma$ is the standard deviation of the attribute, and $n$ is a parameter that can be adjusted to control the \emph{width} of the membership function. The \emph{width} of the membership function describes the interval where there is a significant change in the membership value. Outside of this interval, the membership value is close to 0 or 1, depending on the side of the interval.
+
+The value of $n$ is typical chosen from the interval $n\in [0,5]$ as otherwise the membership function can become too wide, weakening the decision-making process ~\cite{CROCKETT20062809}. In this work we will use $n=2$ as a default value.
+
+By using a data dependent \emph{width} of the membership functions, it is possible to fully automate the conversion of a decision tree into a fuzzy decision tree which we will utilize in this work.
 
 
-\begin{figure}[H]
+The conversion of a crisp decision boundary into a fuzzy decision boundary is shown in \autoref{fig:fuzzyMembershipFunctions} using the example split $x \leq 3$.
+
+
+
+\begin{figure}[h]
     \centering
     \begin{tikzpicture}[scale=2,font=\tiny]
         \node [rectangle,rounded corners,draw,inner sep=2pt] (A) at (0.5,0) {
@@ -250,12 +259,12 @@ The conversion of a classical decision tree to a fuzzy decision tree is done by 
         (1.5,0) to [bend left] (2.5,0);
 
     \end{tikzpicture}
-    \caption[Conversion of crisp tree node into fuzzy tree node]{Conversion of a crisp decision surface to a fuzzy decision surface. The crisp decision surface $x \leq 3$ is replaced by two \texttt{sigmoid} membership functions \textcolor{red}{$\mu_{\text{xsmaller3}}$} and \textcolor{blue}{$\mu_{\text{xgreater3}}$} that specify to which degree the comparison is true or false.}
+    \caption[Conversion of crisp tree node into fuzzy tree node]{Conversion of a crisp decision surface to a fuzzy decision surface. The crisp decision surface $x \leq 3$ is replaced by two \texttt{sigmoid} membership functions \textcolor{red}{$\mu_{\text{xsmaller3}}$} and \textcolor{blue}{$\mu_{\text{xgreater3}}$} that specify to which degree the comparison is true or false. The \emph{width} of the membership function is data dependent and is determinend by $n\cdot \sigma = 2 \cdot \sigma$.}
     \label{fig:fuzzyMembershipFunctions}
 \end{figure}
 
 
-Once the internal nodes of the decision tree have been converted, the next step is to convert the leaf nodes of the decision tree to fuzzy leaf nodes, representing the class values. This is also done by replacing each crisp class value with a fuzzy membership function that assigns a degree of membership to the class. The shape of the membership functions can again be chosen arbitrarily, but typical choices include \texttt{gaussian} functions with a specific mean and variance. The ordering of the different class-specific membership functions is very important, as it can heavily influence the defuzzification process for some defuzzification methods. The conversion of the complete decision tree to a fuzzy decision tree is shown in \autoref{fig:fuzzyDecisionTreeExample}.
+Once the internal nodes of the decision tree have been converted, the next step is to convert the leaf nodes of the decision tree to fuzzy leaf nodes, representing the class values. This is also done by replacing each crisp class value with a fuzzy membership function that assigns a degree of membership to the class. The shape of the membership functions can again be chosen arbitrarily, but we will use \texttt{gaussian} functions with a specific mean and variance. The placement of the different class-specific membership functions is very important, as it can heavily influence the defuzzification process for some defuzzification methods as fuzzy systems typically use a interpolation between the different class values to determine the final output. The resulting conversion of the decision tree to a fuzzy decision tree is shown in \autoref{fig:fuzzyDecisionTreeExample}.
 
 
 \begin{figure}[h]
@@ -287,11 +296,11 @@ Once the internal nodes of the decision tree have been converted, the next step 
             \fuzzyTreeLeaf{1}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=red!20] (G) at (-2.5,-4.5) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=orange!20] (G) at (-2.5,-4.5) {
             \fuzzyTreeLeaf{2}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=red!20] (H) at (-1.5,-4.5) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=orange!20] (H) at (-1.5,-4.5) {
             \fuzzyTreeLeaf{2}
         };
 
@@ -337,7 +346,7 @@ After the translation of the decision tree, all membership functions operating o
 
     \includegraphics[width=\linewidth,trim={3.5cm 0 3.5cm 1cm},clip]{figures/ProofOfConcepts/fuzzy_sets.png}
 
-    \caption[Linguistic variables for the converted fuzzy decision tree]{Linguistic variables used in the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample}.}
+    \caption[Linguistic variables for the converted fuzzy decision tree]{Linguistic variables used in the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample}. The standard deviation of the attributes is assumed to be $\sigma \approx 0.5$ such that the \emph{width} of the sigmoid membership functions is $n\cdot \sigma \approx 1$. The class values are assumed to be normally distributed and are places such that they dont overlap much.}
     \label{fig:fuzzyDecisionTreeLinguisticVariables}
 \end{figure}
 
@@ -493,8 +502,12 @@ Using the \texttt{LiveInfoLogger} and \texttt{TuningDataLogger} classes of the \
 
 We will only make use of a subset however as we are only interesed in \emph{relative} values, that don't change when the simulation is scaled up or down and are therefore only include:  \texttt{avgParticlesPerCell}, \texttt{maxParticlesPerCell}, \texttt{homogeneity}, texttt{maxDensity}, \texttt{particlesPerCellStdDev} and \texttt{threadCount}.
 
-All the values were collected with the \texttt{PAUSE\_SIMULATION\_DURING\_TUNING} cmake option enabled, to ensure that the simulation state does not change during the tuning process. The data was collected on the CoolMUC-2 \todo{add specs} and primarly stems from the example scenarios provided by \gls{mdflexible} such as \texttt{explodingLiquid.yaml}, \texttt{fallingDrop.yaml}, \texttt{SpinodalDecomposition.yaml} and some simulations of uniform cubes with different particle counts and densities. The exact scenarios files used for the simulations can be found in \autoref{des:scenarios}.
+All the values were collected with the \texttt{PAUSE\_SIMULATION\_DURING\_TUNING} cmake option enabled, to ensure that the simulation state does not change during the tuning process. This ensures a fair comparison of the different configurations as all of them are evaluated under the same conditions.
+
+The data was collected on the CoolMUC-2 \todo{add specs} and primarly stems from the example scenarios provided by \gls{mdflexible} such as \texttt{explodingLiquid.yaml}, \texttt{fallingDrop.yaml}, \texttt{SpinodalDecomposition.yaml} and some simulations of uniform cubes with different particle counts and densities. The exact scenarios files used for the simulations can be found in \autoref{des:scenarios}.
 All simulations were run on the Serial-Partition of the the cluster were repeated twice, to account for fluctuations in performance. Furthermore every simulation was run with 1, 4, 12, 24 and 28 threads to also gather data on how parallelization affects the ideal configuration.
+
+\subsection{Data Analysis}
 
 
 To verify the sanity of the collected data, we can make plots about the distribution of the data and the nominal values of the collected data. The boxplot in \autoref{fig:inputAnalysisBoxplot} shows the distribution of the collected data, while the pie charts in \autoref{fig:inputAnalysisPiChart} shows the relative proportions of the collected parameters. We can see that the data is quite balanced and that the nominal values are spread out quite evenly, which is a good sign for the quality of the collected data.
@@ -521,6 +534,8 @@ To verify the sanity of the collected data, we can make plots about the distribu
     \caption[Pi Charts of nominal values of the collected Dataset]{ We can see that LinkedCells regardless of the Datalayout dominates the data. The Traversals and Newton3 options are spread out quite evenly}
     \label{fig:inputAnalysisPiChart}
 \end{figure}
+
+\subsection{Speedup Analysis}
 
 We can also do a more detailed analysis of the average performance of the different configuration options. As we froze the simulation during the tuning process, we can safely use the runtime of each iteration as a performance metric to compare all the tested configurations. For each tuning phase there is a unique ranking of all the configurations based on their runtime which we can use to calculate the relative speedup of each configuration compared to the best configuration. The formula for the relative speedup is given by:
 
@@ -570,54 +585,52 @@ The ordering of the different parameters in the dataset matches the intuition we
 By using the decision tree approach described in the previous sections, we can create a fully automated system to transform the collected data into rulefiles. The process is as follows:
 
 \begin{enumerate}
-    \item Load the colelcted data from the \texttt{LiveInfoLogger} and \texttt{TuningDataLogger} of all evaluated scenarios and threadscounts.
-    \item Preprocess the data and remove any outliers and values occuring very infrequently.
-    \item Train decision trees on the preprocessed data trying to predict a certain metrics and prune the tree to avoid overfitting. (The value to predict is different in both Suited and Individual Tuning Approach. See the respective sections for more information)
-    \item Select the best decision trees based on the performance of the predictions.
-    \item Convert the decision tree into a fuzzy decision tree using the method described in the previous sections.
-    \item Extract the fuzzy rules from the fuzzy decision, create the linguistic variables and export the rules to a rulefile.
+    \item Preprocess the data according to to approach used (see next section).
+    \item Train the decision trees and prune the tree to avoid overfitting.
+    \item Select the best perfoming decision trees and convert them into fuzzy decision trees.
+    \item Extract the fuzzy rules from the fuzzy decision trees.
+    \item Generate the linguistic variables and terms for the fuzzy system.
+    \item Create the OutputMapping Export and export everything to a rulefile.
 \end{enumerate}
 
-The resulting rulefile can then be loaded into AutoPas and defines the Fuzzy System used for the prediction of the optimal configuration parameters.
+As described previously, we are going to create two different kind of rule-bases, one for the Suitability Approach and one for the Individual Tuning Approach. In the following sections we will describe both approaches in detail.
 
 \subsection{Individual Tuning Approach}
 
-This approach is used to create different fuzzy systems for each of the tunable paramters of the simulation. In our case this means that we want to create systems for \texttt{ContainerDataLayout}, \texttt{Traversal} and \texttt{Newton3}.
+This approach tries to create different fuzzy systems for each of the tunable paramters of the simulation. We decided to combine the \texttt{container} and \texttt{dataLayout} parameters into a single parameter as they are closely related and the performance of one is heavily dependent on the other. Consequently we want to create systems for \texttt{ContainerDataLayout}, \texttt{Traversal} and \texttt{Newton3}.
 
-To accomplish this we first filter the collected data to only include configurations performing better than a certain threshold as we only want the best configurations to be included in the training data. We chose to include all configurations that have a relative speedup of at least 70\% as seen in \autoref{fig:speedup}. Afterward we group together all configurations that have been evaluated in the same tuning phase and aggregate all the present tunable parameters into a single string representing good values to be chosen for this tuning phase. As we have frozen the simulation during the tuning process, we can savely asume that all tesed configurations are evaluated under the same conditions.
+As we only want to create a fuzzy system predicting good configurations, we first remove all configurations perfoming worse than a certain threshold. As depicted in \autoref{fig:speedup} we chose to only include configurations that have a relative speedup of at least 70\% as this still leaves us with a large enough dataset to train the decision trees.
 
-The resulting training data is shown in \autoref{tab:trainingDataIndividual} and can be used to train the decision trees. After transforming the decision trees into fuzzy decision trees, we can extract the fuzzy rules and end up with rules shown in \autoref{tab:fuzzyRulesIndividual}.
-
-Finally these rules need to be exported to a rulefile together with suitable linguistic variables and linguistic terms. This concludes the creation of the fuzzy system for the Individual Tuning Approach.
-
-
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup.png}
-    \caption[Speedup density plot of all configurations]{The density plot shows the distribution of all the collected configurations with respect to the relative speedup compared to the best configuration during each tuning phase. This distribution shows that the average tested configuration performs just 50\% with some of them also being 10 times slower than the best configuration. It is therfore of great importance to effectively find good configurations.}
+    \caption[Speedup density plot of all configurations]{The density plot shows the distribution of all the collected configurations with respect to the relative speedup compared to the best configuration during each tuning phase. This distribution shows that the average tested configuration performs just 50\% as good as the best. With some configurations beeing 10 times slower than the best configuration.
+        We see that it is of utmost importance to efficiently find good configurations as testing all possible configurations causes a huge performance loss.}
     \label{fig:speedup}
 \end{figure}
 
+Afterward we group together all configurations that have been evaluated in the same tuning phase and aggregate all the present values of tunable parameters into a single term. This term representing all \emph{good} values for the paramters to be chosen under the conditions of the tuning phase. The resulting training data is shown in \autoref{tab:trainingDataIndividual} and can be used to train the decision trees. After applying the transformation process described in the previous sections, we end up with rules shown in \autoref{tab:fuzzyRulesIndividual}. This concludes the creation of the fuzzy rules for the Individual Tuning Approach.
 
-\begin{table}[h]
+
+\begin{table}[H]
     \footnotesize
     \centering
     \begin{tabular}{|c|c|c|c|c|}
         \hline
-        \textbf{\#Phase}       &
-        \textbf{LiveInfo Data} & \textbf{Container\_DataLayout} & \textbf{Traversal} & \textbf{Newton3}          \\
+
+        \textbf{LiveInfo Data} & \textbf{Container\_DataLayout} & \textbf{Traversal} & \textbf{Newton3} \\
         \hline
-        1                      & \makecell{(0.905797,	0.055112,                                                   \\	0.297891,	15,	0.015171,	4) }                                                                                                              & \makecell{"LinkedCells\_SoA,                                                \\ VerletClusterLists\_SoA, \\ VerletListsCells\_AoS"} & \makecell{"lc\_sliced,\\ lc\_sliced\_balanced,\\ lc\_sliced\_c02,\\ lc\_c04"} & "enabled"          \\
+        \makecell{(0.905797,	0.055112,                                                                   \\	0.297891,	15,	0.015171,	4) }                                                                                                              & \makecell{"LinkedCells\_SoA,                                                \\ VerletClusterLists\_SoA, \\ VerletListsCells\_AoS"} & \makecell{"lc\_sliced,\\ lc\_sliced\_balanced,\\ lc\_sliced\_c02,\\ lc\_c04"} & "enabled"          \\
         \hline
-        2                      & \makecell{(0.944637,	0.084061,                                                   \\	0.673320,                                                                                                                                                                                                   	25,	0.039916, 24) }                                                                                                               & \makecell{"LinkedCells\_SoA,                                                \\ VerletClusterLists\_SoA, \\ VerletListsCells\_AoS"} & \makecell{"lc\_c04,\\ lc\_c08,\\ lc\_sliced,\\ lc\_sliced\_balanced"} &  \makecell{"disabled,\\enabled"}         \\
+        \makecell{(0.944637,	0.084061,                                                                   \\	0.673320,                                                                                                                                                                                                   	25,	0.039916, 24) }                                                                                                               & \makecell{"LinkedCells\_SoA,                                                \\ VerletClusterLists\_SoA, \\ VerletListsCells\_AoS"} & \makecell{"lc\_c04,\\ lc\_c08,\\ lc\_sliced,\\ lc\_sliced\_balanced"} &  \makecell{"disabled,\\enabled"}         \\
         \hline
-        3                      & \makecell{(0.905797,	0.041394,                                                   \\	0.336900,                                                                                                                                                                                                   	20,	0.013546, 24) }                                                                                                               & \makecell{"VerletClusterLists\_SoA,                                         \\ VerletListsCells\_AoS"} & \makecell{"vcl\_c06,\\ vlc\_c01,\\ vlc\_c18,\\ vlc\_sliced\_c02"} &  \makecell{"disabled,\\enabled"}         \\
+        \makecell{(0.905797,	0.041394,                                                                   \\	0.336900,                                                                                                                                                                                                   	20,	0.013546, 24) }                                                                                                               & \makecell{"VerletClusterLists\_SoA,                                         \\ VerletListsCells\_AoS"} & \makecell{"vcl\_c06,\\ vlc\_c01,\\ vlc\_c18,\\ vlc\_sliced\_c02"} &  \makecell{"disabled,\\enabled"}         \\
         \hline
 
-        \vdots                 & \vdots                         & \vdots             & \vdots           & \vdots \\
+        \vdots                 & \vdots                         & \vdots             & \vdots           \\
         \hline
     \end{tabular}
-    \caption[Prepared training data for the Individual Tuning Approach]{Selection of the prepared training data for the Individual Tuning Approach. The table shows the liveinfo data and the corresponding top preforming values for the tunable parameters \texttt{ContainerDataLayout}, \texttt{Traversal} and \texttt{Newton3} for each tuning phase.}
+    \caption[Prepared training data for the Individual Tuning Approach]{Selection of the prepared training data for the Individual Tuning Approach. The table shows the liveinfo data and the corresponding prediction of top performing values for each tunable parameter. Each row represents a different tuning phase.}
     \label{tab:trainingDataIndividual}
 \end{table}
 
@@ -627,9 +640,12 @@ Finally these rules need to be exported to a rulefile together with suitable lin
 \definecolor{LightCyan}{rgb}{0.88,1,1}
 \newcolumntype{g}{>{\columncolor{LightCyan}}c}
 
-\begin{table}[h]
+\begin{table}[H]
     \footnotesize
     \centering
+    \addtolength{\leftskip} {-3cm} % increase (absolute) value if needed
+    \addtolength{\rightskip}{-3cm}
+
     \begin{tabular}{|c|c|c|c|g|}
         \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                    \\
         \hline
@@ -688,6 +704,32 @@ Finally these rules need to be exported to a rulefile together with suitable lin
         \hline
     \end{tabular}
 
-    \caption[Extracted fuzzy rules for the Individual Tuning Approach]{Extracted fuzzy rules for the Individual Tuning Approach. The table shows a selection of the rules extracted from the decision trees trained on the training data in \autoref{tab:trainingDataIndividual}. The rules are in the format: $\textbf{IF} \text{ Antecedent } \textbf{THEN} \text{ Consequent }$ where all conditions in the antecedent are connected with an \texttt{AND} operation.}
+    \caption[Extracted fuzzy rules for the Individual Tuning Approach]{Extracted fuzzy rules for the Individual Tuning Approach. The table shows a selection of the rules extracted from the decision trees trained on the training data in \autoref{tab:trainingDataIndividual}. The columns of the antecedent represent the different fuzzy sets taking part in the rule.}
     \label{tab:fuzzyRulesIndividual}
 \end{table}
+
+As descibed previously we use \texttt{gaussian} membership functions for each linguistic term of the consequent linguistic variables. The placement of the  values is irrelevant and we just place them in a way that they don't overlap. \autoref{fig:homogenityLinguisticVariable} and \autoref{fig:newton3LinguisticVariable_individual} show the resulting linguistic variables for a antecedent linguistic variable (homogeneity) and a consequent linguistic variable (Newton3) respectively.
+
+
+\begin{multicols}{2}
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\columnwidth,trim={0 0 0 1.25cm},clip]{figures/DataAnalytics/homogenity_linguistic_variable.png}
+
+        \caption[Linguistic variable for the homogeneity attribute]{
+            This figure shows the linguistic variable for the homogeneity attribute. We see the different fuzzy sets created from the decision trees. The background shows the histogram of all homogeneity values present in the dataset. 
+        }
+        \label{fig:homogenityLinguisticVariable}
+    \end{figure}
+
+    \columnbreak
+
+    \begin{figure}[H]
+        \includegraphics[width=\columnwidth,trim={0 0 0 1.25cm},clip]{figures/DataAnalytics/newton3_linguistic_variable.png}
+        \caption[Linguistic variable for the Newton3 attribute]{
+            This figure shows the linguistic variable for the Newton3 attribute. We see the two \texttt{gaussian} membership functions representing the two possible values for the Newton3 attribute. The background shows the histogram of all Newton3 values present in the dataset. We see that there are way more configurations with Newton3 enabled than disabled.
+
+        }
+        \label{fig:newton3LinguisticVariable_individual}
+    \end{figure}
+\end{multicols}
