@@ -490,7 +490,7 @@ It is also possible to calculate the whole decision surface of the fuzzy system 
 
 \noindent The choice of the defuzzification method also marks the end of the conversion process, since we now have a complete fuzzy system that can be used to predict new data points based on their features. In the next section, we use this approach to create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations.
 
-\section{Creating a Fuzzy System for \texttt{\gls{mdflexible}}}
+\section{Creating a Fuzzy System for \texttt{md\_flexible}}
 
 By following the fuzzy decision tree approach from the previous sections, we can create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations. Contrary to the previous example, we must first collect a dataset of simulation runs with different configuration parameters and their corresponding performance metrics which can then be used to train the crisp decision tree. After the conversion of the crisp decision tree to a \gls{fis}, a human expert can evaluate the rules and membership functions and adjust them if necessary.
 
@@ -612,6 +612,8 @@ As we only want to create a fuzzy system predicting good configurations, we firs
 Afterward we group together all configurations that have been evaluated in the same tuning phase and aggregate all the present values of tunable parameters into a single term. This term representing all \emph{good} values for the paramters to be chosen under the conditions of the tuning phase. The resulting training data is shown in \autoref{tab:trainingDataIndividual} and can be used to train the decision trees. After applying the transformation process described in the previous sections, we end up with rules shown in \autoref{tab:fuzzyRulesIndividual}. This concludes the creation of the fuzzy rules for the Individual Tuning Approach.
 
 
+
+
 \begin{table}[H]
     \footnotesize
     \centering
@@ -708,6 +710,21 @@ Afterward we group together all configurations that have been evaluated in the s
     \label{tab:fuzzyRulesIndividual}
 \end{table}
 
+
+We can also visualize the training data in a scatterplot as shown in \autoref{fig:scatterContainerDataLayout}.
+
+% scatter_container_datalayout
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=8cm,trim={0cm 0.7cm 1cm 1.5cm},clip]{figures/DataAnalytics/scatter_container_datalayout.png}
+    \caption[Scatterplot of the ContainerDataLayout parameter]{The scatterplot shows the influence of the variables \texttt{homogeneity}, \texttt{particlesPerCellStdDev} and \texttt{threadCount} on the optimal \texttt{ContainerDataLayout} parameter. We can clearly see regions which are going to be learned by the decision tree.}
+    \label{fig:scatterContainerDataLayout}
+
+\end{figure}
+
+
+
 As descibed previously we use \texttt{gaussian} membership functions for each linguistic term of the consequent linguistic variables. The placement of the  values is irrelevant and we just place them in a way that they don't overlap. \autoref{fig:homogenityLinguisticVariable} and \autoref{fig:newton3LinguisticVariable_individual} show the resulting linguistic variables for a antecedent linguistic variable (homogeneity) and a consequent linguistic variable (Newton3) respectively. The visualization of the other variables follows a similar pattern, but are more complex due to the higher number of terms and are therefore not shown here.
 
 
@@ -734,68 +751,7 @@ As descibed previously we use \texttt{gaussian} membership functions for each li
     \end{figure}
 \end{multicols}
 
-At the end of the process we have different fuzzy systems for each of the tunable parameters of the simulation of the form shown in \autoref{fig:fuzzyInferenceSystemIndividual}. The fuzzy system can be seen as a black box that maps the LiveInfo data into a sort of \emph{index} representing the the predicted values of the parameter. As we are using the \gls{mom} method, the output will always correspond to the fuzzy set with the highest membership value and will be free of interpolation errors. Using the output mappings of the form shown in \autoref{lst:outputMappingIndividual} we can then convert the predicted \emph{index} into a format suitabile for AutoPas.
-
-\begin{lstlisting}[language=FuzzyLanguage, caption={OutputMapping for the Individual Tuning Approach}, label={lst:outputMappingIndividual}]
-    OutputMapping:
-      "Newton 3":
-//      index => predicted configuration values
-        0.333 =>  [newton3="disabled"]
-        0.666 =>  [newton3="disabled"], [newton3="enabled"]
-    ...
-    
-\end{lstlisting}
-
-\begin{figure}[H]
-    \centering
-    \begin{tikzpicture}[scale=2,font=\small]
-        \node[anchor=east] (L) at (-2,0.6) {$\text{LiveInfo} \in \mathbb{R}^d$};
-
-        \foreach \x in {5,...,1}
-            {
-                \node [rectangle,rounded corners,draw,inner sep=2pt,fill=white!80!black] (A) at (0+\x /5,0+\x/4) {
-                    \begin{tikzpicture}[scale=2- \x/8 ,font=\tiny]
-                        \begin{axis}%
-                            [
-                                title={FIS [paramter\textsubscript \x]},
-                                width=3.2cm,
-                                height=2cm,
-                                axis lines=center,
-                                xmin=0,
-                                xmax=4,
-                                xlabel={$\mathbb{R}$},
-                                x label style={at={(axis description cs:1,0.2)},anchor=west},
-                                ylabel=$\mu$,
-                                y label style={at={(axis description cs:0,0.8)},anchor=east},
-                                xtick={},
-                                xticklabels= {},
-                                ytick={},
-                                yticklabels={},
-                                ymax=1,
-                                every axis plot/.append style={thick},
-                                domain=0:4
-                            ]
-                            \addplot[blue, samples=17] {gaussian(x,1,0.2)};
-                            \addplot[red,samples=15] {gaussian(x,2,0.2)};
-                            \addplot[green,samples=17] {gaussian(x,3,0.2)};
-                        \end{axis}
-                    \end{tikzpicture}
-                };
-
-                \node (T) at (2.5+\x/8,0+\x/4) {term\_id\textsubscript \x $\in \mathbb{R}$};
-
-                \draw[->,ultra thick] (L.east) -- (A.west) ;
-                \draw[->,ultra thick] (A) -- (T) ;
-            }
-
-    \end{tikzpicture}
-
-    \caption[Visualization of the fuzzy inference systems for the Individual Tuning Approach]{The fuzzy inference systems created from the fuzzy decision trees in \autoref{tab:fuzzyRulesIndividual} can be seen as black boxes that map the LiveInfo data to a term\_id representing the predicted \emph{index} which can then be converted into a configuration value using the output mapping.
-        There are as many fuzzy systems as there are tunable parameters in the simulation.
-    }
-
-    \label{fig:fuzzyInferenceSystemIndividual}
-\end{figure}
+At the end of the process we have different fuzzy systems for each of the tunable parameters of the simulation of the form shown in \autoref{fig:fuzzyInferenceSystemIndividual}. The fuzzy system can be seen as a black box that maps the LiveInfo data into a sort of \emph{index} representing the the predicted values of the parameter. As we are using the \gls{mom} method, the output will always correspond to the fuzzy set with the highest membership value and will be free of interpolation errors.
 
 
 \subsection{Suitability Approach}
@@ -804,9 +760,11 @@ The suitability approach differs from the individual tuning approach in that it 
 
 The process is similar to the one described in the previous section, but we do not group the configurations together and directly use the calculated relative speedup as the suitability value.
 
-To train the decision trees we again use a classication based approach with \texttt{terrible}, \texttt{bad}, \texttt{average}, \texttt{good} and \texttt{excellent} as the possible classes. The suitability values are then just mapped to the closest class. (see \autoref{tab:suitabilityClasses}).
+To train the decision trees we again use a classication based approach with \texttt{terrible}, \texttt{bad}, \texttt{average}, \texttt{good} and \texttt{excellent} as the possible linguistic terms (see \autoref{fig:suitabilityClasses}). The calculated suitability values of each configuration during a specific tuning phase are then just mapped to the corresponding class.
 
-The training data is shown in \autoref{tab:trainingDataSuitability} and the resulting fuzzy rules in \autoref{tab:fuzzyRulesSuitability}.
+The final training data is shown in \autoref{tab:trainingDataSuitability} and it is again possible to train the decision trees and extract the fuzzy rules from them. It is important to note that each configuration has its own fuzzy system and rules tailored to it. This makes the suitability approach more flexible but also causes more computational overhead during the inference process.
+
+The resulting rules are shown in \autoref{tab:fuzzyRulesSuitability} and the linguistic variables for the suitability attribute are shown in \autoref{fig:suitabilityClasses}. The output mapping for the suitability approach is shown in \autoref{lst:outputMappingSuitability}.
 
 \begin{figure}[H]
     \centering
@@ -814,7 +772,7 @@ The training data is shown in \autoref{tab:trainingDataSuitability} and the resu
     \caption[Linguistic variable for the Suitability attribute]{
         Linguistic terms for the suitability variables. The fuzzy sets consist of  \texttt{sigmoid} membership functions at the borders and \texttt{gaussian} membership functions in the middle. The values are placed in coherent way. This time we will use the \gls{cog} defuzzification method and will make use of the interpolation between the values.
     }
-    \label{fig:suitabilityLinguisticVariable}
+    \label{fig:suitabilityClasses}
 \end{figure}
 
 
@@ -857,38 +815,38 @@ The training data is shown in \autoref{tab:trainingDataSuitability} and the resu
     \addtolength{\rightskip}{-3cm}
 
     \begin{tabular}{|c|c|c|c|g|}
-        \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                             \\
+        \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                  \\
         \hline
         \textbf{avgParticlesPC}                         & \textbf{homogeneity}                                & \textbf{particlesPCStdDev} & \textbf{threadCount}                              & \textbf{ LinkedCells\_AoS\_lc\_c01\_disabled} \\
 
         \hline
-                                                        & \texttt{lower than 0.084}                           & \texttt{higher than 0.029} & \texttt{higher than 26.0 }                        & "medium"                                                 \\
+                                                        & \texttt{lower than 0.084}                           & \texttt{higher than 0.029} & \texttt{higher than 26.0 }                        & "medium"                                      \\
         \hline
-                                                        & \texttt{higher than 0.084}                          & \texttt{higher than 0.029} & \texttt{higher than 26.0 }                        & "bad"                                                    \\
+                                                        & \texttt{higher than 0.084}                          & \texttt{higher than 0.029} & \texttt{higher than 26.0 }                        & "bad"                                         \\
         \hline
-                                                        &                                                     & \texttt{higher than 0.02}  & \texttt{lower than 2.5	 }                          & "rubbish"                                                \\
+                                                        &                                                     & \texttt{higher than 0.02}  & \texttt{lower than 2.5	 }                          & "rubbish"                                     \\
 
         \hline
-        \vdots                                          & \vdots                                              & \vdots                     & \vdots                                            & \vdots                                                   \\
+        \vdots                                          & \vdots                                              & \vdots                     & \vdots                                            & \vdots                                        \\
         \hline
 
-        \multicolumn{5}{c}{ }                                                                                                                                                                                                                             \\
+        \multicolumn{5}{c}{ }                                                                                                                                                                                                                  \\
 
 
-        \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                             \\
+        \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                  \\
 
         \hline
         \textbf{maxParticlesPerCell}                    & \textbf{homogeneity}                                & \textbf{particlesPCStdDev} & \textbf{threadCount}                              & \textbf{ LinkedCells\_AoS\_lc\_c04\_disabled} \\
 
         \hline
-        \texttt{higher than 18.5	}                       & \texttt{lower than 0.082}                          &                            & \tabularCenterstack{c} {\texttt{higher than 18.0}                                                            \\ $\land$ \texttt{ lower than 26.0}} & "medium" \\
+        \texttt{higher than 18.5	}                       & \texttt{lower than 0.082}                           &                            & \tabularCenterstack{c} {\texttt{higher than 18.0}                                                 \\ $\land$ \texttt{ lower than 26.0}} & "medium" \\
 
         \hline
-        \texttt{higher than 18.5	}                       & \texttt{higher than 0.082}                          &                            & \tabularCenterstack{c} {\texttt{higher than 18.0}                                                            \\ $\land$ \texttt{ lower than 26.0}} & "bad" \\
+        \texttt{higher than 18.5	}                       & \texttt{higher than 0.082}                          &                            & \tabularCenterstack{c} {\texttt{higher than 18.0}                                                 \\ $\land$ \texttt{ lower than 26.0}} & "bad" \\
         \hline
 
 
-        \vdots                                          & \vdots                                              & \vdots                     & \vdots                                            & \vdots                                                   \\
+        \vdots                                          & \vdots                                              & \vdots                     & \vdots                                            & \vdots                                        \\
 
         \hline
     \end{tabular}
@@ -897,60 +855,5 @@ The training data is shown in \autoref{tab:trainingDataSuitability} and the resu
     \label{tab:fuzzyRulesSuitability}
 \end{table}
 
-
-
-
-\begin{figure}[H]
-    \centering
-    \begin{tikzpicture}[scale=2,font=\small]
-        \node[anchor=east] (L) at (-2,1.2) {$\text{LiveInfo} \in \mathbb{R}^d$};
-
-        \foreach \x in {16,...,1}
-            {
-                \node [rectangle,rounded corners,draw,inner sep=2pt,fill=white!80!black, fill opacity=10/\x] (A) at (0+\x /16,0+\x/5) {
-                    \begin{tikzpicture}[scale=2- \x/16 ,font=\tiny]
-                        \begin{axis}%
-                            [
-                            title={FIS [Configuration\textsubscript {{\ifthenelse{\x<10}{\x\space}{\x}}]}},
-                                    width=3.2cm,
-                                    height=2cm,
-                                    axis lines=center,
-                                    xmin=0,
-                                    xmax=4,
-                                    xlabel={$\mathbb{R}$},
-                                    x label style={at={(axis description cs:1,0.2)},anchor=west},
-                                    ylabel=$\mu$,
-                                    y label style={at={(axis description cs:0,0.8)},anchor=east},
-                                    xtick={},
-                                    xticklabels= {},
-                                    ytick={},
-                                    yticklabels={},
-                                    ymax=1,
-                                    every axis plot/.append style={thick},
-                                    domain=0:4
-                                ]
-                            \addplot[blue, samples=17] {gaussian(x,1,0.2)};
-                            \addplot[red,samples=15] {gaussian(x,2,0.2)};
-                            \addplot[green,samples=17] {gaussian(x,3,0.2)};
-                        \end{axis}
-                    \end{tikzpicture}
-                };
-
-                \node (T) at (2.5+\x/35,0+\x/5) {
-                    \begin{pgflowlevelscope}{\pgftransformscale{1-\x/28}}
-                        suitability\textsubscript \x $\in \mathbb{R}$
-                    \end{pgflowlevelscope}
-                };
-
-                \draw[->,ultra thick] (L.east) -- (A.west) ;
-                \draw[->,ultra thick] (A) -- (T.west) ;
-            }
-
-    \end{tikzpicture}
-
-    \caption[Visualization of the fuzzy inference systems for the Suitability Approach]{Selection of the fuzzy inference systems created from the fuzzy decision trees in \autoref{tab:fuzzyRulesSuitability}. Each fuzzy system is tailored to evaluate a specific configuration and maps the LiveInfo data to a suitability value representing the predicted performance of the configuration. There are as many fuzzy systems as there are possible configurations.}
-
-    \label{fig:fuzzyInferenceSystemSuitability}
-\end{figure}
 
 

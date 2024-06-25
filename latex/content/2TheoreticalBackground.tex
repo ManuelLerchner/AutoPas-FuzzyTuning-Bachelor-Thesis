@@ -386,37 +386,6 @@ With these choices of t-norms, t-conorms and negation operators, it is possible 
             Again this means that the degree of membership of an element $x$ in the complement set $\tilde{C}$ is just $1$ minus the degree of membership of $x$ in the set $\tilde{A}$.
 \end{itemize}
 
-Those definitions arise naturally by extending the classical set operations into the realm of fuzzy sets. The similarity between the classical and fuzzy set operations are depicted in Table~\ref{tab:fuzzy_logic_operations}.
-
-\begin{table}
-      \centering
-      \begin{tabular}{|c|c|}
-            \hline
-            Classical Set Operation                                & Fuzzy Set Operation                                                                            \\
-            \hline
-            $x \in A \cap B \iff x \in A \land x \in B$            &
-            \parbox{6cm}{    \begin{align*}
-                                         \mu_{\tilde{A} \cap \tilde{B}}(x) & = \mu_{\tilde{A}}(x) \land \mu_{\tilde{B}}(x)  \\
-                                                                           & = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))
-                                   \end{align*}} \\
-            \hline
-            $x \in A \cup B \iff x \in A \lor x \in B$             &
-            \parbox{6cm}{    \begin{align*}
-                                         \mu_{{\tilde{A} \cup  \tilde{B}}}(x) & = \mu_{\tilde{A}}(x) \lor \mu_{\tilde{B}}(x)   \\
-                                                                              & = \max(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))
-                                   \end{align*}}           \\
-            \hline
-            $x \in \bar{A} \iff x \notin A  \iff \neg ({x \in A})$ &
-            \parbox{6cm}{    \begin{align*}
-                                         \mu_{\neg \tilde{A}}(x) & = \neg \mu_{\tilde{A}}(x) \\
-                                                                 & = 1 - \mu_{\tilde{A}}(x)
-                                   \end{align*}}                                                        \\
-            \hline
-      \end{tabular}
-      \caption{Similarities between classical and fuzzy set operations}
-      \label{tab:fuzzy_logic_operations}
-\end{table}
-
 \todo{add grafical representation of the operations}
 
 \subsection{Linguistic Variables}
