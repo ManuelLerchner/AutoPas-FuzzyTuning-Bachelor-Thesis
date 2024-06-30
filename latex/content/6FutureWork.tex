@@ -2,5 +2,18 @@
 \label{sec:future_work}
 
 
+We demonstrated that the expert knowledge extracted from the collected dataset can lead to a significant reduction of tuning time and is able to provide an overall improvement in the performance of the simulation. However, the expert knowledge is not perfect and can be improved in several ways. In this chapter, we discuss some of the possible improvements that can be made to the expert knowledge and the data collection process.
 
-\section{A}
+\section{Better Data Collection}
+
+The data collection process can be improved in several ways. One of the main limitations of the current data collection process is that it is very difficult and possibly impossible to collect a dataset that is representative of all possible scenarios. The current dataset is limited to a few scenarios and the expert knowledge extracted from this dataset may not be applicable to other scenarios.
+
+We showed that using the fuzzy-tuning strategy leads to a near-optimal prediction of configurations when the current scenario is represented in the dataset. As it is probably impossible to account for all possible scenarios. One could look into ways of adaptively updating the expert knowledge as new scenarios are encountered. This could be done spending some extra time during the simulation to evaluate performance data of recently executed configurations and to update the expert knowledge accordingly.
+
+\section{Verification of Expert Knowledge}
+
+The currently used expert knowledge is directly extracted from the collected dataset without further validation. It would be interesting to investigate ways of validating the expert knowledge to rule out implausible rules and insert concepts not currently covered by the expert knowledge.
+
+\section{Future Work on Tuning Strategies}
+
+Another follow-up tuning strategy that could be investigated could make use of Adaptive Neuro-Fuzzy Inference Systems (ANFIS). Those systems are a combination of neural networks and fuzzy logic and combine the learning capabilities of neural networks with uncertainty handling capabilities of fuzzy logic. ANFIS systems could be used to predict the suitability-values of the configurations with way more flexibility than currently allowed by the expert knowledge.

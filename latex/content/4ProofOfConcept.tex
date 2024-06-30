@@ -490,7 +490,7 @@ It is also possible to calculate the whole decision surface of the fuzzy system 
 
 \noindent The choice of the defuzzification method also marks the end of the conversion process, since we now have a complete fuzzy system that can be used to predict new data points based on their features. In the next section, we use this approach to create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations.
 
-\section{Creating a Fuzzy System for \texttt{md\_flexible}}
+\section{Creating Fuzzy Rules for \texttt{md\_flexible}}
 
 By following the fuzzy decision tree approach from the previous sections, we can create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations. Contrary to the previous example, we must first collect a dataset of simulation runs with different configuration parameters and their corresponding performance metrics which can then be used to train the crisp decision tree. After the conversion of the crisp decision tree to a \gls{fis}, a human expert can evaluate the rules and membership functions and adjust them if necessary.
 
@@ -513,27 +513,6 @@ All simulations were run on the Serial-Partition of the the cluster were repeate
 To verify the sanity of the collected data, we can make plots about the distribution of the data and the nominal values of the collected data. The boxplot in \autoref{fig:inputAnalysisBoxplot} shows the distribution of the collected data, while the pie charts in \autoref{fig:inputAnalysisPiChart} shows the relative proportions of the collected parameters. We can see that the data is quite balanced and that the nominal values are spread out quite evenly, which is a good sign for the quality of the collected data.
 
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth,trim={0 0 0 0.5cm},clip]{figures/DataAnalytics/input_analysis.png}
-    \caption[Boxplot of the collected Dataset]{The boxplot shows the distribution of the collected data. The boxplot shows the median, the first and third quartile, and the whiskers show the range of the data.}
-
-    \label{fig:inputAnalysisBoxplot}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[height=5cm,trim={0cm 0 2cm 0cm},clip]{figures/DataAnalytics/correlation_matrix.png}
-    \caption[Correlation Matrix of the collected Dataset]{The correlation matrix shows the correlation between the different parameters of the collected dataset. We can see many of the collected parameters are slighly positively correlated with each other. \texttt{particlesPerCellStdDev} is negatively correlated with \texttt{avgParticlesPerCell} and \texttt{maxParticlesPerCell} which is also expected, as a higher standard deviation of the particles per cell should lead to unbalanced cells.}
-    \label{fig:corrMatrix}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth,trim={1cm 2cm 2cm 2cm},clip]{figures/DataAnalytics/traversal_pie_chart.png}
-    \caption[Pi Charts of nominal values of the collected Dataset]{ This figures show the relative proportions of the collected parameters in the dataset. All parameters are spread out quite evenly, which means that the dataset is quite balanced. The data however stems from every iteration, not just the tuning phases.}
-    \label{fig:inputAnalysisPiChart}
-\end{figure}
 
 \subsection{Speedup Analysis}
 
@@ -551,34 +530,7 @@ We can then make plots of the distribution of the relative speedup values for ea
 
 The ordering of the different parameters in the dataset matches the intuition we have about the different implementations and we can be confidently proceed with the creation of the fuzzy system.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_Newton 3.png}
-    \caption[Speedup density plot of Newton 3 option]{Density plot showing the distribution of the Newton3 options with respect to their relative speedup compared to the best configuration during each tuning phase. We can clearly see the two peaks wheter Newton3 is enabled or disabled. It is also very obvious that Newton3=enabled is the better option as it generally allows for a higher relative speedup. It is interesting to note that all performances having relative speedups of at least 80\% make use of the Newton3 optimization. Therefore we can confirm that Newton3 is generally a good option to enable.}
-    \label{fig:inputAnalysisDensityNewton3}
-\end{figure}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_Traversal.png}
-    \caption[Speedup density plot of Traversal option]{The density plot shows the distribution of the Traversal option with respect to the relative speedup compared to the best configuration during each tuning phase. There are no clear peaks in the data, but we can see that the vlc\_sliced\_balanced option generally performed better than the other options with an expeced relative speedup of 66\% compared to the best configuration.}
-    \label{fig:inputAnalysisDensityTraversal}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_ContainerDataLayout.png}
-    \caption[Speedup density plot of Configuration-Datalayout option]{Density plot showing the distribution of the container-datalayout option with respect to the relative speedup compared to the best configuration during each tuning phase. The VerletListCells\_AoS container-data-layout is the best configuration in most cases with 68\% of the runtime as the best configuration on average.}
-    \label{fig:inputAnalysisDensityDatalayout}
-\end{figure}
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_density_configurations.png}
-    \caption[Speedup density plot of configurations]{The density plot shows the distribution of the collected configurations with respect to the relative speedup compared to the best configuration during each tuning phase. The VerletListCells\_AoS\_vlc\_spliced\_balanced\_enabled configuration is the best configuration in most cases with 94\% of the runtime as the best configuration on average.}
-    \label{fig:inputAnalysisDensityConfigurations}
-\end{figure}
 
 \subsection{Creating the Fuzzy Rules}
 

@@ -1,0 +1,81 @@
+@startuml
+!theme mars
+namespace autopas::FuzzyLogic {
+
+  class CrispSet {
+    +CrispSet operator*(CrispSet rhs)
+    -std::map<std::string, Interval> kCell
+  }
+
+  class FuzzySet {
+    -std::string term
+    -MembershipFunction membershipFunction
+    -double centerOfGravity()
+    -double meanOfMaximum()
+    +double evaluateMembership(Data data)
+    +double defuzzify(Method method)
+    ..
+    +FuzzySet operator||(FuzzySet lhs, FuzzySet rhs)
+    +FuzzySet operator&&(FuzzySet lhs, FuzzySet rhs)
+    +FuzzySet operator!(FuzzySet fuzzySet)
+  }
+
+  class LinguisticVariable {
+    +FuzzySet operator==(std::string term)
+    -std::string name
+    -std::map<std::string, FuzzySet> terms
+  }
+
+  class FuzzyRule {
+    -FuzzySet antecedent
+    -FuzzySet consequent
+    +FuzzySet apply(Data data)
+  }
+
+  class FuzzyControlSystem {
+    +void addRule(FuzzyRule rule)
+    +FuzzySet applyRules(Data data)
+    +double predict(Data data)
+    -FuzzyControlSettings settings
+    -std::string outputDomain
+  }
+
+}
+
+
+class OutputMapper {
+  +Configurations closestConfigs(double x)
+  -std::map<double, Configurations> map
+}
+
+class FuzzyTuning {
+  -FuzzyFile parseFuzzyRuleFile(std::string path)
+  -void evaluateSuitability(Configurations &configQueue)
+  -void evaluateIndividual(Configurations &configQueue)
+  +bool needsLiveInfo()
+  +void receiveLiveInfo(LiveInfo value)
+  +void reset(Configurations &configQueue)
+  +void optimizeSuggestions(Configurations &configQueue)
+}
+
+
+
+interface TuningStrategyInterface {}
+
+
+FuzzySet "1" *-- "1" CrispSet 
+FuzzySet "parent 1" *-- "children 0..2" FuzzySet : based on
+
+LinguisticVariable "1" *-- "*" FuzzySet 
+FuzzyRule "1" *-- "2" FuzzySet 
+
+FuzzyControlSystem "1" *-- "*" FuzzyRule 
+
+FuzzyTuning "1" o-- "*" FuzzyControlSystem
+FuzzyTuning "1" *-r- "*" OutputMapper 
+FuzzyTuning .u.|> TuningStrategyInterface
+
+
+LinguisticVariable -r[hidden]- FuzzyRule
+LinguisticVariable -u[hidden]- FuzzyControlSystem
+@enduml
