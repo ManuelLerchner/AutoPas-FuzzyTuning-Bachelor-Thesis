@@ -27,10 +27,10 @@ The following fields are currently available in the LiveInfoData file. The LiveI
   \item [numParticles] The total number of particles in the simulation domain.
   \item [particleSize] The number of bytes used to store a single particle in memory.
   \item [particleSizeNeededByFunctor] The particle size required by the functor (the function used for calculating interactions).
-  \item [particlesPerBlurredCellStdDev] The standard deviation of the number of particles per blurred cell, providing a measure of particle distribution variability.
+  \item [particlesPerBlurredCellStdDev] The standard deviation of the number of particles per blurred cell provides a measure of particle distribution variability.
   \item [particlesPerCellStdDev] The standard deviation of the number of particles per cell, indicating the variability in particle distribution.
   \item [rebuildFrequency] The frequency at which the neighbor list is rebuilt.
-  \item [skin] The skin width added to the cutoff radius to create a buffer zone for neighbor lists, ensuring efficient interaction calculations.
+  \item [skin] The skin width is added to the cutoff radius to create a buffer zone for neighbor lists, ensuring efficient interaction calculations.
   \item [threadCount] The number of threads used for parallel processing in the simulation.
 \end{description}
 
@@ -49,8 +49,8 @@ The TuningData file is a CSV file containing the performance information for all
   \item[Traversal] The method used to traverse the cells and calculate interactions between particles.
   \item[Load Estimator] The strategy used to estimate and balance the computational load across different parts of the simulation domain.
   \item[Data Layout] The arrangement of particle data in memory (e.g., AoS for Array of Structures, SoA for Structure of Arrays).
-  \item[Newton 3] Indicates whether the Newton's third law optimization is used to reduce computation by only calculating forces once per particle pair (enabled/disabled).
-  \item[Reduced] The reduced performance data for all sample points, calculated by aggregating the data across all sample points. The specific aggregation method can be configured via the \texttt{.yaml} configuration file.
+  \item[Newton 3] Indicates whether Newton's third law optimization is used to reduce computation by only calculating forces once per particle pair (enabled/disabled).
+  \item[Reduced] The reduced performance data for all sample points is calculated by aggregating the data across all sample points. The specific aggregation method can be configured via the \texttt{.yaml} configuration file.
   \item[Smoothed] A smoothed version of the reduced performance data.
 
 \end{description}
@@ -58,7 +58,7 @@ The TuningData file is a CSV file containing the performance information for all
 \section{Scenarios used for Data Generation}
 \label{des:scenarios}
 
-The scenarios used for data generation stem directly from the examples provided in the \texttt{AutoPas} library. And their state at the time of the data generation can be looked up at: \small{
+The scenarios used for data generation stem directly from the examples provided in the \texttt{AutoPas} library. Their state at the time of the data generation can be looked up at \small{
   \url{
     https://github.com/AutoPas/AutoPas/tree/563528b4ef55d29b8ec148f6387f0be1adb400ed/examples/md-flexible/input
   }
@@ -69,7 +69,7 @@ The specific scenarios used are: \texttt{explodingLiquid}, \texttt{spinodalDecom
 
 \section{Data Analysis}
 
-To gain insights into the collected dataset, we performed some exploratory data analysis. The results are presented in the following figures.
+We performed some exploratory data analysis to gain insights into the collected dataset. The results are presented in the following figures.
 
 \begin{figure}[H]
   \centering
@@ -81,21 +81,21 @@ To gain insights into the collected dataset, we performed some exploratory data 
 \begin{figure}[H]
   \centering
   \includegraphics[height=5cm,trim={0cm 0 2cm 0cm},clip]{figures/DataAnalytics/correlation_matrix.png}
-  \caption[Correlation Matrix of the collected Dataset]{Correlation matrix showing the correlation between the collected parameters of the LiveInfoData files. We can see many of the collected parameters are slighly positively correlated with each other.}
+  \caption[Correlation Matrix of the collected Dataset]{Correlation matrix showing the correlation between the collected parameters of the LiveInfoData files. We can see that many of the collected parameters are slightly positively correlated with each other.}
   \label{fig:corrMatrix}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_Newton 3.png}
-  \caption[Speedup density plot based on the Newton 3 option]{Density plot showing the distribution of the relative speedup based on the Newton3 option. We can clearly see that Newton3=enabled is generally the better option as it generally allows for a higher relative speedup. All performances having relative speedups of at least 80\% make use of the Newton3 optimization. Therefore we can confirm that Newton3 is generally a good option to enable.}
+  \caption[Speedup density plot based on the Newton 3 option]{Density plot showing the distribution of the relative speedup based on the Newton 3 option. We can see that Newton3=enabled is generally the better option as it generally allows for a higher relative speedup. All performances with relative speedups of at least 80\% use the Newton3 optimization. Therefore, we can confirm that Newton 3 is generally a good option.}
   \label{fig:inputAnalysisDensityNewton3}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_Traversal.png}
-  \caption[Speedup density plot based on the Traversal option]{Density plot showing the distribution of the relative speedup based on the Traversal option. We can see that the vlc\_sliced\_balanced option generally performed better than the other options on this dataset with an expeced relative speedup of 66\%.}
+  \caption[Speedup density plot based on the Traversal option]{Density plot showing the distribution of the relative speedup based on the Traversal option. We can see that the vlc\_sliced\_balanced option generally performed better than the other options on this dataset with an expected relative speedup of 66\%.}
   \label{fig:inputAnalysisDensityTraversal}
 \end{figure}
 
