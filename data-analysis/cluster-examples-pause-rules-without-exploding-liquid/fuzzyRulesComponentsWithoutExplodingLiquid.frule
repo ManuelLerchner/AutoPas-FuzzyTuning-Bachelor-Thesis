@@ -1,0 +1,178 @@
+FuzzySystemSettings:
+        defuzzificationMethod: "meanOfMaximum"
+        interpretOutputAs: "IndividualSystems"
+
+FuzzyVariable: domain: "avgParticlesPerCell" range: (-0.7782885852132515, 8.51394958521325)
+	"lower than 3.454": SigmoidFinite(5.138085585213251, 3.454, 1.7699144147867487)
+	"lower than 1.553": SigmoidFinite(3.2370855852132516, 1.553, -0.13108558521325153)
+	"lower than 0.925": SigmoidFinite(2.6090855852132515, 0.925, -0.7590855852132514)
+	"lower than 1.572": SigmoidFinite(3.2560855852132518, 1.572, -0.1120855852132514)
+	"higher than 3.454": SigmoidFinite(1.7699144147867487, 3.454, 5.138085585213251)
+	"higher than 1.553": SigmoidFinite(-0.13108558521325153, 1.553, 3.2370855852132516)
+	"higher than 0.925": SigmoidFinite(-0.7590855852132514, 0.925, 2.6090855852132515)
+	"higher than 1.572": SigmoidFinite(-0.1120855852132514, 1.572, 3.2560855852132518)
+
+FuzzyVariable: domain: "homogeneity" range: (-0.07432698775919701, 0.537503987759197)
+	"lower than 0.05": SigmoidFinite(0.157464987759197, 0.05, -0.057464987759197006)
+	"lower than 0.037": SigmoidFinite(0.144464987759197, 0.03699999999999999, -0.07046498775919702)
+	"lower than 0.242": SigmoidFinite(0.349464987759197, 0.242, 0.134535012240803)
+	"lower than 0.047": SigmoidFinite(0.154464987759197, 0.047, -0.06046498775919701)
+	"lower than 0.235": SigmoidFinite(0.342464987759197, 0.235, 0.127535012240803)
+	"lower than 0.04": SigmoidFinite(0.147464987759197, 0.039999999999999994, -0.06746498775919701)
+	"higher than 0.05": SigmoidFinite(-0.057464987759197006, 0.05, 0.157464987759197)
+	"higher than 0.037": SigmoidFinite(-0.07046498775919702, 0.03699999999999999, 0.144464987759197)
+	"higher than 0.242": SigmoidFinite(0.134535012240803, 0.242, 0.349464987759197)
+	"higher than 0.047": SigmoidFinite(-0.06046498775919701, 0.047, 0.154464987759197)
+	"higher than 0.235": SigmoidFinite(0.127535012240803, 0.235, 0.342464987759197)
+	"higher than 0.04": SigmoidFinite(-0.06746498775919701, 0.039999999999999994, 0.147464987759197)
+
+FuzzyVariable: domain: "threadCount" range: (-19.991860548633383, 48.99186054863338)
+	"lower than 18.0": SigmoidFinite(38.99186054863338, 18.0, -2.991860548633383)
+	"lower than 26.0": SigmoidFinite(46.99186054863338, 26.0, 5.008139451366617)
+	"lower than 8.0": SigmoidFinite(28.991860548633383, 8.0, -12.991860548633383)
+	"lower than 2.5": SigmoidFinite(23.491860548633383, 2.5, -18.491860548633383)
+	"higher than 18.0": SigmoidFinite(-2.991860548633383, 18.0, 38.99186054863338)
+	"higher than 26.0": SigmoidFinite(5.008139451366617, 26.0, 46.99186054863338)
+	"higher than 8.0": SigmoidFinite(-12.991860548633383, 8.0, 28.991860548633383)
+	"higher than 2.5": SigmoidFinite(-18.491860548633383, 2.5, 23.491860548633383)
+
+FuzzyVariable: domain: "particlesPerCellStdDev" range: (-0.025265145086352154, 0.07279214508635215)
+	"lower than 0.038": SigmoidFinite(0.06385914508635215, 0.038, 0.012140854913647844)
+	"lower than 0.024": SigmoidFinite(0.049859145086352155, 0.024, -0.0018591450863521541)
+	"lower than 0.023": SigmoidFinite(0.048859145086352154, 0.023, -0.002859145086352155)
+	"lower than 0.013": SigmoidFinite(0.03885914508635215, 0.012999999999999998, -0.012859145086352155)
+	"lower than 0.037": SigmoidFinite(0.06285914508635215, 0.037, 0.011140854913647844)
+	"lower than 0.036": SigmoidFinite(0.06185914508635215, 0.036, 0.010140854913647843)
+	"higher than 0.038": SigmoidFinite(0.012140854913647844, 0.038, 0.06385914508635215)
+	"higher than 0.024": SigmoidFinite(-0.0018591450863521541, 0.024, 0.049859145086352155)
+	"higher than 0.023": SigmoidFinite(-0.002859145086352155, 0.023, 0.048859145086352154)
+	"higher than 0.013": SigmoidFinite(-0.012859145086352155, 0.012999999999999998, 0.03885914508635215)
+	"higher than 0.037": SigmoidFinite(0.011140854913647844, 0.037, 0.06285914508635215)
+	"higher than 0.036": SigmoidFinite(0.010140854913647843, 0.036, 0.06185914508635215)
+
+FuzzyVariable: domain: "maxDensity" range: (-0.3164994486102749, 2.015045448610275)
+	"lower than 0.787": SigmoidFinite(1.1992504486102749, 0.7869999999999999, 0.3747495513897251)
+	"higher than 0.787": SigmoidFinite(0.3747495513897251, 0.7869999999999999, 1.1992504486102749)
+
+
+
+FuzzyVariable: domain: "Container_DataLayout" range: (0, 5)
+	"LinkedCells_SoA": Gaussian(0.71, 0.12)
+	"LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS": Gaussian(1.43, 0.12)
+	"LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS, VerletListsCells_SoA": Gaussian(2.14, 0.12)
+	"LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS, VerletListsCells_SoA, VerletLists_SoA": Gaussian(2.86, 0.12)
+	"VerletClusterLists_SoA, VerletListsCells_AoS": Gaussian(3.57, 0.12)
+	"VerletClusterLists_SoA, VerletListsCells_AoS, VerletListsCells_SoA": Gaussian(4.29, 0.12)
+
+FuzzyVariable: domain: "Traversal" range: (0, 11)
+	"lc_c01, lc_c04, lc_c08, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vl_list_iteration, vlc_c01, vlc_c18, vlc_sliced_c02": Gaussian(0.85, 0.07)
+	"lc_c04, lc_c04_HCP, lc_c08, lc_c18, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vcl_sliced, vcl_sliced_balanced, vcl_sliced_c02, vlc_c18, vlc_sliced, vlc_sliced_balanced, vlc_sliced_c02": Gaussian(1.69, 0.07)
+	"lc_c04, lc_c08, lc_c18, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vlc_c18, vlc_sliced_c02": Gaussian(2.54, 0.07)
+	"lc_c04, lc_c08, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vl_list_iteration, vlc_c01, vlc_c18, vlc_sliced_c02": Gaussian(3.38, 0.07)
+	"lc_c04, lc_c08, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vl_list_iteration, vlc_c18, vlc_sliced_c02": Gaussian(4.23, 0.07)
+	"lc_c04, lc_c08, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vlc_c18, vlc_sliced_c02": Gaussian(5.08, 0.07)
+	"lc_c08, lc_c18, lc_sliced_c02": Gaussian(5.92, 0.07)
+	"lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vlc_c18, vlc_sliced_c02": Gaussian(6.77, 0.07)
+	"lc_sliced, lc_sliced_c02, vcl_c06, vlc_c18, vlc_sliced_c02": Gaussian(7.62, 0.07)
+	"vcl_c06, vcl_cluster_iteration, vlc_c18, vlc_sliced_c02": Gaussian(8.46, 0.07)
+	"vcl_c06, vlc_c01, vlc_c18, vlc_sliced_c02": Gaussian(9.31, 0.07)
+	"vcl_c06, vlc_c18, vlc_sliced_c02": Gaussian(10.15, 0.07)
+
+FuzzyVariable: domain: "Newton 3" range: (0, 1)
+	"disabled, enabled": Gaussian(0.33, 0.17)
+	"enabled": Gaussian(0.67, 0.17)
+
+
+
+OutputMapping:
+    "Container_DataLayout":
+        0.666 =>        [container="LinkedCells", dataLayout="SoA"], [container="VerletClusterLists", dataLayout="SoA"],
+                                        [container="VerletListsCells", dataLayout="AoS"]
+                1.333 =>        [container="LinkedCells", dataLayout="SoA"], [container="VerletClusterLists", dataLayout="SoA"],
+                                        [container="VerletListsCells", dataLayout="AoS"], [container="VerletListsCells", dataLayout="SoA"]
+                2.0   =>    [container="LinkedCells", dataLayout="SoA"], [container="VerletClusterLists", dataLayout="SoA"],
+                                        [container="VerletListsCells", dataLayout="AoS"], [container="VerletListsCells", dataLayout="SoA"],
+                                        [container="VerletLists", dataLayout="SoA"]
+                2.666 =>        [container="VerletClusterLists", dataLayout="SoA"], [container="VerletListsCells", dataLayout="AoS"]
+                3.333 =>        [container="VerletClusterLists", dataLayout="SoA"], [container="VerletListsCells", dataLayout="AoS"],
+                                        [container="VerletListsCells", dataLayout="SoA"]
+
+        "Traversal":
+                0.833 =>        [traversal="lc_c01"], [traversal="lc_c04"], [traversal="lc_c08"], [traversal="lc_sliced"],
+                                        [traversal="lc_sliced_balanced"], [traversal="lc_sliced_c02"], [traversal="vcl_c06"],
+                                        [traversal="vl_list_iteration"], [traversal="vlc_c01"], [traversal="vlc_c18"], [traversal="vlc_sliced_c02"]
+                1.666 =>        [traversal="lc_c04"], [traversal="lc_c04_HCP"], [traversal="lc_c08"], [traversal="lc_c18"],
+                                        [traversal="lc_sliced"], [traversal="lc_sliced_balanced"], [traversal="lc_sliced_c02"],
+                                        [traversal="vcl_c06"], [traversal="vcl_sliced"], [traversal="vcl_sliced_balanced"], [traversal="vcl_sliced_c02"],
+                                        [traversal="vlc_c18"], [traversal="vlc_sliced"], [traversal="vlc_sliced_balanced"], [traversal="vlc_sliced_c02"]
+                2.5   =>        [traversal="lc_c04"], [traversal="lc_c08"], [traversal="lc_c18"], [traversal="lc_sliced"],
+                                        [traversal="lc_sliced_balanced"], [traversal="lc_sliced_c02"], [traversal="vcl_c06"],
+                                        [traversal="vlc_c18"], [traversal="vlc_sliced_c02"]
+                3.333 =>        [traversal="lc_c04"], [traversal="lc_c08"], [traversal="lc_sliced"], [traversal="lc_sliced_balanced"],
+                                        [traversal="lc_sliced_c02"], [traversal="vcl_c06"], [traversal="vl_list_iteration"],
+                                        [traversal="vlc_c01"], [traversal="vlc_c18"], [traversal="vlc_sliced_c02"]
+                4.166 =>        [traversal="lc_c04"], [traversal="lc_c08"], [traversal="lc_sliced"], [traversal="lc_sliced_balanced"],
+                                        [traversal="lc_sliced_c02"], [traversal="vcl_c06"], [traversal="vl_list_iteration"],
+                                        [traversal="vlc_c18"], [traversal="vlc_sliced_c02"]
+                5.0   =>        [traversal="lc_c04"], [traversal="lc_c08"], [traversal="lc_sliced"], [traversal="lc_sliced_balanced"],
+                                        [traversal="lc_sliced_c02"], [traversal="vcl_c06"], [traversal="vlc_c18"], [traversal="vlc_sliced_c02"]
+                5.833 =>        [traversal="lc_sliced"], [traversal="lc_sliced_balanced"], [traversal="lc_sliced_c02"],
+                                        [traversal="vcl_c06"], [traversal="vlc_c18"], [traversal="vlc_sliced_c02"]
+                6.666 =>        [traversal="lc_sliced"], [traversal="lc_sliced_c02"], [traversal="vcl_c06"],
+                                        [traversal="vlc_c18"], [traversal="vlc_sliced_c02"]
+                7.5   =>        [traversal="vcl_c06"], [traversal="vcl_cluster_iteration"], [traversal="vlc_c18"], [traversal="vlc_sliced_c02"]
+                8.333 =>        [traversal="vcl_c06"], [traversal="vlc_c01"], [traversal="vlc_c18"], [traversal="vlc_sliced_c02"]
+                9.166 =>        [traversal="vcl_c06"], [traversal="vlc_c18"], [traversal="vlc_sliced_c02"]
+
+        "Newton 3":
+                0.333 =>        [newton3="disabled"], [newton3="enabled"]
+                0.666 =>        [newton3="enabled"]
+
+
+
+
+if (("avgParticlesPerCell" == "lower than 3.454")) && (("homogeneity" == "lower than 0.05")) && (("threadCount" == "lower than 18.0")) then ("Container_DataLayout" == "VerletClusterLists_SoA, VerletListsCells_AoS")
+if (("avgParticlesPerCell" == "lower than 3.454")) && (("homogeneity" == "lower than 0.05")) && (("threadCount" == "higher than 18.0")) then ("Container_DataLayout" == "VerletClusterLists_SoA, VerletListsCells_AoS, VerletListsCells_SoA")
+if (("avgParticlesPerCell" == "lower than 3.454")) && (("homogeneity" == "higher than 0.05")) && (("threadCount" == "lower than 18.0")) && (("particlesPerCellStdDev" == "higher than 0.038")) then ("Container_DataLayout" == "LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS, VerletListsCells_SoA")
+if (("avgParticlesPerCell" == "lower than 3.454")) && (("homogeneity" == "higher than 0.05")) && (("threadCount" == "higher than 18.0")) && (("particlesPerCellStdDev" == "higher than 0.024")) then ("Container_DataLayout" == "LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS, VerletListsCells_SoA, VerletLists_SoA")
+if (("avgParticlesPerCell" == "lower than 3.454")) && (("homogeneity" == "higher than 0.05")) && (("threadCount" == "lower than 18.0")) && (("particlesPerCellStdDev" == "lower than 0.038")) then ("Container_DataLayout" == "LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS")
+if (("avgParticlesPerCell" == "lower than 3.454")) && (("homogeneity" == "higher than 0.05")) && (("threadCount" == "higher than 18.0")) && (("particlesPerCellStdDev" == "lower than 0.024")) then ("Container_DataLayout" == "LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS")
+if (("avgParticlesPerCell" == "higher than 3.454")) then ("Container_DataLayout" == "LinkedCells_SoA")
+if (("maxDensity" == "lower than 0.787")) && (("homogeneity" == "lower than 0.05")) && (("threadCount" == "lower than 18.0")) then ("Container_DataLayout" == "VerletClusterLists_SoA, VerletListsCells_AoS")
+if (("maxDensity" == "lower than 0.787")) && (("homogeneity" == "lower than 0.05")) && (("threadCount" == "higher than 18.0")) then ("Container_DataLayout" == "VerletClusterLists_SoA, VerletListsCells_AoS, VerletListsCells_SoA")
+if (("maxDensity" == "lower than 0.787")) && (("homogeneity" == "higher than 0.05")) && (("threadCount" == "lower than 18.0")) && (("particlesPerCellStdDev" == "higher than 0.038")) then ("Container_DataLayout" == "LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS, VerletListsCells_SoA")
+if (("maxDensity" == "lower than 0.787")) && (("homogeneity" == "higher than 0.05")) && (("threadCount" == "higher than 18.0")) && (("particlesPerCellStdDev" == "higher than 0.024")) then ("Container_DataLayout" == "LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS, VerletListsCells_SoA, VerletLists_SoA")
+if (("maxDensity" == "lower than 0.787")) && (("homogeneity" == "higher than 0.05")) && (("threadCount" == "lower than 18.0")) && (("particlesPerCellStdDev" == "lower than 0.038")) then ("Container_DataLayout" == "LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS")
+if (("maxDensity" == "lower than 0.787")) && (("homogeneity" == "higher than 0.05")) && (("threadCount" == "higher than 18.0")) && (("particlesPerCellStdDev" == "lower than 0.024")) then ("Container_DataLayout" == "LinkedCells_SoA, VerletClusterLists_SoA, VerletListsCells_AoS")
+if (("maxDensity" == "higher than 0.787")) then ("Container_DataLayout" == "LinkedCells_SoA")
+
+if (("particlesPerCellStdDev" == "lower than 0.023")) && (("homogeneity" == "lower than 0.037")) && (("threadCount" == "lower than 26.0")) then ("Traversal" == "vcl_c06, vlc_c18, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "higher than 0.023")) && (("threadCount" == "lower than 8.0")) && (("homogeneity" == "lower than 0.242")) then ("Traversal" == "lc_c04, lc_c08, lc_c18, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vlc_c18, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "lower than 0.023")) && (("particlesPerCellStdDev" == "higher than 0.013")) && (("homogeneity" == "lower than 0.047")) && (("homogeneity" == "higher than 0.037")) then ("Traversal" == "vcl_c06, vlc_c18, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "lower than 0.023")) && (("homogeneity" == "higher than 0.047")) && (("avgParticlesPerCell" == "lower than 1.553")) && (("threadCount" == "higher than 2.5")) then ("Traversal" == "lc_sliced, lc_sliced_c02, vcl_c06, vlc_c18, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "higher than 0.037")) && (("threadCount" == "lower than 18.0")) && (("threadCount" == "higher than 8.0")) then ("Traversal" == "lc_c04, lc_c08, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vlc_c18, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "higher than 0.023")) && (("threadCount" == "higher than 26.0")) && (("homogeneity" == "lower than 0.235")) then ("Traversal" == "lc_c01, lc_c04, lc_c08, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vl_list_iteration, vlc_c01, vlc_c18, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "higher than 0.023")) && (("threadCount" == "higher than 18.0")) && (("threadCount" == "lower than 26.0")) && (("homogeneity" == "lower than 0.235")) then ("Traversal" == "lc_c04, lc_c08, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vl_list_iteration, vlc_c01, vlc_c18, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "lower than 0.023")) && (("homogeneity" == "lower than 0.037")) && (("threadCount" == "higher than 26.0")) then ("Traversal" == "vcl_c06, vcl_cluster_iteration, vlc_c18, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "lower than 0.013")) && (("homogeneity" == "lower than 0.047")) && (("homogeneity" == "higher than 0.037")) then ("Traversal" == "vcl_c06, vlc_c01, vlc_c18, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "lower than 0.023")) && (("homogeneity" == "higher than 0.047")) && (("avgParticlesPerCell" == "higher than 1.553")) then ("Traversal" == "lc_c04, lc_c04_HCP, lc_c08, lc_c18, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vcl_sliced, vcl_sliced_balanced, vcl_sliced_c02, vlc_c18, vlc_sliced, vlc_sliced_balanced, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "lower than 0.023")) && (("homogeneity" == "higher than 0.047")) && (("avgParticlesPerCell" == "lower than 1.553")) && (("threadCount" == "lower than 2.5")) then ("Traversal" == "lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vlc_c18, vlc_sliced_c02")
+if (("particlesPerCellStdDev" == "higher than 0.023")) && (("threadCount" == "higher than 18.0")) && (("homogeneity" == "higher than 0.235")) then ("Traversal" == "lc_c08, lc_c18, lc_sliced_c02")
+if (("particlesPerCellStdDev" == "higher than 0.023")) && (("threadCount" == "lower than 8.0")) && (("homogeneity" == "higher than 0.242")) then ("Traversal" == "lc_c08, lc_c18, lc_sliced_c02")
+if (("particlesPerCellStdDev" == "higher than 0.023")) && (("particlesPerCellStdDev" == "lower than 0.037")) && (("threadCount" == "lower than 18.0")) && (("threadCount" == "higher than 8.0")) then ("Traversal" == "lc_c08, lc_c18, lc_sliced_c02")
+if (("avgParticlesPerCell" == "lower than 0.925")) && (("threadCount" == "lower than 26.0")) then ("Traversal" == "vcl_c06, vlc_c18, vlc_sliced_c02")
+if (("avgParticlesPerCell" == "lower than 1.572")) && (("avgParticlesPerCell" == "higher than 0.925")) && (("threadCount" == "lower than 8.0")) then ("Traversal" == "lc_c04, lc_c08, lc_c18, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vlc_c18, vlc_sliced_c02")
+if (("avgParticlesPerCell" == "lower than 0.925")) && (("threadCount" == "higher than 26.0")) then ("Traversal" == "vcl_c06, vcl_cluster_iteration, vlc_c18, vlc_sliced_c02")
+if (("avgParticlesPerCell" == "lower than 1.572")) && (("avgParticlesPerCell" == "higher than 0.925")) && (("threadCount" == "higher than 8.0")) && (("threadCount" == "lower than 18.0")) then ("Traversal" == "lc_c04, lc_c08, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vlc_c18, vlc_sliced_c02")
+if (("avgParticlesPerCell" == "lower than 1.572")) && (("avgParticlesPerCell" == "higher than 0.925")) && (("threadCount" == "higher than 26.0")) then ("Traversal" == "lc_c01, lc_c04, lc_c08, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vl_list_iteration, vlc_c01, vlc_c18, vlc_sliced_c02")
+if (("avgParticlesPerCell" == "lower than 1.572")) && (("avgParticlesPerCell" == "higher than 0.925")) && (("threadCount" == "lower than 26.0")) && (("threadCount" == "higher than 18.0")) then ("Traversal" == "lc_c04, lc_c08, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vl_list_iteration, vlc_c01, vlc_c18, vlc_sliced_c02")
+if (("avgParticlesPerCell" == "higher than 3.454")) then ("Traversal" == "lc_c08, lc_c18, lc_sliced_c02")
+if (("avgParticlesPerCell" == "higher than 1.572")) && (("avgParticlesPerCell" == "lower than 3.454")) then ("Traversal" == "lc_c04, lc_c04_HCP, lc_c08, lc_c18, lc_sliced, lc_sliced_balanced, lc_sliced_c02, vcl_c06, vcl_sliced, vcl_sliced_balanced, vcl_sliced_c02, vlc_c18, vlc_sliced, vlc_sliced_balanced, vlc_sliced_c02")
+
+if (("threadCount" == "higher than 18.0")) && (("particlesPerCellStdDev" == "higher than 0.036")) then ("Newton 3" == "disabled, enabled")
+if (("threadCount" == "higher than 26.0")) && (("particlesPerCellStdDev" == "lower than 0.013")) then ("Newton 3" == "disabled, enabled")
+if (("threadCount" == "higher than 18.0")) && (("threadCount" == "lower than 26.0")) && (("particlesPerCellStdDev" == "higher than 0.013")) && (("particlesPerCellStdDev" == "lower than 0.013")) then ("Newton 3" == "enabled")
+if (("threadCount" == "lower than 8.0")) then ("Newton 3" == "enabled")
+if (("threadCount" == "lower than 18.0")) && (("threadCount" == "higher than 8.0")) && (("homogeneity" == "higher than 0.04")) then ("Newton 3" == "enabled")
+if (("threadCount" == "lower than 18.0")) && (("threadCount" == "higher than 8.0")) && (("homogeneity" == "lower than 0.04")) then ("Newton 3" == "enabled")
+

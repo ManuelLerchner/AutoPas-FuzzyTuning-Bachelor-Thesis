@@ -23,6 +23,8 @@
             "-synctex=1",
             "-draftmode",
             "-interaction=nonstopmode",
+            "-shell-escape",
+            "-halt-on-error",
             "-file-line-error",
             "-lualatex",
             "%DOC%"
@@ -48,9 +50,17 @@
             "args": [
                 "-synctex=1",
                 "-interaction=nonstopmode",
+                "-shell-escape",
+                "-halt-on-error",
                 "-file-line-error",
                 "%DOC%"
             ]
+        }
+    ],
+    "grammarly.selectors": [
+        {
+            "language": "latex",
+            "scheme": "file"
         }
     ]
 }

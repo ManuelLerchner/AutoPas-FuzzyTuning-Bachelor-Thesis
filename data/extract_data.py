@@ -11,6 +11,7 @@ out_files: dict = {}
 
 
 for filename in os.listdir(folder):
+    print(f"Processing {filename}")
     # filter files ending in .out
     if filename.endswith(".out"):
         # parse filename
@@ -89,8 +90,9 @@ for filename in os.listdir(folder):
     if filename.endswith(".csv"):
         # parse filename
         # AutoPas_liveInfoLogger_Rank0_2024-05-22_21-16-57.csv
+        print(filename)
         timestamp = re.search(
-            r'Rank0_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})', filename).group(1)
+            r'Rank\d{1}_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})', filename).group(1)
 
         # replace last two - with _
         replace = timestamp.rsplit("-", 2)
@@ -123,7 +125,7 @@ for timestamp in out_files.keys():
               folder}/{scenario}_{current_repeat[(scenario, threads)]}")
 
         # move file
-        shutil.copy(
+        shutil.move(
             f"{folder}/{file}", f"{folder}/{scenario}_{current_repeat[(scenario, threads)]}")
 
     current_repeat[(scenario, threads)] += 1

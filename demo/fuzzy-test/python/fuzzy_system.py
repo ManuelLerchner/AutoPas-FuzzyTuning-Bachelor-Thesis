@@ -390,7 +390,7 @@ class Gaussian(FuzzySet):
         prefix = ""
         if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
             prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Gaussian({self.mean}, {self.sigma})"
+        return f"{prefix}\"{self.linguistic_term}\": Gaussian({np.round(self.mean, 2)}, {np.round(self.sigma, 2)})"
 
 
 class Sigmoid(FuzzySet):
