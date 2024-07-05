@@ -63,38 +63,40 @@
 }
 
 
-This chapter describes the implementation of the Fuzzy Tuning technique in AutoPas. The implementation is divided into two main parts: the Fuzzy Tuning framework and the Tuning Strategy. The Fuzzy Tuning framework is the core of this implementation and implements the mathematical foundation of this technique. The tuning strategy acts as the interface between the fuzzy tuning framework and the AutoPas simulation and is therefore responsible for updating AutoPas' configuration queue.
+This chapter describes the implementation of the Fuzzy Tuning technique in AutoPas. The implementation is divided into three main parts: the generic Fuzzy Logic framework, the Rule Parser, and the Fuzzy Tuning Strategy. The Fuzzy Logic framework is the core of this implementation and implements the mathematical foundation of this technique. The Rule Parser is responsible for parsing the rule base supplied by the user and converting it into the internal representation used by the Fuzzy Tuning framework. Finally, the Fuzzy Tuning Strategy is the interface between the Fuzzy Logic framework and the AutoPas simulation. It is responsible for updating the configuration queue to select configurations to be tested next.
+
 
 \section{Fuzzy Tuning Framework}
 
-The Fuzzy Tuning framework implements the mathematical foundation of the Fuzzy Tuning technique. It consists of several components that work together to apply the Fuzzy Rules to the input variables and generate the output variables. The components of the Fuzzy Tuning framework are as follows:
+The Fuzzy Tuning framework implements the mathematical foundation of the Fuzzy Tuning technique. It consists of several components that work together to fully describe the workflow of the fuzzy-rule evaluations. The components of the Fuzzy Tuning framework are as follows:
 
 \begin{itemize}
-  \item \textbf{Crisp Set:} The Crisp Set is used to model k-cells used as the underlying sets over which the Fuzzy Sets are defined. A k-cell is a hyperrectangle in the k-dimensional space constructed from the Cartesian product of k intervals $I = I_1 \times I_2 \times \ldots \times I_k$ where $I_i = [x_{low}, x_{high}] \subset \mathbb{R} $ is an interval in the real numbers. They are used to define the underlying sets over which the corresponding fuzzy set is defined and can be thought of as the parameter space of the input variable.
+  \item \textbf{Crisp Set}\\
+        The Crisp Set models classical sets using k-cells and is used to define the underlying classical sets over which all fuzzy sets are defined. A k-cell is a hyperrectangle in the k-dimensional space constructed from the Cartesian product of k intervals $I = I_1 \times I_2 \times \ldots \times I_k$ where $I_i = [x_{low}, x_{high}] \subset \mathbb{R} $ is an interval in the real numbers. This cell defines the parameter space of the input variables, and its boundaries are later used for the numerical defuzzification step.
 
 
-  \item \textbf{Fuzzy Set:} A fuzzy set consists of a membership function that assigns a degree of membership to each element of the Crisp Set. There are two types of membership functions: The \texttt{BaseMembershipFunction} and the \texttt{CompositeMembershipFunction}. The \texttt{BaseMembershipFunction} implements a function $f: \mathbb{R} \rightarrow [0, 1]$ that directly maps the crisp value to the degree of membership. The \texttt{CompositeMembershipFunction} is used to create new fuzzy sets by recursively combining existing fuzzy sets and their membership functions with generic functions. This helps to split up the complex fuzzy sets of the rule base into smaller, more manageable parts. Let us say we have a fuzzy set $\tilde{A}$ defined over the Crisp Set $X$ and a fuzzy set $\tilde{B}$ defined over the Crisp Set $Y$. Both membership functions are functions mapping the respective Crisp Set to the degree of membership ($\mu_{\tilde{A}}: X \rightarrow [0, 1]$ and $\mu_{\tilde{B}}: Y \rightarrow [0, 1]$). Since both membership functions directly map the Crisp Set to the degree of membership, they are considered \texttt{BaseMembershipFunction}s. When we want to create a new fuzzy set $\tilde{C} = \tilde{A} \cap \tilde{B}$ this new fuzzy set is defined over the Crisp Set $X \times Y$  and thus needs to provide a membership function $\mu_{\tilde{C}}: X \times Y \rightarrow [0, 1]$. As described in \todo{add chcpter} this membership function is defined as $\mu_{\tilde{C}}(x, y) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(y))$, which can be thought of as recursively combining the membership functions of $\tilde{A}$ and $\tilde{B}$ with the minimum function.
+  \item \textbf{Fuzzy Set} \\
+        As mentioned previously, fuzzy sets consist of a membership function assigning a degree of membership to each element of the Crisp Set. For the implementation in C++, we distinguish between two types of membership functions: The \texttt{BaseMembershipFunction} and the \texttt{CompositeMembershipFunction}. The \texttt{BaseMembershipFunction} acts as the standard membership function and directly assigns the degree of membership values to all continuous input values. It has the following signature: $f: \mathbb{R} \rightarrow [0, 1]$. Examples of this type of membership function are the trapezoid, sigmoid, and Gaussian functions described in the previous chapter. \\
+        \smallskip
+        The \texttt{CompositeMembershipFunctions} implement the logical operations. They act as links between existing fuzzy sets to create more complex ones. This helps to split up the complex fuzzy sets of the rule base into smaller, more manageable parts. Internally, this way of combining fuzzy sets builds a tree structure where the leave nodes can directly calculate membership value based on \texttt{BaseMembershipFunctions}, and the inner nodes combine those membership values and pass them up to their parents. This way of defining fuzzy sets is natural and allows for efficient membership evaluation. \autoref{fig:modularfuzzysetconstruction} shows how complex fuzzy sets can be constructed from simpler fuzzy sets using the \texttt{CompositeMembershipFunctions}. Each fuzzy set additionally provides a method to calculate the defuzzified value.
 
-        This way of combining fuzzy sets builds a tree structure where the leaves calculate a direct membership value, and the inner nodes combine the membership values of their children and pass them up to their parents. \autoref{fig:modularfuzzysetconstruction} shows how a complex fuzzy set can be constructed from more straightforward fuzzy sets.
+  \item \textbf{Linguistic Variable}\\
+        Linguistic variables act as a container for the fuzzy sets. They group linguistic terms of the same concept and provide ways to access the fuzzy sets.
 
-  \item \textbf{Linguistic Variable:} A linguistic variable is a variable whose values are terms in a natural language. Each term is associated with a fuzzy set that defines its concept using the language of fuzzy logic. The linguistic variables can then be used to express rules in a human-readable way.
+  \item \textbf{Fuzzy Rule}\\
+        Fuzzy rules store an antecedent and a consequent fuzzy set. Additionally, they provide a method to evaluate the fuzzy set resulting from the rule activation based on the input variables.
 
-  \item \textbf{Fuzzy Rule:} A fuzzy rule is a conditional statement that describes the relationship between input- and output variables. It consists of an antecedent and a consequent, both of which are fuzzy sets. During the evaluation of the rule, the antecedent is evaluated to determine the degree to which the rule is satisfied; thus, the rule's effect can be reduced accordingly.
-
-  \item \textbf{Fuzzy Control System:} The Fuzzy Control System combines all the concepts described above to create a system that can evaluate a set of fuzzy rules and generate an output based on the input variables. Such a control system acts like a black box $f: \mathbb{R}^n \rightarrow \mathbb{R}$ that takes a set of crisp input variables and returns the predicted value.
+  \item \textbf{Fuzzy Control System:} The Fuzzy Control System combines all the concepts described above to create a system that can evaluate a set of fuzzy rules and generate an output based on the input variables. Such a control system acts like a black box $f: \mathbb{R}^n \rightarrow \mathbb{R}$ that maps crisp input values to a crisp output value. Multiple such systems are used in later sections to implement the tuning strategy.
 \end{itemize}
 
 A simplified class diagram of the Fuzzy Tuning strategy can be seen in \autoref{fig:classdiagram}.
 
-\begin{figure}[h]
-  \centering
-  \includesvg[width=\textwidth]{figures/class-diagram.svg}
-  \caption[Class diagram of the Fuzzy Tuning Strategy]{Simplified class diagram of the Fuzzy Tuning strategy. There is a clear separation between implementing the Fuzzy Logic framework and the tuning strategy. This allows for an easy reuse of the Fuzzy Logic framework in other parts of AutoPas if desired.}
-  \label{fig:classdiagram}
-\end{figure}
+\newpage
 
 
-\begin{figure}[h]
+
+
+\begin{figure}[H]
   \centering
   \begin{tikzpicture}[scale=2,font=\tiny]
 
@@ -177,13 +179,24 @@ A simplified class diagram of the Fuzzy Tuning strategy can be seen in \autoref{
   \label{fig:modularfuzzysetconstruction}
 \end{figure}
 
+\begin{figure}[H]
+  \centering
+  \includesvg[width=\textwidth]{figures/class-diagram.svg}
+  \caption[Class diagram of the Fuzzy Tuning Strategy]{Simplified class diagram of the Fuzzy Tuning strategy. There is a clear separation between implementing the Fuzzy Logic framework and the tuning strategy. This allows for an easy reuse of the Fuzzy Logic framework in other parts of AutoPas if desired.}
+  \label{fig:classdiagram}
+\end{figure}
 
+
+\section{Rule Parser}
+
+The Rule Parser is responsible for parsing the rule base supplied by the user and converting it into the internal representation used by the Fuzzy Tuning framework. It uses the ANTLR4\footnote{https://www.antlr.org/} parser generator to create a parser for a domain-specific language tailored to the needs of the Fuzzy Tuning. The language is inspired by common standards such as the Fuzzy Control Language (FCL)\footnote{https://www.fuzzylite.com/} but is designed to be more lightweight and directly incorporate aspects of the AutoPas simulation.
+The parsed rules are transformed into the internal representation by a visitor pattern that traverses the parse tree generated by ANTLR4 and internally builds the corresponding object hierarchy.
 
 \section{Tuning Strategy}
 
-The Tuning Strategy implements the interface between the Fuzzy Tuning framework and the AutoPas simulation. It is responsible for interacting with AutoPas and updating the configuration queue.
+The Tuning Strategy implements the interface between the Fuzzy Tuning framework and the AutoPas simulation and is responsible for updating the configuration queue of configurations to be tested next.
 
-It does this by evaluating all fuzzy systems present in the rule file with the current information on the simulation. The LiveInformation is a snapshot of the current state of the simulation. It contains summary statistics about various aspects of the simulation such as the number of particles, the average density, or the total number of particles. Each evaluation of a Fuzzy Control System yields a single numeric value, which is then passed on to the \texttt{OutputMapper}, which assigns the associated configurations to this predicted value.
+It does this by evaluating all fuzzy systems present in the rule file with the current information on the simulation. It primarily used \emph{LiveInformation} data, containing summary statistics about various aspects of the current simulation state. Possible parameters include the total number of particles, the average density, or the average homogeneity of the particle distribution. Each evaluation of a Fuzzy Control System yields a single numeric value, which is then passed on to the \texttt{OutputMapper}, which determines the resulting configuration. Such a mapping is necessary because the output of the Fuzzy Control System is a continuous value, while the configuration space of AutoPas is discrete, and we need to define mappings between the two.
 
 This method of assigning concrete configurations to the continuous output space of the Fuzzy Control Systems is inspired by Mohammed et al.~\cite{Mohammed2022}'s work on scheduling algorithms. Internally, the \texttt{OutputMapper} stores an ideal location for each available configuration and determines the configuration closest to the predicted value.
 
@@ -191,27 +204,146 @@ The resulting list of configurations predicted by the Fuzzy Tuning Strategy is t
 
 Currently, two different modes of interpreting the rules are implemented:
 
-\subsection{Individual Tuning Approach}
+\subsection{Component Tuning Approach}
 
-A more lightweight approach is the Parameter Tuning Approach. This approach creates a single Fuzzy Control System for each tunable parameter. All Fuzzy Control Systems then attempt to independently predict the optimal value for their respective parameter. Using this approach, the rule file only needs to define $\#Parameters$ Fuzzy Control Systems, which is much more manageable. The drawback of this approach is that the continuous output space of the Fuzzy Control Systems needs to be directly translated to discrete values, which is a non-trivial task. The main problem is that the tunable parameters are nominal values and thus have no natural order. This means that the interpolation between different linguistic terms, naturally performed by the Fuzzy Control Systems, is not meaningful in this context. To avoid this problem, we can use a defuzzification method that does not rely on performing some interpolation. One such method is the \gls{som} method, which selects the smallest $x$-value for which the membership function is maximal. Using this method, only a discrete set of possible outputs can be directly mapped to the nominal values of the tunable parameters using the OutputMapping construct of the Rule Parser. Since there is no interpolation between the linguistic terms, the order of the terms in the OutputMapping can be chosen arbitrarily.
+The component Tuning Approach expects a single Fuzzy Control System for each tunable parameter. All those Fuzz Systems should then attempt to predict the best value of their parameter independent of the other parameters. This approach requires the rule file to only define $\#Parameters$ different Fuzzy Control Systems, which makes it easier to maintain and understand. An obvious drawback of this method is the independence assumption between the parameters, which might not hold in practice.
 
-\todo{find citations for fuzzy rules for nominal values}
+Another problem of this approach lies in the defuzzification step. As this method relies on defining a single system for all parameter values, there must be a \emph{ranking} of all those values on a single numeric scale. Such a ranking is problematic, as most tunable values are nominal and do not have a natural order. To circumvent this problem, we can use a defuzzification method that does not perform interpolations between the values. Using such a method, the placement of the linguistic terms can be arbitrary. One such method is \gls{mom}. It selects the mean of all $x$-values for which the membership function is maximal. When using Gaussian-shaped membership functions, this method will only ever return the mean of the Gaussian with the highest activation. The OutputMapper can directly take these values and assign them to the corresponding nominal value of the tunable parameter. All predicted values are then used to filter the configuration queue, excluding all configurations that do not match the predicted values.
 
-\todo{link to later section}
+\autoref{fig:fuzzyInferenceSystemIndividual} shows a schematic of the Component Tuning Approach.
+
+
+\begin{figure}[H]
+  \centering
+
+  \newcommand{\xShift}{0.15}
+  \newcommand{\yShift}{0.27}
+  \newcommand{\scaleShift}{0.1}
+  \begin{tikzpicture}[scale=2,font=\small]
+    \node[anchor=east] (L) at (-3,-0.6) {$\text{LiveInfo} \in \mathbb{R}^d$};
+
+    \foreach \name [count=\i from 0] in { Newton3, DataLayout, Traversal, Container}
+      {
+        \pgfmathsetmacro{\scaleFactor}{1 + \i*\scaleShift}
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=white!80!black,scale=\scaleFactor,anchor=east] (A) at (0-\i * \xShift,0-\i * \yShift) {
+          \begin{tikzpicture}[font=\small]
+            \begin{axis}%
+              [
+                title={FCS [\name]},
+                width=3.8cm,
+                height=2.2cm,
+                axis lines=center,
+                xmin=0,
+                xmax=4,
+                xlabel={$\mathbb{R}$},
+                x label style={at={(axis description cs:1,0.2)},anchor=west},
+                ylabel=$\mu$,
+                y label style={at={(axis description cs:0,0.8)},anchor=east},
+                xtick={},
+                xticklabels= {},
+                ytick={},
+                yticklabels={},
+                ymax=1,
+                every axis plot/.append style={thick},
+                domain=0:4
+              ]
+              \addplot[blue, samples=17] {gaussian(x,1,0.2)};
+              \addplot[red,samples=15] {gaussian(x,2,0.2)};
+              \addplot[green,samples=17] {gaussian(x,3,0.2)};
+            \end{axis}
+          \end{tikzpicture}
+        };
+
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=white!80!black,scale=\scaleFactor*1.1,anchor=east] (O) at (1.45-\i *\xShift*0.2,0-\i*\yShift) {\tiny{OutputMapper}};
+
+        \node[scale=\scaleFactor*1.2, anchor=west] (T) at (1.85-\i*\xShift*0.3,0-\i*\yShift) {\tiny{\name Option}};
+
+        \draw[->, thick] (L.east) -- (A.west) ;
+
+        \draw[->, thick] (A.east) -- (O.west) ;
+        \draw[->, thick] (O.east) -- (T.west) ;
+      }
+
+  \end{tikzpicture}
+
+  \caption[Visualization of the fuzzy control systems for the Component Tuning Approach]{Example Visualization of the fuzzy control systems for the Component Tuning Approach. The parameters \texttt{Container}, \texttt{Traversal}, \texttt{DataLayout}, and \texttt{Newton3} are tuned independently. The OutputMapper assigns the predicted values to the corresponding nominal values of the parameters.}
+  \label{fig:fuzzyInferenceSystemIndividual}
+
+\end{figure}
 
 
 \subsection{Suitability Tuning Approach}
 
-The Suitability Approach is designed to tackle rule bases that try to predict a suitability value directly for \emph{each} configurations. The rule file needs to define $\#Containers \cdot \#Traversals \cdot \#DataLayouts \cdot \#Newton3\_options$ different Fuzzy Control Systems—one for each possible configuration of those parameters. As a result, we receive a direct ranking (maybe from 0 to 100\% applicability) for each configuration. The Tuning Strategy then selects all configurations within a certain threshold of the highest-ranking configuration and rewrites the queue of configurations with these selected configurations.
+The Suitability Approach differs from the Component Tuning Approach in that it utilizes $\#Container\_options \cdot \#Traversal\_options \cdot \#DataLayout\_options \cdot \#Newton3\_options$ different Fuzzy Control Systems, one for each possible combination of those parameters. Consequently, there are way more Fuzzy Control Systems to evaluate. The advantage of this approach is that there is no need to rank the output values, and one can utilize the power of interpolation between different predictions by using the \gls{cog} defuzzification method as the predicted suitabilities have a natural order. Furthermore, dependencies and incompatibilities between the parameters can be modeled accurately. The downside is the increased complexity of the rule file, which quickly becomes infeasible to maintain by hand. Surprisingly, the cost of evaluating all those Fuzzy Control Systems is negligible compared to the overhead of other tuning strategies.
 
-This method is a natural choice for rule bases as its style closely relates to the idea of Fuzzy Control Systems. It is possible to fully use the continuous output space of the Fuzzy Control Systems, and the method provides a straightforward mapping to the discrete AutoPas configuration space.
+Each System is responsible for predicting the suitability of a specific configuration, ranging from 0 (not suitable) to 100\% (perfectly suitable). After applying the OutputMapping, the Strategy selects all configurations performing within a certain threshold of the best configuration and rewrites the configuration queue accordingly. \autoref{fig:fuzzyInferenceSystemSuitability} shows a schematic of the Suitability Tuning Approach.
 
-The huge downside of this approach is the need to define a massive amount of Fuzzy Control Systems and rules in the rule file. This leads to a considerable rule file, quickly becoming infeasible to maintain by hand.
+\begin{figure}[H]
+  \centering
+
+  \newcommand{\xShift}{0.03}
+  \newcommand{\yShift}{0.13}
+  \newcommand{\scaleShift}{0.066}
+
+  \begin{tikzpicture}[scale=2,font=\small]
+    \node[anchor=east] (L) at (-3.5,-1.5) {$\text{LiveInfo} \in \mathbb{R}^d$};
+
+    \foreach \name [count=\i from 0] in {15,...,1}
+      {
+        \pgfmathsetmacro{\scaleFactor}{1 + \i*\scaleShift}
+        \pgfmathsetmacro{\opacity}{0 + 1*\i/6}
+        \pgfmathsetmacro{\arrowThickness}{0.2 + 1.8*\i/16}
 
 
-\todo{link to later section}
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=white!80!black, fill opacity=\opacity, draw opacity=\opacity,scale=\scaleFactor,anchor=east] (A) at (0-\i * \xShift,0-\i * \yShift) {
+          \begin{tikzpicture}[font=\tiny]
+            \begin{axis}%
+              [
+                title={FCS [Combination\textsubscript {\ifthenelse{\name<10}{\name\space}{\name}}]},
+                width=3cm,
+                height=2cm,
+                axis lines=center,
+                xmin=0,
+                xmax=4,
+                xlabel={$\mathbb{R}$},
+                x label style={at={(axis description cs:1,0.2)},anchor=west},
+                ylabel=$\mu$,
+                y label style={at={(axis description cs:0,0.8)},anchor=east},
+                xtick={},
+                xticklabels= {},
+                ytick={},
+                yticklabels={},
+                ymax=1,
+                every axis plot/.append style={thick},
+                domain=0:4
+              ]
+              \addplot[blue, samples=17] {gaussian(x,1,0.2)};
+              \addplot[red,samples=15] {gaussian(x,2,0.2)};
+              \addplot[green,samples=17] {gaussian(x,3,0.2)};
+            \end{axis}
+          \end{tikzpicture}
+        };
 
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=white!80!black, fill opacity=\opacity, draw opacity=\opacity,scale=\scaleFactor*0.8,anchor=east] (O) at (1+\i *\xShift*1,0-\i*\yShift) {\tiny{OutputMapper}};
 
-\section{Rule Parser}
+        \node[scale=\scaleFactor*0.8,fill opacity=\opacity, draw opacity=\opacity, anchor=west] (T) at (1.3+\i*\xShift*1,0-\i*\yShift) {\tiny{ Configuration {\ifthenelse{\name<10}{\name\space}{\name}}}};
 
-The Rule Parser is responsible for parsing the rule base supplied by the user and converting it into the internal representation used by the Fuzzy Tuning framework. It uses the ANTLR4\footnote{https://www.antlr.org/} parser generator to create a parser for a domain-specific language tailored to the needs of the Fuzzy Tuning. The language is inspired by common standards such as the Fuzzy Control Language (FCL)\footnote{https://www.fuzzylite.com/} but is designed to be more lightweight. The transformation of the parsed rules into the internal representation is done by a visitor pattern that traverses the parse tree generated by ANTLR4 and internally builds the corresponding objects of the Fuzzy Tuning framework.
+        \node[scale=\scaleFactor*0.8,fill opacity=\opacity, draw opacity=\opacity, anchor=west] (S) at (1.25+\i*\xShift*1,-0.2-\i*\yShift) {};
+
+        \draw[->,thick,fill opacity=\opacity, draw opacity=\opacity,] (L.east) -- (A.west) ;
+
+        \draw[->,thick,fill opacity=\opacity, draw opacity=\opacity,] (A.east) -- (O.west) ;
+        \draw[->,thick,fill opacity=\opacity, draw opacity=\opacity,] (O.east) -- (T.west) ;
+
+        \draw[thick, fill opacity=\opacity, draw opacity=\opacity]
+        (A.east) edge[bend right, looseness=0.5, ->]
+        (S.south west) ;
+      }
+
+  \end{tikzpicture}
+
+  \caption[Visualization of the fuzzy control systems for the Suitability Tuning Approach]{Example Visualization of the fuzzy control systems for the Suitability Tuning Approach. Each Fuzzy Control System is responsible for predicting the suitability of a specific configuration. The suitability and the mapped configuration are passed on to the Strategy, which only considers highly suitable configurations for the next simulation steps.}
+  \label{fig:fuzzyInferenceSystemSuitability}
+\end{figure}
+
