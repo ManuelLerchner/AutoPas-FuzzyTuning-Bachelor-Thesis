@@ -359,9 +359,9 @@ class Trapezoid(FuzzySet):
 
     def __repr__(self):
         prefix = ""
-        if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
-            prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Trapezoid({self.left}, {self.center_left}, {self.center_right}, {self.right})"
+        # if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
+        #     prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
+        return f"{prefix}\"{self.linguistic_term}\": Trapezoid({np.round(self.left, 0)}, {np.round(self.center_left, 0)}, {np.round(self.center_right, 0)}, {np.round(self.right, 0)})"
 
 
 class Gaussian(FuzzySet):
@@ -388,9 +388,9 @@ class Gaussian(FuzzySet):
 
     def __repr__(self):
         prefix = ""
-        if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
-            prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Gaussian({np.round(self.mean, 2)}, {np.round(self.sigma, 2)})"
+        # if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
+        #     prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
+        return f"{prefix}\"{self.linguistic_term}\": Gaussian({np.round(self.mean, 0)}, {np.round(self.sigma, 0)})"
 
 
 class Sigmoid(FuzzySet):
@@ -417,9 +417,9 @@ class Sigmoid(FuzzySet):
 
     def __repr__(self):
         prefix = ""
-        if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
-            prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Sigmoid({self.center}, {self.width})"
+        # if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
+        #     prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
+        return f"{prefix}\"{self.linguistic_term}\": Sigmoid({np.round(self.center, 0)}, {np.round(self.width, 2)})"
 
 
 class SigmoidFinite(FuzzySet):
@@ -526,7 +526,7 @@ class LinguisticVariable:
         ax.set_ylabel('Degree of Membership')
         ax.legend(loc='lower right')
 
-        ax.axhline(0, color='black', linewidth=1)
+        # ax.axhline(0, color='black', linewidth=1)
 
     def __eq__(self, name: str):
         """
