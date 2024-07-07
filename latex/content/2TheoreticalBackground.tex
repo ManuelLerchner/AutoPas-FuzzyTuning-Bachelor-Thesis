@@ -29,16 +29,16 @@ Two illustrations of such simulations are shown in \autoref{fig:hiv_capsid} and 
 
 \subsection{Quantum Mechanial Background}
 
-Our current knowledge of physics suggests that the behavior of atoms and molecules is governed by the laws of quantum mechanics, where particles are described by probabilistic wave functions evolving over time. The physicist Erwin Schrödinger first formulated a mathematical model describing this concept in 1926, which has gotten widespread acceptance and is now known as the Schrödinger equation. The Schrödinger equation is a partial differential equation describing the time evolution of a quantum system. It is given by:
+Our current knowledge of physics suggests that the behavior of atoms and molecules is governed by the laws of quantum mechanics, where particles are described by probabilistic wave functions evolving over time. In 1926, Austrian physicist Erwin Schrödinger formulated a mathematical model describing this concept, which has since gained widespread acceptance and is now generally known as the Schrödinger equation. The Schrödinger equation is a partial differential equation describing the time evolution of a quantum system and is given by:
 
 \begin{equation}
-      i \hbar \frac{\partial \Psi}{\partial t} = \hat{H} \Psi
+      i \hbar \frac{\partial \Psi(\vec{r}, t)}{\partial t} = \hat{H} \Psi(\vec{r}, t)
 \end{equation}
 
-Where $\Psi$ is the system's wave function, $\hat{H}$ is the Hamiltonian operator describing the system's energy, $t$ is the time, and $\hbar$ is the reduced Planck constant.
+Where $\Psi(\vec{r}, t)$ is the system's wave function, evolving over time $t$ and space $\vec{r}$. $\hat{H}$ is the Hamiltonian operator describing the system's energy, $t$ is the time, and $\hbar$ is the reduced Planck constant.
 \smallskip
 
-The Schrödinger equation provides a way to calculate the future states of a quantum system given the current state of the system. However, solving the Schrödinger equation for many particles is computationally very expensive and quickly becomes infeasible for systems with more than a few particles~\cite{Leimkuhler2015}. Simulating a single water molecule consisting of three nuclei and 10 electrons would require solving a partial differential equation with 39 variables (The water molecule consists of two hydrogen atoms, one oxygen atom, and 10 electrons. Each of those 13 objects is described by three spatial coordinates resulting in $(2+1+10)\times 3 = 39$ variables). The can be written as:
+The Schrödinger equation provides a way to calculate the future states of a quantum system given the system's current state. However, the computational complexity of solving this equation increases dramatically with the number of particles involved and quickly becomes infeasible for systems with more than a few particles~\cite{Leimkuhler2015}. To illustrate this complexity, consider simulating a single water molecule. This molecule consists of three nuclei (two hydrogen atoms and one oxygen atom) and 10 electrons. Each of these 13 objects requires three spatial coordinates to describe its position, resulting in a total of $(2+1+10) \times 3 = 39$ variables. The Schrodinger equation for this single water molecule can therefore be written as:
 
 \begin{equation}
       i \hbar \frac{\partial \Psi}{\partial t} = -\hbar^2 \sum_{i=1}^{13} \frac{1}{2m_i} \left( \frac{\partial^2 \Psi}{\partial x_i^2} + \frac{\partial^2 \Psi}{\partial y_i^2} + \frac{\partial^2 \Psi}{\partial z_i^2} \right) + U_p (x_1, y_1, z_1, \ldots, x_{13}, y_{13}, z_{13}) \Psi
@@ -47,8 +47,12 @@ The Schrödinger equation provides a way to calculate the future states of a qua
 In this equation, $m_i$ is the mass of the $i$-th object, $x_i$, $y_i$, and $z_i$ are the spatial coordinates of the $i$-th object, and $U_p$ is the potential energy function of the system.
 \smallskip
 
-As the Schrödinger equation is a partial differential equation, it is computationally expensive to solve for systems with many particles, as one quickly runs into the curse of dimensionality. The Born-Oppenheimer approximation simplifies this problem by exploiting the significant mass difference between electrons and nuclei. From the perspective of fast-moving electrons, the much heavier nuclei appear nearly stationary, allowing the separation of electronic and nuclear motions and treating the nuclei as classical particles. The remaining electronic energies can be combined further using a new energy function $U$ that depends solely on nuclear positions.
-This potential energy surface $U$ is typically obtained through quantum mechanical calculations or fitted to empirical data and is the critical component of molecular dynamics simulations.
+As the Schrödinger equation is a partial differential equation, it is computationally expensive to solve for systems with many particles, as one quickly runs into the curse of dimensionality. Larger systems, such as the HIV-1 capsid shown in \autoref{fig:hiv_capsid} consisting of millions of atoms, are practically impossible to simulate using the Schrödinger equation directly.
+
+Luckily, the Born-Oppenheimer approximation simplifies the Schrödinger equation so that it becomes computationally feasible to simulate even large systems of particles. The approximation exploits the significant mass difference between electrons and nuclei\footnote{
+      The mass ratio of a single proton to an electron is approximately 1836:1, illustrating the vast difference in mass between nuclei and electrons.
+}, making it possible to solve both motions independently~\cite{Zielinski2013}. As the forces acting on the heavy nuclei cause way slower movements compared to the same force acting on the electrons, it is possible to approximate the position of the nucleus as entirely stationary. This simplification yields a new potential energy function $U$ combining all electronic and nuclear energies, which depends only on the nuclei's positions.
+The potential energy function $U$ fundamentally controls the motions of the nuclei~\cite{Zielinski2013} and is typically obtained through quantum mechanical calculations or fitted to empirical data~\cite{Irikura2021}.
 
 As the Born-Oppenheimer approximation is based on simplifications of the full model, it is not always accurate. Depending on the system under investigation and the chosen potential energy function $U$, the Born-Oppenheimer approximation may neglect specific quantum mechanical effects, resulting in inaccuracies in the simulation.
 
@@ -62,7 +66,23 @@ After applying the Born-Oppenheimer approximation and using Newton's second law 
       m_i \frac{d^2 \vec{r}_i}{dt^2} = -\nabla_i U
 \end{equation}
 
-Where $m_i$ is the mass of the $i$-th particle, $\vec{r}_i$ is the position of the $i$-th particle, and $U$ is the potential energy function of the system. These equations precisely describe a classical particle system, where particles are treated as point masses moving through space under the influence of forces. The forces are derived from the potential energy function $U$ and are calculated using the gradient of the potential energy function $\nabla_i U$. The following section will describe an efficient way to solve these equations of motion using numerical integration methods.
+Where $m_i$ is the mass of the $i$-th particle, $\vec{r}_i$ is the position of the $i$-th particle, and $U$ is the potential energy function of the system. These equations precisely describe a classical particle system, where particles are treated as point masses moving through space under the influence of forces. The forces are derived from the potential energy function $U$ and are calculated using the negative gradient of the potential energy function $\nabla_i U$.
+
+\subsection{Potential Energy Function}
+
+As stated above, the potential energy function $U$ is a critical component of molecular dynamics simulations as it fundamentally defines the properties of the system. MD simulations use many different potential energy functions, all of which are tailored to describe specific aspects of the system. Those potentials typically use a mixture of 2-body, 3-body, and 4-body interactions between the particles, each used to describe different aspects of particle interactions. The 2-body interactions typically express the effect of Pauli repulsion, atomic bonds, and coulomb interactions, while higher-order interactions allow for asymmetric wave functions for atoms in bound-groups \cite{Leimkuhler2015}.
+
+A common choice for the potential energy function is the Lennard-Jones potential. This potential can reproduce the potential energy surfaces of many biological systems~\cite{NexusPhysicsLennardJones} while still being very simple and efficient to compute. It mainly emulates the attractive Van-der-Waals forces and the repulsive Pauli repulsion forces between the particles~\cite{ChemieLexikonLennardJones}.
+
+The Lennard-Jones potential is given by:
+
+\begin{equation}
+      U_{LJ}(r) = 4 \epsilon \left[ \left( \frac{\sigma}{r} \right)^{12} - \left( \frac{\sigma}{r} \right)^6 \right]
+\end{equation}
+
+
+Where $r$ is the distance between the particles, $\epsilon$ is the depth of the potential well, and $\sigma$ is the distance at which the potential is zero. The parameters $\epsilon$ and $\sigma$ can differ for each type of particle interaction and are either determined from theoretical considerations of the material or chosen to match experimental data~\cite{Maghfiroh2020}.
+
 
 \subsection{Numerical Integration}
 
@@ -73,19 +93,6 @@ Since the simulation domain potentially consists of a vast number of particles a
 \end{equation}
 
 Where $\vec{a}_i(t)$ is the acceleration of the $i$-th object at time $t$, this acceleration can be calculated from the particle mass and the acting forces using Newton's second law of motion $\vec{a}_i(t) =\frac{F_i}{m_i}= \frac{-\nabla_i U}{m_i}$.
-
-\subsection{Potential Energy Function}
-
-As stated above, the potential energy function $U$ is a critical component of molecular dynamics simulations as it fundamentally defines the properties of the system. MD simulations use many different potential energy functions, all of which are tailored to describe specific aspects of the system. Those potentials typically use a mixture of 2-body, 3-body, and 4-body interactions between the particles, each used to describe different aspects of particle interactions. The 2-body interactions typically express the effect of Pauli repulsion, atomic bonds, and coulomb interactions, while higher-order interactions allow for asymmetric wave functions for atoms in bound-groups \cite{Leimkuhler2015}.
-
-A common choice for the potential energy function is the Lennard-Jones potential. The simplicity of the Lennard-Jones potential makes it a popular choice for many systems, as it can be computed quite efficiently while still capturing many of the essential properties of the system. The Lennard-Jones potential is given by:
-
-\begin{equation}
-      U_{LJ}(r) = 4 \epsilon \left[ \left( \frac{\sigma}{r} \right)^{12} - \left( \frac{\sigma}{r} \right)^6 \right]
-\end{equation}
-
-
-Where $r$ is the distance between the particles, $\epsilon$ is the depth of the potential well, and $\sigma$ is the distance at which the potential is zero. The parameters $\epsilon$ and $\sigma$ can differ for each type of particle interaction and are either determined from theoretical considerations of the material or fitted to experimental data.
 
 \subsection{Simulation Loop}
 
