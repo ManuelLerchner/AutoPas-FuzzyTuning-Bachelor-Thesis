@@ -62,5 +62,6 @@
             "language": "latex",
             "scheme": "file"
         }
-    ]
+    ],
+    "cmake.sourceDirectory": "/home/manuel/AutoPas-FuzzyTuning-Bachelor-Thesis/demo/fuzzy-test/cpp"
 }
