@@ -116,7 +116,7 @@
 
 This chapter presents a proof of concept for the fuzzy tuning technique. We will develop a set of linguistic variables and fuzzy rules to predict the optimal configuration parameters for \texttt{\gls{mdflexible}} simulations.
 
-\section{Creating the Knowledge Base}
+\section{Demonstration of Rule Generation Process}
 
 Creating the knowledge base is one of the most complex parts of developing a fuzzy system, as it typically requires a profound understanding of the system to create meaningful rules. However, there are also methods to use a data-driven approach to create the knowledge base automatically. This is especially useful as those methods do not require prior expert knowledge about the system. However, regardless of how the knowledge base is created, it is still possible to manually evaluate and adjust the rules to add manual expert knowledge to the system. Such data-driven methods can be a good starting point for creating a fuzzy system, providing a good initial set of rules that experts can further refine.
 
@@ -124,7 +124,7 @@ There are several methods to automatically create and tune fuzzy systems based o
 In this work, we will use a decision tree approach proposed by Crockett et al.~\cite{CROCKETT20062809} to create the knowledge base for the fuzzy system. This proposed method uses machine learning to train a classical decision tree on the dataset. Then, it converts the decision tree into a fuzzy decision tree, which can be used to extract the linguistic variables and fuzzy rules.
 
 
-\section{Decision Trees}
+\subsection{Decision Trees}
 
 Decision trees are prevalent machine learning algorithms used for classification and regression tasks. They work by recursively partitioning the input using axis-parallel splits~\cite{10.5555/2380985} so that the resulting subsets are as pure as possible. There are several algorithms to train decision trees, such as ID3, C4.5, CART, and many others, but they all work by the principle of minimizing the \textit{impurity} of the resulting subsets. Decision trees are supervised learning algorithms, which means that they require labeled data to train.
 
@@ -219,12 +219,12 @@ Since decision trees directly partition the input space into regions with differ
 
 
 
-\section{Fuzzy Decision Trees}
+\subsection{Fuzzy Decision Trees}
 
 
 Fuzzy decision trees are a generalization of classical decision trees that allow for fuzzy logic to be used in decision-making. This extension eliminates the crisp decision boundaries of classical decision trees. Instead, it uses fuzzy sets at each node of the tree to calculate the contribution of each branch to the final decision. This allows for a more flexible decision-making process to consider the input data's uncertainty and the splits. Contrary to classical decision trees, which follow a single path from the root to a leaf node, fuzzy decision trees explore all possible paths simultaneously and make a final decision by aggregating the results of all paths using fuzzy logic. This is possible, as each node in a fuzzy decision tree can fuzzily assign how much each of its children should contribute to the final decision.
 
-\section{Converting a Decision Tree into a Fuzzy Inference System}
+\subsection{Conversion of Decision Trees to Fuzzy Control Systems}
 
 
 This section will demonstrate how to convert a classical decision tree into a fuzzy inference system using the fictional decision tree from \autoref{fig:decisionTreeExample} as an example.
@@ -490,7 +490,7 @@ Calculating the fuzzy system's whole decision surface is also possible by evalua
 
 \noindent The choice of the defuzzification method also marks the end of the conversion process since we now have a complete fuzzy system that can be used to predict new data points based on their features. The following section uses this approach to create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations.
 
-\section{Creating Fuzzy Rules for \texttt{md\_flexible}}
+\section{Fuzzy Control Systems for \texttt{md\_flexible}}
 
 Following the fuzzy decision tree approach from the previous sections, we can create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations. Contrary to the previous example, we must first collect a dataset of simulation runs with different configuration parameters and their corresponding performance metrics, which can then be used to train the crisp decision tree. After converting the crisp decision tree to a \gls{fis}, a human expert can evaluate and adjust the rules and membership functions if necessary.
 
@@ -507,16 +507,10 @@ All the values were collected with the \texttt{PAUSE\_SIMULATION\_DURING\_TUNING
 The data was collected on the CoolMUC-2 \todo{add specs} and primarily stems from the example scenarios provided by \gls{mdflexible} such as \texttt{explodingLiquid.yaml}, \texttt{fallingDrop.yaml}, \texttt{SpinodalDecomposition.yaml} and some simulations of uniform cubes with different particle counts and densities. The exact scenarios files used for the simulations can be found in \autoref{des:scenarios}.
 All simulations were run on the serial partition of the cluster and were repeated twice to account for fluctuations in performance. Furthermore, every simulation was run with 1, 4, 12, 24, and 28 threads to gather data on how parallelization affects the ideal configuration.
 
-\subsection{Data Analysis}
-
-
-To verify the sanity of the collected data, we can make plots about the data's distribution and the collected data's nominal values. The boxplot in \autoref{fig:inputAnalysisBoxplot} shows the distribution of the collected data, while the pie charts in \autoref{fig:inputAnalysisPiChart} show the relative proportions of the collected parameters. We can see that the data is quite balanced and that the nominal values are spread out relatively evenly, which is a good sign for the quality of the collected data.
-
-
 
 \subsection{Speedup Analysis}
 
-We can also do a more detailed analysis of the average performance of the different configuration options. As we froze the simulation during the tuning process, we can safely use the runtime of each iteration as a performance metric to compare all the tested configurations. Each tuning phase has a unique ranking of all the configurations based on their runtime, which we can use to calculate the relative speedup of each configuration compared to the best configuration. The formula for the relative speedup is given by:
+In order to make predictions about the performance of different configurations, we first need to define the metric used to compare them. As we froze the simulation during the tuning process, we can safely use the runtime of configuration during a tuning phase to find an ordering. To make these timings comparable between tuning phases, we introduce the term \emph{relative speedup}. The relative speedup describes the performance of a configuration relative to the best configuration in the tuning phase. The formula for the relative speedup is given by:
 
 \begin{equation}
     {\text{speedup}^{(i)}_{\text{config}}}= \frac{t_{\text{best}}^{(i)}}{t_{\text{config}}^{(i)}}

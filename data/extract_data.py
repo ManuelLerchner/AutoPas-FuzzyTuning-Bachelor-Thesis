@@ -117,15 +117,20 @@ current_repeat: dict = defaultdict(lambda: 1)
 
 for timestamp in out_files.keys():
     (scenario, threads, out_file) = out_files[timestamp]
-    csv_files = same_time[timestamp]
+    try:
+        csv_files = same_time[timestamp]
 
-    # copy files to scenario_repeat folder
-    for file in [out_file] + csv_files:
-        print(f"COPY {file} to {
-              folder}/{scenario}_{current_repeat[(scenario, threads)]}")
+        # copy files to scenario_repeat folder
+        for file in [out_file] + csv_files:
+            print(f"COPY {file} to {
+                folder}/{scenario}_{current_repeat[(scenario, threads)]}")
 
-        # move file
-        shutil.move(
-            f"{folder}/{file}", f"{folder}/{scenario}_{current_repeat[(scenario, threads)]}")
+            # move file
+            shutil.move(
+                f"{folder}/{file}", f"{folder}/{scenario}_{current_repeat[(scenario, threads)]}")
 
-    current_repeat[(scenario, threads)] += 1
+        current_repeat[(scenario, threads)] += 1
+    except KeyError:
+        print(f"Error: No csv file for {scenario} {threads} {timestamp}")
+        continue
+        # raise Exception("No csv file")
