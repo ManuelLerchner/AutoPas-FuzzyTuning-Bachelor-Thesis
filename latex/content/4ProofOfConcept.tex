@@ -114,23 +114,16 @@
 
 % -------------------------------------------------------------------------------
 
-This chapter presents a proof of concept for the fuzzy tuning technique. We will develop a set of linguistic variables and fuzzy rules to predict the optimal configuration parameters for \texttt{\gls{mdflexible}} simulations.
+This chapter presents a proof of concept for the fuzzy tuning technique. We will develop two different knowledge bases to predict the optimal configurations for \texttt{\gls{mdflexible}} simulations.
 
-\section{Demonstration of Rule Generation Process}
-
-Creating the knowledge base is one of the most complex parts of developing a fuzzy system, as it typically requires a profound understanding of the system to create meaningful rules. However, there are also methods to use a data-driven approach to create the knowledge base automatically. This is especially useful as those methods do not require prior expert knowledge about the system. However, regardless of how the knowledge base is created, it is still possible to manually evaluate and adjust the rules to add manual expert knowledge to the system. Such data-driven methods can be a good starting point for creating a fuzzy system, providing a good initial set of rules that experts can further refine.
-
-There are several methods to automatically create and tune fuzzy systems based on data. Some of the most common methods include genetic algorithms \todo{Add references to the methods}, particle swarm optimization, and decision trees.
-In this work, we will use a decision tree approach proposed by Crockett et al.~\cite{CROCKETT20062809} to create the knowledge base for the fuzzy system. This proposed method uses machine learning to train a classical decision tree on the dataset. Then, it converts the decision tree into a fuzzy decision tree, which can be used to extract the linguistic variables and fuzzy rules.
+As for all fuzzy systems, creating the knowledge base is one of the most complex parts of developing a fuzzy system, as it typically requires a profound understanding of the system to create meaningful rules. Luckily, methods such as data-driven approaches exist to semi-automate this process. This is extremely useful as those methods do not require prior expert knowledge about the system. For a problem as complex as tuning molecular dynamics simulations, it would be extremely hard to create a meaningful knowledge base from scratch. Such data-driven methods provide a good initial set of rules that experts can manually evaluate and adjust if desired. In this work, we will use a decision tree approach proposed by Crockett et al.~\cite{CROCKETT20062809}. This proposed method uses machine learning to first train decision trees on the dataset to create an initial crisp rule base. In the second step, the decision trees are converted into so-called fuzzy decision trees, which can then be used to extract the linguistic variables and fuzzy rules.
 
 
 \subsection{Decision Trees}
 
-Decision trees are prevalent machine learning algorithms used for classification and regression tasks. They work by recursively partitioning the input using axis-parallel splits~\cite{10.5555/2380985} so that the resulting subsets are as pure as possible. There are several algorithms to train decision trees, such as ID3, C4.5, CART, and many others, but they all work by the principle of minimizing the \textit{impurity} of the resulting subsets. Decision trees are supervised learning algorithms, which means that they require labeled data to train.
+Decision trees are prevalent machine learning algorithms used for classification and regression tasks. They work by recursively partitioning the input using axis-parallel splits so that the resulting subsets are as pure as possible. Concretely, they try to minimize a given impurity metric, such as the Gini impurity $I_G = \sum_{i=1}^{n} p_i(1-p_i)$ or the entropy $H = -\sum_{i=1}^{n} p_i \log_2(p_i)$ of the subsets~\cite{10.5555/2380985}. The probability $p_i$ is the fraction of samples in the subset that belong to class $i$, and $n$ is the total number of classes.
 
-A key feature of decision trees is their interpretability. This makes them a good choice for creating the initial knowledge base for a fuzzy system, as it is straightforward for a human expert to understand and refine the rules created by the decision tree with additional knowledge.
-
-Since decision trees directly partition the input space into regions with different classes, they can also be easily represented by their decision surface (given that the dimensionality of the input space is low enough). The decision surface of a decision tree is a piecewise constant function that assigns the predicted class to each region of the input space. An example decision tree and its decision surface are shown in \autoref{fig:decisionTreeExample} and \autoref{fig:decisionBoundaryExample}.
+Since decision trees directly partition the input space into regions with different classes, they can also be depicted using their decision surface if the dimensionality allows it. The decision surface of a decision tree is a piecewise constant function that assigns the predicted class label to each point in the input space of the decision tree. An example decision tree and its decision surface are shown in \autoref{fig:decisionTreeExample} and \autoref{fig:decisionBoundaryExample}.
 
 % Image of a decision tree
 \begin{multicols}{2}
@@ -218,27 +211,21 @@ Since decision trees directly partition the input space into regions with differ
 \end{multicols}
 
 
-
-\subsection{Fuzzy Decision Trees}
-
-
-Fuzzy decision trees are a generalization of classical decision trees that allow for fuzzy logic to be used in decision-making. This extension eliminates the crisp decision boundaries of classical decision trees. Instead, it uses fuzzy sets at each node of the tree to calculate the contribution of each branch to the final decision. This allows for a more flexible decision-making process to consider the input data's uncertainty and the splits. Contrary to classical decision trees, which follow a single path from the root to a leaf node, fuzzy decision trees explore all possible paths simultaneously and make a final decision by aggregating the results of all paths using fuzzy logic. This is possible, as each node in a fuzzy decision tree can fuzzily assign how much each of its children should contribute to the final decision.
-
 \subsection{Conversion of Decision Trees to Fuzzy Control Systems}
 
+This section will demonstrate how to convert a classical decision tree into a fuzzy decision system using the fictional decision tree from \autoref{fig:decisionTreeExample} as an example.
 
-This section will demonstrate how to convert a classical decision tree into a fuzzy inference system using the fictional decision tree from \autoref{fig:decisionTreeExample} as an example.
+\subsubsection{Fuzzy Decision Trees}
 
-A classical decision tree is converted to a fuzzy decision tree by replacing the crisp decision boundaries (e.g., $x \leq 3$) at each internal node with fuzzy membership functions. Those membership functions should have the same semantics as the crisp decision boundaries. However, instead of returning a binary value of whether to continue down the left or right branch, they return a value in the $[0,1]$ range that specifies to which degree each branch should be taken. The shape of the membership functions can be chosen arbitrarily, but since the decision should be one-sided, typical choices include complementary \texttt{sigmoid}-shaped functions.
-An obvious choice for the membership functions is to use \texttt{sigmoid} functions with a center at the crisp decision boundary, as this maintains the semantics of the branch. Crockett et al.~\cite{CROCKETT20062809} suggested defining symmetric sigmoid functions on the interval $[t-n\cdot \sigma, t+n\cdot \sigma]$ where $t$ is the crisp decision boundary, $\sigma$ is the standard deviation of the attribute, and $n$ is a parameter that can be adjusted to control the \emph{width} of the membership function. The \emph{width} of the membership function describes the interval where there is a significant change in the membership value. Outside of this interval, the membership value is close to 0 or 1, depending on the side of the interval.
+As the conversion makes use of so-called fuzzy decision trees, we will briefly introduce them here. Fuzzy decision trees are a generalization of classical decision trees and allow for fuzzy logic to be used in the decision-making process. Instead of following the classical \texttt{if then else} logic to descend into the decision tree, it uses fuzzy sets at each node of the tree to fuzzily calculate the contribution of each branch to the final decision based on the degree of truth of both possible paths. Contrary to classical decision trees, which follow a single path from the root to a leaf node, fuzzy decision trees explore all possible paths simultaneously and make a final decision by aggregating the results of the paths using fuzzy logic operations.
 
-The value of $n$ is typically chosen from the interval $n\in [0,5]$ as otherwise, the membership function can become too broad, weakening the decision-making process ~\cite{CROCKETT20062809}. In this work, we will use $n=2$ as a default value.
-
-By using a data-dependent \emph{width} of the membership functions, it is possible to fully automate the conversion of a decision tree into a fuzzy decision tree, which we will utilize in this work.
+\subsubsection{Conversion}
 
 
-The conversion of a crisp decision boundary into a fuzzy decision boundary is shown in \autoref{fig:fuzzyMembershipFunctions} using the example split $x \leq 3$.
+A classical decision tree is converted into a fuzzy decision tree by replacing the crisp decision (e.g., $x \leq 3$) at each internal node of the decision tree with a fuzzy set. Those fuzzy sets should maintain the same semantics as the crisp decision but should provide a continuous value in the range $[0,1]$ specifying the degree of how much each branch should be considered. Classical decision trees can only make binary decisions (${0,1}$), which causes them to only consider a single path of the decision tree. Allowing them to consider multiple paths simultaneously can drastically increase the decision-making capabilities of the decision tree, especially in boundary cases where the decision can be ambiguous.
 
+
+The shape of the membership functions of the fuzzy sets can be chosen arbitrarily, but since trees work with one-sided boundaries, typical choices include complementary \texttt{sigmoid}-shaped functions that are centered around the crisp decision boundary (See \autoref{fig:fuzzyMembershipFunctions}), as those function shapes maintain the semantics of the branching idea. Crockett et al.~\cite{CROCKETT20062809} suggested creating those sigmoid shapes with a \emph{width} proportional to the standard deviation of the attribute. In Particular, the authors suggested an interval $[t-n\cdot \sigma, t+n\cdot \sigma]$ for the membership function, where  $t$ is the value of the decision boundary, $\sigma$ is the standard deviation of the attribute and $n$ is a parameter that can be adjusted to control the \emph{width} of the membership function. This interval specifies the region of the membership function where most of the change in membership occurs. The value of $n$ is typically chosen from the interval $n\in [0,5]$ as the membership function can become too broad otherwise and could even weaken the decision-making process~\cite{CROCKETT20062809}. In this work, we will use $n=2$ as a default value. Using this method, it is possible to fully automate the conversion of a decision tree into a fuzzy decision tree, which we will utilize in this work.
 
 
 \begin{figure}[h]
@@ -259,60 +246,60 @@ The conversion of a crisp decision boundary into a fuzzy decision boundary is sh
         (1.5,0) to [bend left] (2.5,0);
 
     \end{tikzpicture}
-    \caption[Conversion of crisp tree node into fuzzy tree node]{Conversion of a crisp decision surface to a fuzzy decision surface. The crisp decision surface $x \leq 3$ is replaced by two \texttt{sigmoid} membership functions \textcolor{red}{$\mu_{\text{xsmaller3}}$} and \textcolor{blue}{$\mu_{\text{xgreater3}}$} that specify to which degree the comparison is true or false. The \emph{width} of the membership function is data dependent and is determined by $n\cdot \sigma = 2 \cdot \sigma$.}
+    \caption[Conversion of crisp tree node into fuzzy tree node]{Conversion of crisp set membership functions to fuzzy set membership functions. The classical membership functions $x \leq 3$ and $x>3$ of a decision tree node are replaced by two \texttt{sigmoid}-shaped membership functions \textcolor{red}{$\mu_{\text{xsmaller3}}$} and \textcolor{blue}{$\mu_{\text{xgreater3}}$} that specify to which degree one should traverse left or right. The \emph{width} of the membership functions is data dependent and is determined by $n\cdot \sigma = 2 \cdot \sigma$. }
     \label{fig:fuzzyMembershipFunctions}
 \end{figure}
 
+Once the internal nodes of the decision tree have been converted, the next step is to convert the leaf nodes of the decision tree to fuzzy leaf nodes. As the outputs of decision trees are specific class labels, we can define a single linguistic variable consisting of all possible class labels together with a corresponding fuzzy set. The shapes of the membership functions for the fuzzy sets can again be chosen mostly arbitrarily, but we will use \texttt{gaussian} functions with a different mean as they are a good choice for representing class labels in a continuous domain. This way of placing the fuzzy sets is not directly obvious, and the placement can significantly influence the defuzzification process depending on the chosen defuzzification function, as we will see later. However, we can minimize this issue by carefully choosing a suitable defuzzification method.
+The resulting conversion of the decision tree in \autoref{fig:decisionTreeExample} into a fuzzy decision tree is shown in \autoref{fig:fuzzyDecisionTreeExample}.
 
-Once the internal nodes of the decision tree have been converted, the next step is to convert the leaf nodes of the decision tree to fuzzy leaf nodes, representing the class values. This is also done by replacing each crisp class value with a fuzzy membership function that assigns a degree of membership to the class. The shape of the membership functions can again be chosen arbitrarily, but we will use \texttt{gaussian} functions with a specific mean and variance. Placing the different class-specific membership functions is very important, as it can heavily influence the defuzzification process for some defuzzification methods. Fuzzy systems typically use an interpolation between the different class values to determine the final output. The resulting conversion of the decision tree to a fuzzy decision tree is shown in \autoref{fig:fuzzyDecisionTreeExample}.
 
-
-\begin{figure}[h]
+\begin{figure}[h!]
     \centering
-    \begin{tikzpicture}[scale=2,font=\tiny]
+    \begin{tikzpicture}[scale=1.9,font=\tiny]
 
         \node [rectangle, rounded corners, draw, inner sep=2pt] (A) at (0,0) {
             \fuzzyTreeNode{x}{3}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt] (B) at (-2,-1.5) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt] (B) at (-2,-1.6) {
             \fuzzyTreeNode{y}{2}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt] (C) at (1.5,-1.5) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt] (C) at (1.8,-1.6) {
             \fuzzyTreeNode{y}{1}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt] (D) at (-3,-3) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt] (D) at (-3,-3.2) {
             \fuzzyTreeNode{x}{2}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt] (E) at (-1,-3) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt] (E) at (-1,-3.2) {
             \fuzzyTreeNode{x}{1}
         };
 
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=blue!20] (F) at (-3.5,-4.5) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=blue!20] (F) at (-3.7,-4.7) {
             \fuzzyTreeLeaf{1}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=orange!20] (G) at (-2.5,-4.5) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=orange!20] (G) at (-2.6,-4.7) {
             \fuzzyTreeLeaf{2}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=orange!20] (H) at (-1.5,-4.5) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=orange!20] (H) at (-1.5,-4.7) {
             \fuzzyTreeLeaf{2}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=blue!20] (I) at (-0.5,-4.5) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=blue!20] (I) at (-0.4,-4.7) {
             \fuzzyTreeLeaf{1}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=blue!20] (J) at (1,-4.5) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=blue!20] (J) at (1.25,-4.7) {
             \fuzzyTreeLeaf{1}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=green!20] (K) at (2,-4.5) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=green!20] (K) at (2.35,-4.7) {
             \fuzzyTreeLeaf{3}
         };
 
@@ -334,27 +321,29 @@ Once the internal nodes of the decision tree have been converted, the next step 
         \draw[->] (E) -- (I) node [pos=.6, right, above right] {no};
     \end{tikzpicture}
 
-    \caption[Fuzzy decision tree created from the regular decision tree]{The fuzzy decision tree corresponding to the decision tree in \autoref{fig:decisionTreeExample}. Each internal node in the fuzzy decision tree uses two \texttt{sigmoid} membership functions (\textcolor{red}{$\mu_{\text{smaller}}$} and \textcolor{blue}{$\mu_{\text{greater}}$}) to specify to which degree the comparison is true or false. The leaf nodes use different \texttt{gaussian} membership functions centered around their class value.}
+    \caption[Fuzzy decision tree created from the regular decision tree]{The fuzzy decision tree corresponding to the decision tree in \autoref{fig:decisionTreeExample}. Internal nodes use two \texttt{sigmoid} membership functions (\textcolor{red}{$\mu_{\text{smaller}}$} and \textcolor{blue}{$\mu_{\text{greater}}$}) instead of a crisp decision. The leaf nodes use different \texttt{gaussian} membership functions centered around a unique mean.}
 
     \label{fig:fuzzyDecisionTreeExample}
 \end{figure}
 
-After the translation of the decision tree, all membership functions operating on the same variable can be combined into a single linguistic variable. Note that the membership functions' specific shapes have been picked arbitrarily and can be adjusted to better fit the data. The resulting linguistic variables are shown in \autoref{fig:fuzzyDecisionTreeLinguisticVariables}.
+It is now possible to fully extract all linguistic variables from the fuzzy decision tree. Every fuzzy set defined over the same variable can be collected into a single linguistic variable. This results in linguistic variables consisting of a bunch of different \texttt{sigmoid} membership functions for input variables (internal nodes) and a single linguistic variable with different \texttt{gaussian} membership functions for the output variable (leaf nodes). The resulting linguistic variables are shown in \autoref{fig:fuzzyDecisionTreeLinguisticVariables}.
 
-\begin{figure}[H]
+
+\begin{figure}[h]
     \centering
 
-    \includegraphics[width=\linewidth,trim={3.5cm 0 3.5cm 1cm},clip]{figures/ProofOfConcepts/fuzzy_sets.png}
+    \includegraphics[width=\linewidth]{figures/ProofOfConcepts/fuzzy_sets.png}
 
-    \caption[Linguistic variables for the converted fuzzy decision tree]{Linguistic variables used in the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample}. The standard deviation of the attributes is assumed to be $\sigma \approx 0.5$ such that the \emph{width} of the sigmoid membership functions is $n\cdot \sigma \approx 1$. The class values are assumed to be normally distributed and are places where they don't overlap much.}
+    \caption[Linguistic variables for the converted fuzzy decision tree]{Linguistic variables used in the fuzzy decision tree of \autoref{fig:fuzzyDecisionTreeExample}. The standard deviation of the attributes is assumed to be $\sigma \approx 0.5$ such that the \emph{width} of the sigmoid membership functions is $n\cdot \sigma \approx 1$. The standard deviation of the class values is chosen so that they do not overlap too much.}
     \label{fig:fuzzyDecisionTreeLinguisticVariables}
 \end{figure}
 
 \subsubsection{Rule Extraction}
 
-Once the fuzzy decision tree has been created, the next step is to extract the fuzzy rules from the tree. This can be done by traversing the tree in a depth-first manner and collecting the correct membership functions for each path along the way. Each connection between two internal nodes in the tree corresponds to a \texttt{AND} operation. In contrast, each final connection between an internal node and a leaf node corresponds to an \texttt{IMPLIES} operation. This implication then forms a rule for the fuzzy system.
-This process essentially mimics the decision surface seen in \autoref{fig:decisionBoundaryExample}, as we create precisely one rule for each region of the decision surface. The rules extracted from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} are shown in \autoref{tab:fuzzyRulesExample}.
+The final step is to extract the fuzzy rules from the tree. This can be done by traversing the tree in a depth-first manner and collecting the correct membership functions for each path ending in a leaf node along the way. As all conditions of this path have to hold simultaneously, all fuzzy sets are connected using the \texttt{AND} operation. This newly created fuzzy set, which consists of the intersection of all fuzzy sets along the way, is the premise of selecting the fuzzy set of the leaf node. Consequently, both fuzzy sets are connected using the Mamdani \texttt{IMPLICATION} operator. This implication then forms a rule for the fuzzy system. Therefore, each unique path traversing the tree results in a unique rule. This process essentially mimics the decision surface seen in \autoref{fig:decisionBoundaryExample}, as we create precisely one rule for each region of the decision surface. The rules extracted from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} using this method are shown in \autoref{tab:fuzzyRulesExample}.
 
+
+\newpage
 \newcommand{\is}{\textit{ is }}
 
 
@@ -374,10 +363,9 @@ This process essentially mimics the decision surface seen in \autoref{fig:decisi
     \label{tab:fuzzyRulesExample}
 \end{table}
 
-\subsubsection{Fuzzy Inference System}
+\subsubsection{Fuzzy Control System}
 
-With the linguistic variables and fuzzy rules extracted from the decision tree, we can now use them to create a fuzzy system that can predict the class of a new data point based on its features. Since the fuzzy system can be seen as a black box mapping continuous input features to continuous output classes
-(see \autoref{fig:fuzzyInferenceSystem}), it is possible to visualize the fuzzy system's decision surface by evaluating the rules' membership functions for each point in the input space. This decision surface can then be used to understand the fuzzy system's decision-making process and identify possible errors in the rules or membership functions.
+With the linguistic variables and fuzzy rules extracted from the decision tree, we can finally use them to create a fuzzy system that can predict the class of a new data point based on its features. Since the fuzzy system can be seen as a black box mapping continuous input features to continuous output classes, we represent them as shown in \autoref{fig:fuzzyControlSystem} from now on. It is also possible to visualize the fuzzy system's decision surface by evaluating the system for each point in the input space, as shown in \autoref{fig:fuzzyDecisionSurface} for two different defuzzification methods. Such visualizations can help understand the decision-making process of the fuzzy system but, unfortunately, are not possible for higher-dimensional input spaces.
 
 
 \begin{figure}[h]
@@ -388,17 +376,18 @@ With the linguistic variables and fuzzy rules extracted from the decision tree, 
             Rules, Linguistic Variables \& Defuzzification Method
         };
 
-        \node [rectangle, rounded corners, draw, inner sep=2pt] (A) at (0,0) {
+
+        \node [rectangle, rounded corners, draw, inner sep=2pt,fill=white!80!black, fill ] (A) at (0,0) {
             \begin{tikzpicture}[scale=2,font=\tiny]
                 \begin{axis}%
                     [
-                        title={\gls{fis}},
-                        width=3.2cm,
+                        title={FCS},
+                        width=3cm,
                         height=2cm,
                         axis lines=center,
                         xmin=0,
                         xmax=4,
-                        xlabel={$class$},
+                        xlabel={$\mathbb{R}$},
                         x label style={at={(axis description cs:1,0.2)},anchor=west},
                         ylabel=$\mu$,
                         y label style={at={(axis description cs:0,0.8)},anchor=east},
@@ -417,6 +406,8 @@ With the linguistic variables and fuzzy rules extracted from the decision tree, 
             \end{tikzpicture}
         };
 
+
+
         \draw[->,thick] (B) -- (A);
 
         \draw[->,ultra thick] (-2.5,+0.2) -- (A) node [left, pos=0] {$x \in \mathbb{R}$};
@@ -424,23 +415,22 @@ With the linguistic variables and fuzzy rules extracted from the decision tree, 
         \draw[->,ultra thick] (A) -- (2.5,0) node [right, pos=1] {$class \in \mathbb{R}$};
     \end{tikzpicture}
 
-    \caption[Fuzzy inference system created from the fuzzy decision tree seen as a black box]{The fuzzy inference system created from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} can be seen as a black box that maps continuous input features to continuous output classes.}
+    \caption[Fuzzy Control system created from the fuzzy decision tree seen as a black box]{The fuzzy control system created from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} can be seen as a black box that maps continuous input features to continuous output classes.}
 
-    \label{fig:fuzzyInferenceSystem}
+    \label{fig:fuzzyControlSystem}
 \end{figure}
 
 \subsubsection{Choice of Defuzzification Method}
 
-The exact shape of the decision surface depends on the defuzzification method used. The most common choice is the \gls{cog} method, which calculates the $x$-position of the center of gravity of the resulting membership function.
-However, using the \gls{cog} method can lead to undesired results when using nominal \todo{check} values for the output classes, as there is no concept of ordering among the values.
-Without such an ordering, the interpolation between the different classes performed by methods such as \gls{cog} is not meaningful and leads to wrong predictions. Other methods, such as the \gls{mom} method, can be used instead. This method calculates the mean value of the maximum membership functions. In most cases, this method will return precisely the center of the membership function with the highest value and is, therefore, a good choice for nominal values. A direct comparison of the two methods on a critical datapoint is shown in \autoref{fig:fuzzySetForDataCOG} and \autoref{fig:fuzzySetForDataMOM}
+The exact shape of the decision surface depends on the specific defuzzification method used. The most common choice in literature is the \gls{cog} method, which calculates the $x$-position of the center of gravity of the membership function of the final fuzzy set.
+However, using the \gls{cog} method can lead to undesired results when using nominal values for the output classes, which we will see later. The main problem is that the values have no concept of order. Without such an ordering, the interpolation between the different classes performed by methods such as \gls{cog} is not meaningful and leads to wrong predictions. Other methods, such as the \gls{mom} method, can be used instead. This method calculates the mean value of the maximum membership functions. In most cases, this method will return precisely the center of the membership function with the highest value and is a good choice for such types of knowledge bases. A direct comparison of the two methods on a critical datapoint is shown in \autoref{fig:fuzzySetForDataCOG} and \autoref{fig:fuzzySetForDataMOM}. Using the \gls{cog} method results in an opposite class than originally predicted from the fuzzy system, while the \gls{mom} method correctly predicts the class.
 
 \begin{multicols}{2}
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.9\columnwidth,trim={0 0 0 1cm},clip]{figures/ProofOfConcepts/fuzzy_set_for_data_cog.png}
-        \caption[Resulting Fuzzy Set after applying the Rules on specific Data, COG Method]{Resulting fuzzy set after applying the rules from \autoref{tab:fuzzyRulesExample} on the data point $(x=2.95, y=2.5)$. There are clear peaks at the class values 1 and 3. However, the \gls{cog} method returns Class 2, as it lies right between the two peaks, turning the good predictions into bad ones.}
+        \caption[Resulting Fuzzy Set after applying the Rules on specific Data, COG Method]{Defuzzification on the fuzzy obtained by applying the rules from \autoref{tab:fuzzyRulesExample} on the data point $(x=2.95, y=2.5)$. There are clear peaks at the class values 1 and 3. However, the \gls{cog} method incorrectly suggests values close to class 2, thus turning the two good predictions into a bad one.}
         \label{fig:fuzzySetForDataCOG}
     \end{figure}
 
@@ -449,20 +439,20 @@ Without such an ordering, the interpolation between the different classes perfor
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.9\columnwidth,trim={0 0 0 1cm},clip]{figures/ProofOfConcepts/fuzzy_set_for_data_mom.png}
-        \caption[Resulting Fuzzy Set after applying the Rules on specific Data, MOM Method]{The \gls{mom} method returns the class value 1, as it is the mean of the two peaks at class values 1 and 3. This is a much better prediction than the one made by the \gls{cog} method.}
+        \caption[Resulting Fuzzy Set after applying the Rules on specific Data, MOM Method]{Defuzzification on the fuzzy obtained by applying the rules from \autoref{tab:fuzzyRulesExample} on the data point $(x=2.95, y=2.5)$. The \gls{mom} method correctly suggests the class value 1, as it is the class with the highest membership value.}
 
         \label{fig:fuzzySetForDataMOM}
     \end{figure}
 
 \end{multicols}
 
-Calculating the fuzzy system's whole decision surface is also possible by evaluating the rules' membership functions for each point in the input space. Both the decision surface using the \gls{cog} and \gls{mom} defuzzification methods are shown in \autoref{fig:fuzzyDecisionSurfaceExampleCOG} and \autoref{fig:fuzzyDecisionSurfaceExampleMOM} respectively.
+As previously mentioned, we can recreate the process depicted in \autoref{fig:fuzzyControlSystem} for every possible input data point to visualize the fuzzy systems' decision surface. Both resulting decision surfaces are shown in \autoref{fig:fuzzySetForDataCOG} and \autoref{fig:fuzzySetForDataMOM}, respectively. The decision surface using the \gls{cog} tries to smoothly interpolate between the different classes, which causes interpolation errors if there are other classes in between. The decision surface using the \gls{mom} method is valid and closely resembles the decision surface of the crisp decision tree in \autoref{fig:decisionBoundaryExample}.
 
 \begin{multicols}{2}
     \begin{figure}[H]
         \centering
         \begin{tikzpicture}
-            \node[anchor=south west,inner sep=0] (image) at (0,0) { \includegraphics[width=0.9\columnwidth,trim={0 0 0 1cm},clip]{figures/ProofOfConcepts/fuzzy_system_cog.png}};
+            \node[anchor=south west,inner sep=0] (image) at (0,0) { \includegraphics[width=0.9\columnwidth,trim={0 0 0 1.25cm},clip]{figures/ProofOfConcepts/fuzzy_system_cog.png}};
             \begin{scope}[x={(image.south east)},y={(image.north west)}]
                 \draw[yellow, thin,rounded corners] (.55,.67) rectangle (.65,.95);
                 \draw[yellow, thin,rounded corners] (.6,.32) rectangle (.74,.48);
@@ -473,7 +463,7 @@ Calculating the fuzzy system's whole decision surface is also possible by evalua
             \end{scope}
         \end{tikzpicture}
 
-        \caption[Decision surface of the fuzzy rules using COG method]{The decision surface of the \gls{fis} created from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} over $\mathcal{D}=[0,4]\times[0,3]$ using the \gls{cog} defuzzification method. The highlighted area shows the interpolation error of the \gls{cog} method described in \autoref{fig:fuzzySetForDataCOG}.}
+        \caption[Decision surface of the fuzzy rules using COG method]{Decision surface of the developed fuzzy-system using the \gls{cog} defuzzification method. The highlighted areas show interpolation errors caused by the defuzzification.}
         \label{fig:fuzzyDecisionSurfaceExampleCOG}
     \end{figure}
 
@@ -481,18 +471,17 @@ Calculating the fuzzy system's whole decision surface is also possible by evalua
 
     \begin{figure}[H]
         \begin{tikzpicture}
-            \node[anchor=south west,inner sep=0] (image) at (0,0) { \includegraphics[width=0.9\columnwidth,trim={0 0 0 1cm},clip]{figures/ProofOfConcepts/fuzzy_system_mom.png}};
+            \node[anchor=south west,inner sep=0] (image) at (0,0) { \includegraphics[width=0.9\columnwidth,trim={0 0 0 1.25cm},clip]{figures/ProofOfConcepts/fuzzy_system_mom.png}};
         \end{tikzpicture}
-        \caption[Decision surface of the fuzzy rules using MOM method]{The decision surface of the  \gls{fis} created from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} over $\mathcal{D}=[0,4]\times[0,3]$ using the \gls{mom} defuzzification method.}
+        \caption[Decision surface of the fuzzy rules using MOM method]{Decision surface of the developed fuzzy-system using the \gls{mom} defuzzification method. There are no invalid regions in the decision surface.}
         \label{fig:fuzzyDecisionSurfaceExampleMOM}
     \end{figure}
 \end{multicols}
 
-\noindent The choice of the defuzzification method also marks the end of the conversion process since we now have a complete fuzzy system that can be used to predict new data points based on their features. The following section uses this approach to create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations.
 
 \section{Fuzzy Control Systems for \texttt{md\_flexible}}
 
-Following the fuzzy decision tree approach from the previous sections, we can create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations. Contrary to the previous example, we must first collect a dataset of simulation runs with different configuration parameters and their corresponding performance metrics, which can then be used to train the crisp decision tree. After converting the crisp decision tree to a \gls{fis}, a human expert can evaluate and adjust the rules and membership functions if necessary.
+Following the fuzzy decision tree approach from the previous sections, we can create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations. Contrary to the previous example, we must first collect a dataset of simulation runs with different configuration parameters and their corresponding performance metrics, which can then be used to train the crisp decision tree. After converting the crisp decision tree to a \gls{fcs}, a human expert can evaluate and adjust the rules and membership functions if necessary.
 
 The resulting fuzzy system can then be used to predict the optimal configuration parameters for new simulation runs based on the current state of the simulation.
 
@@ -539,7 +528,7 @@ Using the decision tree approach described in the previous sections, we can crea
     \item Create the OutputMapping Export and export everything to a rulefile.
 \end{enumerate}
 
-As described previously, we will create two different kinds of rule bases, one for the Suitability Approach and one for the Individual Tuning Approach. In the following sections, we will describe both approaches in detail.
+As described previously, we will create two different kinds of knowledge bases, one for the Suitability Approach and one for the Individual Tuning Approach. In the following sections, we will describe both approaches in detail.
 
 \subsection{Individual Tuning Approach}
 
@@ -697,7 +686,7 @@ As described previously, we use \texttt{gaussian} membership functions for each 
     \end{figure}
 \end{multicols}
 
-At the end of the process, we have different fuzzy systems for each of the tunable parameters of the simulation of the form shown in \autoref{fig:fuzzyInferenceSystemIndividual}. The fuzzy system can be seen as a black box that maps the LiveInfo data into a sort of \emph{index} representing the predicted values of the parameter. Using the \gls{mom} method, the output will always correspond to the fuzzy set with the highest membership value and be free of interpolation errors.
+At the end of the process, we have different fuzzy systems for each of the tunable parameters of the simulation of the form shown in \autoref{fig:fuzzyControlSystemIndividual}. The fuzzy system can be seen as a black box that maps the LiveInfo data into a sort of \emph{index} representing the predicted values of the parameter. Using the \gls{mom} method, the output will always correspond to the fuzzy set with the highest membership value and be free of interpolation errors.
 
 
 \subsection{Suitability Approach}

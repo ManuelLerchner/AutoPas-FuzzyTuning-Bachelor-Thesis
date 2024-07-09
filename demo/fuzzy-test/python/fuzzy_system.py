@@ -283,8 +283,8 @@ class FuzzySet:
                 ax.fill_between(xrange, 0, y, alpha=0.25)
             (cog_x, cog_y) = self.defuzzyfy(method=defuzzifiationMethod, n=n)
             ax.axvline(cog_x, color='black', linestyle='--')
-            ax.plot([cog_x], [cog_y], marker='o', markersize=5, color="black",
-                    label=f"Defuzzified Value: ({cog_x:.2f}, {cog_y:.2f}) [method={defuzzifiationMethod}]")
+            ax.plot([cog_x], [cog_y], marker='o', markersize=10, color="black",
+                    label=f"Defuzzified Value: ({cog_x:.2f}) [{defuzzifiationMethod}]")
 
         ax.set_xlabel(name)
         ax.set_ylabel("Membership Value")
