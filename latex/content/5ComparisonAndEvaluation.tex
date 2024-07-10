@@ -21,9 +21,23 @@ This plot also shows that the interquartile range of the classical tuning strate
 The last plot in \autoref{fig:explodingLiquidTotalTime_1thread} shows the total time spent calculating the forces for each tuning strategy, again divided into simulation and tuning time. The fuzzy tuning strategies have the lowest total time, with practically no time spent in the tuning phases. Both fuzzy tuning approaches perform similarly and are by far the best-performing strategies. All other strategies typically spend more than 50\% of their time in tuning phases where they potentially encounter very bad configurations, which causes them to perform much worse than the fuzzy tuning strategies.
 
 
+\subsection{Spinodal Decomposition Benchmark MPI (Related to Training Data)}
+
+The spinodal decomposition benchmark simulates an unstable liquid that separates into two phases, each having different characteristics. To improve the performance of the simulation, we used four different MPI ranks, each running on 14 threads to simulate the scenario. As the complete spinodal decomposition benchmark was included in the training data, and the scenario is very homogeneous, we expect the fuzzy tuning strategies to also perform well in this scenario, even if there are no direct training data points for the division of the simulation into multiple MPI ranks.
+
+For brevity, we only include the benchmark results for the 0th MPI rank, as the results for the other MPI ranks are nearly identical.
+
+The plot in \autoref{fig:spinodalTimings_14thread} shows the time spent calculating the forces for each tuning strategy throughout the simulation. This time, we see a difference in both fuzzy tuning strategies, as the component tuning approach performs way better than the suitability approach for most of the simulation. By looking at the boxplots in \autoref{fig:spinodalBoxplot_14thread}, we see that the suitability approach has the lowest median time spent during the tuning phases. However, it struggles to find the optimal configurations.
+
+Currently, the rule file for the suitability approach specifies that only the top 10\% of configurations with the highest suitability should be selected. Increasing this threshold and spending more time in the tuning phase may be beneficial, as currently, the most considerable slowdown is caused by the inability to find the optimal configuration. From \autoref{fig:spinodalTotalTime_14thread}, we can confirm that the suitability approach spends the least time in the tuning phases, and it could be very worthwhile to increase this limit to improve the total performance.
+
+\autoref{fig:spinodal_14thread} shows that the component tuning approach again performs best, with a decrease in simulation time of around 30\% compared to the FullSeach- and BayesianOptimization-based tuning strategies. The suitability and predictive tuning approaches perform similarly and are in second place. Remarkably, the suitability approach performed reasonably well despite never finding the optimal configuration, mainly due to basically no time wasted during the tuning phases. This shows the importance of efficient tuning phases, as they can cause tremendous overhead if not done correctly.
+
+\newpage
 
 
-\begin{figure}[h]
+
+\begin{figure}[H]
     \centering
 
     \begin{subfigure}[c]{\textwidth}
@@ -50,21 +64,7 @@ The last plot in \autoref{fig:explodingLiquidTotalTime_1thread} shows the total 
     \label{fig:explodingLiquid_1thread}
 \end{figure}
 
-
-\subsection{Spinodal Decomposition Benchmark MPI (Related to Training Data)}
-
-The spinodal decomposition benchmark simulates an unstable liquid that separates into two phases, each having different characteristics. To improve the performance of the simulation, we used four different MPI ranks, each running on 14 threads to simulate the scenario. As the complete spinodal decomposition benchmark was included in the training data, and the scenario is very homogeneous, we expect the fuzzy tuning strategies to also perform well in this scenario, even if there are no direct training data points for the division of the simulation into multiple MPI ranks.
-
-For brevity, we only include the benchmark results for the 0th MPI rank, as the results for the other MPI ranks are nearly identical.
-
-The plot in \autoref{fig:spinodalTimings_14thread} shows the time spent calculating the forces for each tuning strategy throughout the simulation. This time, we see a difference in both fuzzy tuning strategies, as the component tuning approach performs way better than the suitability approach for most of the simulation. By looking at the boxplots in \autoref{fig:spinodalBoxplot_14thread}, we see that the suitability approach has the lowest median time spent during the tuning phases. However, it struggles to find the optimal configurations.
-
-Currently, the rule file for the suitability approach specifies that only the top 10\% of configurations with the highest suitability should be selected. Increasing this threshold and spending more time in the tuning phase may be beneficial, as currently, the most considerable slowdown is caused by the inability to find the optimal configuration. From \autoref{fig:spinodalTotalTime_14thread}, we can confirm that the suitability approach spends the least time in the tuning phases, and it could be very worthwhile to increase this limit to improve the total performance.
-
-\autoref{fig:spinodal_14thread} shows that the component tuning approach again performs best, with a decrease in simulation time of around 30\% compared to the FullSeach- and BayesianOptimization-based tuning strategies. The suitability and predictive tuning approaches perform similarly and are in second place. Remarkably, the suitability approach performed reasonably well despite never finding the optimal configuration, mainly due to basically no time wasted during the tuning phases. This shows the importance of efficient tuning phases, as they can cause tremendous overhead if not done correctly.
-
-
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
 
     \begin{subfigure}[c]{\textwidth}
@@ -92,3 +92,36 @@ Currently, the rule file for the suitability approach specifies that only the to
 \end{figure}
 
 
+
+\subsection{General Observations}
+
+As described above, a tremendous slowdown of the classical tuning strategies is caused by very bad configurations that are sometimes encountered during the tuning phases. To further illustrate this, we will investigate the speedup density distribution of all configurations evaluated during the tuning phases of the different strategies. In particular, we will look at the Exploding Liquid and Spinodal Decomposition MPI scenarios described above, as they represent \emph{small} and \emph{large} scenarios, respectively.
+
+The plots in \autoref{fig:tuningPhaseSpeedup} show these relative speedup distributions. All non-rule-based tuning strategies tend to encounter configurations with extremely low speedups during the tuning phases. Some of those bad configurations are $\approx100$ times slower than the best configurations of the tuning phase. As seen in the previous plots, those very slow configurations completely ruin the performance of the classical tuning strategies during the tuning phases.
+
+It is also interesting to note that most of those bad performances are caused by very slow Neighbour List rebuilds, especially in the Spinodal Decomposition MPI scenario. This means that tuning strategies with very short tuning phases, like the fuzzy tuning strategies, have a significant advantage, as they only tend to evaluate configurations expected to suit the current state.
+
+In both scenarios, the fuzzy tuning strategies have the best speedup distributions and, by far, the highest mean speedup during the tuning phases. However, this does not automatically mean they will perform their best in the following simulation phase, as they could fail to predict the optimal configuration.
+
+\newpage
+
+\begin{figure}[H]
+    \centering
+
+    \begin{subfigure}[c]{\textwidth}
+        \includegraphics[width=\columnwidth,trim={1cm 0 0cm 1cm},clip]{figures/Benchmark/Observations/tuning_phase_speedup_explodingLiquid_1_zoomed.png}
+        \caption{Exploding Liquid scenario with one thread.}
+        \label{fig:explodingLiquidSpeedupDensity}
+    \end{subfigure}
+
+
+    \begin{subfigure}[c]{\textwidth}
+        \includegraphics[width=\columnwidth,trim={1cm 0 0cm 1cm},clip]{figures/Benchmark/Observations/tuning_phase_speedup_SpinodalDecompositionMPI_14_0.png}
+        \caption{Rank 0 of the Spinodal Decomposition MPI scenario with 14 threads.}
+        \label{fig:spinodalSpeedupDensity}
+    \end{subfigure}
+
+
+    \caption[Quality of predictions during tuning phases]{The plot shows the speedup density distribution of all configurations evaluated during the tuning phases of both the Exploding Liquid and Spinodal Decomposition MPI scenarios. Most slow configurations are caused by the very slow Neighbour List rebuilds, especially in the Spinodal Decomposition MPI scenario, as there are many more particles.}
+    \label{fig:tuningPhaseSpeedup}
+\end{figure}
