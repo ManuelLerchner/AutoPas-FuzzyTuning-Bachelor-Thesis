@@ -118,6 +118,7 @@ This chapter presents a proof of concept for the fuzzy tuning technique. We will
 
 As for all fuzzy systems, creating the knowledge base is one of the most complex parts of developing a fuzzy system, as it typically requires a profound understanding of the system to create meaningful rules. Luckily, methods such as data-driven approaches exist to semi-automate this process. This is extremely useful as those methods do not require prior expert knowledge about the system. For a problem as complex as tuning molecular dynamics simulations, it would be extremely hard to create a meaningful knowledge base from scratch. Such data-driven methods provide a good initial set of rules that experts can manually evaluate and adjust if desired. In this work, we will use a decision tree approach proposed by Crockett et al.~\cite{CROCKETT20062809}. This proposed method uses machine learning to first train decision trees on the dataset to create an initial crisp rule base. In the second step, the decision trees are converted into so-called fuzzy decision trees, which can then be used to extract the linguistic variables and fuzzy rules.
 
+\section{Data Driven Rule Extraction}
 
 \subsection{Decision Trees}
 
@@ -481,25 +482,35 @@ As previously mentioned, we can recreate the process depicted in \autoref{fig:fu
 
 \section{Fuzzy Control Systems for \texttt{md\_flexible}}
 
-Following the fuzzy decision tree approach from the previous sections, we can create a fuzzy system to predict optimal configuration parameters for \texttt{\gls{mdflexible}} simulations. Contrary to the previous example, we must first collect a dataset of simulation runs with different configuration parameters and their corresponding performance metrics, which can then be used to train the crisp decision tree. After converting the crisp decision tree to a \gls{fcs}, a human expert can evaluate and adjust the rules and membership functions if necessary.
-
-The resulting fuzzy system can then be used to predict the optimal configuration parameters for new simulation runs based on the current state of the simulation.
+This section will demonstrate how to generate fuzzy control systems for \gls{mdflexible} simulations using the approach described in the previous section. The first section will describe the data collection process needed to train the classic decision trees, and the later sections will use the obtained data to generate two different styles of fuzzy control systems for making predictions about the optimal configuration of the current simulation.
 
 \subsection{Data Collection}
 
-Using the \texttt{LiveInfoLogger} and \texttt{TuningDataLogger} classes of the \gls{autopas} framework, it is possible to collect all the necessary data needed to train the decision tree. Both loggers create a \texttt{.csv} file containing each tuning step's simulation parameters and current runtime results. The \texttt{LiveInfoLogger} logs summary statistics about the simulation state, such as the average number of particles per cell or the current homogeneity-estimation of the simulation. In contrast, the \texttt{TuningDataLogger} logs the current configuration and the time it took to execute the last tuning step. The complete list of currently available parameters and their descriptions can be found in \autoref{des:liveinfodatafields} and \autoref{des:tuningdatafields}, respectively.
+\subsubsection{Included Scenarios}
 
-We will only make use of a subset, however, as we are only interested in \emph{relative} values, that does not change when the simulation is scaled up or down and are therefore only include:  \texttt{avgParticlesPerCell}, \texttt{maxParticlesPerCell}, \texttt{homogeneity}, texttt{maxDensity}, \texttt{particlesPerCellStdDev} and \texttt{threadCount}.
+We chose to include the prominent example scenarios provided by \gls{mdflexible} such as \href{https://github.com/AutoPas/AutoPas/blob/c25dc770f173ff160630d7e58f59b38e277032a1/examples/md-flexible/input/fallingDrop.yaml}{\color{blue}\texttt{fallingDrop.yaml}}, \href{https://github.com/AutoPas/AutoPas/blob/c25dc770f173ff160630d7e58f59b38e277032a1/examples/md-flexible/input/explodingLiquid.yaml}{\color{blue} \texttt{explodingLiquid.yaml}} and \href{https://github.com/AutoPas/AutoPas/blob/c25dc770f173ff160630d7e58f59b38e277032a1/examples/md-flexible/input/SpinodalDecomposition.yaml}{\color{blue} \texttt{SpinodalDecomposition.yaml}} as the primary source of data. Additionally, we included some simulations of uniform cubes with different densities and particle counts to gather more data about the performance of the different configurations under lab-like conditions.
 
-All the values were collected with the \texttt{PAUSE\_SIMULATION\_DURING\_TUNING} cmake option enabled to ensure that the simulation state does not change during the tuning process. This ensures a fair comparison of the different configurations, as all of them are evaluated under the same conditions.
+All simulations were run on the serial partition of the CoolMUC-2 cluster (see \ref*{CoolMucSpecs})  and were repeated twice to account for fluctuations in performance. Furthermore, every simulation was repeated with 1, 4, 12, 24, and 28 threads to additionally gather data on how parallelization affects the ideal configuration.
 
-The data was collected on the CoolMUC-2 \todo{add specs} and primarily stems from the example scenarios provided by \gls{mdflexible} such as \texttt{explodingLiquid.yaml}, \texttt{fallingDrop.yaml}, \texttt{SpinodalDecomposition.yaml} and some simulations of uniform cubes with different particle counts and densities. The exact scenarios files used for the simulations can be found in \autoref{des:scenarios}.
-All simulations were run on the serial partition of the cluster and were repeated twice to account for fluctuations in performance. Furthermore, every simulation was run with 1, 4, 12, 24, and 28 threads to gather data on how parallelization affects the ideal configuration.
+All the values were collected with the newly created \texttt{PAUSE\_SIMULATION\_DURING\_TUNING} CMake option enabled to ensure that the simulation state does not change during the tuning phases. This guarantees a fair comparison of the tested configurations, as all of them are evaluated under the exact same conditions. To gather the maximal amount of data, we used the \texttt{FullSeach} tuning strategy, which executes all possible configurations during the tuning phases.
 
 
-\subsection{Speedup Analysis}
+\subsubsection{Collected Parameters}
 
-In order to make predictions about the performance of different configurations, we first need to define the metric used to compare them. As we froze the simulation during the tuning process, we can safely use the runtime of configuration during a tuning phase to find an ordering. To make these timings comparable between tuning phases, we introduce the term \emph{relative speedup}. The relative speedup describes the performance of a configuration relative to the best configuration in the tuning phase. The formula for the relative speedup is given by:
+The existing \texttt{TuningDataLogger} and the newly created \texttt{LiveInfoLogger} classes of the \gls{autopas} framework allow us to collect a wide variety of parameters during the simulation, such as the used configuration, information about the state of the simulation, and the measured timing data for each iteration of the simulation.
+
+The complete shape of the collected data can be found in \autoref{des:tuningdatafields} and \autoref{des:liveinfodatafields}, respectively. We will however only make use of a subset of the available LiveInfo data, as we are only interested in \emph{relative} values that do not change when the simulation is scaled up or down and are therefore only primarily focus on: \texttt{avgParticlesPerCell}, \texttt{maxParticlesPerCell}, \texttt{homogeneity}, \texttt{maxDensity}, \texttt{particlesPerCellStdDev} and \texttt{threadCount}. This focus should help the fuzzy systems generalize better to unseen data, as they are less likely to overfit the training data.
+
+
+\subsubsection{Limitations}
+
+As the performance of machine learning models may degrade quickly when confronted with significantly different data than the data they were trained on, it is essential to collect a wide variety of scenarios to cover as many possible use cases as possible. As we only included a limited number of scenarios, we have to keep in mind that the generated fuzzy systems will only be able to make confident predictions about scenarios similar to the included ones, and we should not expect them to generalize well to unseen data.
+To guarantee a fair evaluation of this tuning approach, we will only focus on slight variations of the included scenarios in the following evaluation section.
+
+\subsection{Data Preprocessing}
+
+In order to make predictions about the performance of different configurations, we first need to define an appropriate metric to compare them. As we \emph{froze} the simulation during the tuning process with the \texttt{PAUSE\_SIMULATION\_DURING\_TUNING} option, we can safely use the runtimes of the different configurations to compare them. Those runtimes are, however, absolute values and may differ significantly between tuning phases as the underlying simulation changes. To compare runtimes between different tuning phases, we introduce the concept of \emph{speedup}, which measures how well a configuration performs compared to the best configuration in the same tuning phase, and augment the collected timing data with this metric. The speedup is calculated as
+
 
 \begin{equation}
     {\text{speedup}^{(i)}_{\text{config}}}= \frac{t_{\text{best}}^{(i)}}{t_{\text{config}}^{(i)}}
@@ -507,75 +518,75 @@ In order to make predictions about the performance of different configurations, 
 
 Where $t_{\text{best}}^{(i)}$ is the runtime of the best configuration during the $i$-th tuning phase and $t_{\text{config}}^{(i)}$ is the runtime of the configuration we are interested in.
 
-This means that all relative speedup values are going to be in the range $[0,1]$, with 1 being the best possible value only achieved by configurations performing optimally and 0 being the worst possible value only achieved by configurations performing \emph{infinitely} worse than the best configuration.
+This value will range from 0 (being infinitely worse than the best configuration) to 1 (being equally good as the best configuration) for each configuration. Additionally, we chose to combine the fields \texttt{Container} and \texttt{DataLayout} of the configuration into a single field \texttt{ContainerDataLayout} as they are closely related, and the performance of one is heavily dependent on the other.
 
-We can then make plots of the distribution of the relative speedup values for each configuration option to see how they affect the performance of the simulation. The density plots in \autoref{fig:inputAnalysisDensityNewton3}, \autoref{fig:inputAnalysisDensityTraversal}, \autoref{fig:inputAnalysisDensityDatalayout} and \autoref{fig:inputAnalysisDensityConfigurations} show the distribution of the relative speedup values for the Newton3, Traversal, Container-Datalayout and some complete configurations respectively. We can see that the Newton3 option generally leads to a higher relative speedup, while the Traversal option does not show a clear trend. The Datalayout option shows that the VerletListCells\_AoS option is generally the best, while the configuration VerletListCells\_AoS\_vlc\_spliced\_balanced\_enabled is the best configuration in most cases on the Dataset we collected.
-
-The ordering of the different parameters in the dataset matches our intuition about the different implementations, and we can confidently proceed with creating the fuzzy system.
-
-
-
-\subsection{Creating the Fuzzy Rules}
-
-Using the decision tree approach described in the previous sections, we can create a fully automated system to transform the collected data into rule files. The process is as follows:
-
-\begin{enumerate}
-    \item Preprocess the data according to the approach used (see next section).
-    \item Train the decision trees and prune the tree to avoid overfitting.
-    \item Select the best-performing decision trees and convert them into fuzzy decision trees.
-    \item Extract the fuzzy rules from the fuzzy decision trees.
-    \item Generate the linguistic variables and terms for the fuzzy system.
-    \item Create the OutputMapping Export and export everything to a rulefile.
-\end{enumerate}
-
-As described previously, we will create two different kinds of knowledge bases, one for the Suitability Approach and one for the Individual Tuning Approach. In the following sections, we will describe both approaches in detail.
-
-\subsection{Individual Tuning Approach}
-
-This approach tries to create different fuzzy systems for each of the tunable parameters of the simulation. We decided to combine the \texttt{container} and \texttt{dataLayout} parameters into a single parameter as they are closely related, and the performance of one is heavily dependent on the other. Consequently, we want to create systems for \texttt{ContainerDataLayout}, \texttt{Traversal}, and \texttt{Newton3}.
-
-As we only want to create a fuzzy system predicting suitable configurations, we first remove all configurations performing worse than a certain threshold as depicted in \autoref{fig:speedup}. We chose to only include configurations with a relative speedup of at least 70\% % as this still leaves us with a large enough dataset to train the decision trees.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup.png}
-    \caption[Speedup density plot of all configurations]{The density plot shows the distribution of all the collected configurations concerning the relative speedup compared to the best configuration during each tuning phase. This distribution shows that the average tested configuration performs just 50\% as well as the best. With some configurations being ten times slower than the best configuration.
-        Efficiently finding good configurations is key, as testing all possible configurations causes a huge performance loss.}
-    \label{fig:speedup}
-\end{figure}
-
-Afterward, we group all configurations evaluated in the same tuning phase and aggregate all the present values of tunable parameters into a single term. This term represents all \emph{good} values for the parameters to be chosen under the conditions of the tuning phase. The resulting training data is shown in \autoref{tab:trainingDataIndividual} and can be used to train the decision trees. After applying the transformation process described in the previous sections, we end up with rules shown in \autoref{tab:fuzzyRulesIndividual}. This concludes the creation of the fuzzy rules for the Individual Tuning Approach.
-
-
-
-
-\begin{table}[H]
-    \footnotesize
-    \centering
-    \begin{tabular}{|c|c|c|c|c|}
-        \hline
-
-        \textbf{LiveInfo Data} & \textbf{Container\_DataLayout} & \textbf{Traversal} & \textbf{Newton3} \\
-        \hline
-        \makecell{(0.905797,	0.055112,                                                                   \\	0.297891,	15,	0.015171,	4) }                                                                                                              & \makecell{"LinkedCells\_SoA,                                                \\ VerletClusterLists\_SoA, \\ VerletListsCells\_AoS"} & \makecell{"lc\_sliced,\\ lc\_sliced\_balanced,\\ lc\_sliced\_c02,\\ lc\_c04"} & "enabled"          \\
-        \hline
-        \makecell{(0.944637,	0.084061,                                                                   \\	0.673320,                                                                                                                                                                                                   	25,	0.039916, 24) }                                                                                                               & \makecell{"LinkedCells\_SoA,                                                \\ VerletClusterLists\_SoA, \\ VerletListsCells\_AoS"} & \makecell{"lc\_c04,\\ lc\_c08,\\ lc\_sliced,\\ lc\_sliced\_balanced"} &  \makecell{"disabled,\\enabled"}         \\
-        \hline
-        \makecell{(0.905797,	0.041394,                                                                   \\	0.336900,                                                                                                                                                                                                   	20,	0.013546, 24) }                                                                                                               & \makecell{"VerletClusterLists\_SoA,                                         \\ VerletListsCells\_AoS"} & \makecell{"vcl\_c06,\\ vlc\_c01,\\ vlc\_c18,\\ vlc\_sliced\_c02"} &  \makecell{"disabled,\\enabled"}         \\
-        \hline
-
-        \vdots                 & \vdots                         & \vdots             & \vdots           \\
-        \hline
-    \end{tabular}
-    \caption[Prepared training data for the Individual Tuning Approach]{Selection of the prepared training data for the Individual Tuning Approach. The table shows the live info data and the corresponding prediction of top-performing values for each tunable parameter. Each row represents a different tuning phase.}
-    \label{tab:trainingDataIndividual}
-\end{table}
-
-
+We can now create the augmented dataset shown in \autoref{tab:trainingData}, which will be used in the following sections to train the decision trees and generate the fuzzy systems.
 
 
 \definecolor{LightCyan}{rgb}{0.88,1,1}
 \newcolumntype{g}{>{\columncolor{LightCyan}}c}
+\begin{table}[H]
+    \centering
+    \tiny
+    \def\arraystretch{2.5}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c| g|}
+        \cline{1-9}
+        \multicolumn{3}{|c|}{ \textbf{ParticlesPerCell}} & \multicolumn{3}{c|}{\textbf{Miscellaneous}} & \multicolumn{3}{c|}{\textbf{Configuration}}                                                                                                                           \\
+        \hline
+        \textbf{avg}                                     & \textbf{max}                                & \textbf{stddev}                             & \tabularCenterstack{c}{\textbf{homo-}                                                                                   \\ \textbf{genity}} & \tabularCenterstack{c}{\textbf{max-} \\ \textbf{density}} & \textbf{threads} & \tabularCenterstack{c}{\textbf{Container} \\ \textbf{DataLayout}}& \textbf{Traversal} & \textbf{Newton3} & \textbf{speedup} \\
+        \hline
+        0.905                                            & 23                                          & 0.0129                                      & 0.0354                                & 0.531  & 1      & LinkedCells\_AoS      & lc\_sliced      & enabled  & 0.450641 \\
+        2.201                                            & 13                                          & 0.0144                                      & 0.0861                                & 0.627  & 24     & VerletListsCells\_AoS & vlc\_sliced     & disabled & 0.594117 \\
+        0.905                                            & 18                                          & 0.0136                                      & 0.0431                                & 0.319  & 4      & LinkedCells\_AoS      & lc\_sliced\_c02 & enabled  & 0.454632 \\
+        \vdots                                           & \vdots                                      & \vdots                                      & \vdots                                & \vdots & \vdots & \vdots                & \vdots          & \vdots   & \vdots   \\
+        \hline
+    \end{tabular}
+    \caption[Augmented dataset used for creating the fuzzy systems]{Augmented dataset used for creating the fuzzy systems. The dataset contains the average, maximum, and standard deviation of the particles per cell, the homogeneity, density, and thread count of the simulation, as well as the configuration options and the speedup of the configuration compared to the best configuration in the same tuning phase.}
+    \label{tab:trainingData}
+\end{table}
+
+
+As described previously, we will create two different kinds of knowledge bases using this dataset. The first attempt is called \emph{Component Tuning Approach} and tries to independently predict the best options for each tunable parameter. The second attempt is the \emph{Suitability Tuning Approach}, which tries to predict the $speedup$ values for all possible configurations and then selects the configurations expected to perform best. Both approaches will be described in the following sections.
+
+\subsection{Component Tuning Approach}
+
+This approach makes use of three different \texttt{FuzzyControlSystems}, one for each of the tunable parameters of the simulation (\texttt{ContainerDataLayout}, \texttt{Traversal}, and \texttt{Newton3}). All those systems should independently predict the best configuration for their respective parameter based on the current LiveInfoData. \autoref{fig:fuzzyControlSystemIndividual} shows the structure of this approach.
+
+As we only want to create a fuzzy system predicting appropriate configurations, we naively remove all configurations performing worse than a certain suitability threshold (we chose 70\%) as depicted in \autoref{fig:speedup}. The remaining configurations, which are known to perform well, are then used to create the fuzzy systems.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup.png}
+    \caption[Speedup distribution of the collected data]{Speedup distribution of the collected data. The suitability threshold is set to 70\%, thus removing all configurations performing worse than this threshold. From the plot, we can also see that the average configuration performs just 52\% as well as the best configuration, with some configurations also performing ten times worse than the best in certain tuning phases.}
+    \label{fig:speedup}
+\end{figure}
+
+Afterward, we group all configurations evaluated in the same tuning phase and aggregate all the present values of tunable parameters into a single term. As we \emph{froze} the simulation during the tuning phase, the LiveInfoData will be equal for such configurations, and the aggregated terms will therefore represent all \emph{good} values for the parameters in this simulation state (as they occur in configurations with $\geq 70\%$ suitability). The aggregated training data is shown in \autoref{tab:trainingDataComponent} and is used to fit three decision trees, which are then converted into fuzzy control systems using the method described in the previous section. The extracted fuzzy rules are shown in \autoref{tab:fuzzyRulesComponent}. The linguistic variables are omitted for brevity.
+
+\begin{table}[H]
+    \centering
+    \tiny
+    \def\arraystretch{2.5}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+        \cline{1-9}
+        \multicolumn{3}{|c|}{ \textbf{ParticlesPerCell}} & \multicolumn{3}{c|}{\textbf{Miscellaneous}} & \multicolumn{3}{c|}{\textbf{Aggregated Configuration Terms}}                                                                                                                               \\
+        \hline
+        \textbf{avg}                                     & \textbf{max}                                & \textbf{stddev}                                              & \tabularCenterstack{c}{\textbf{homo-}                                                                                       \\ \textbf{genity}} & \tabularCenterstack{c}{\textbf{max-} \\ \textbf{density}} & \textbf{threads} & \tabularCenterstack{c}{\textbf{Container} \\ \textbf{DataLayout}}& \textbf{Traversal} & \textbf{Newton3}  \\
+        \hline
+        0.906                                            & 15                                          & 0.015                                                        & 0.055                                 & 0.297  & 4      & \tabularCenterstack{c}{"LinkedCells\_SoA,                         \\ VerletClusterLists\_SoA, \\ VerletListsCells\_AoS"} & \tabularCenterstack{c}{"lc\_sliced, \\ lc\_sliced\_balanced, \\ lc\_sliced\_c02"} & "enabled"   \\
+        \hline
+        0.945                                            & 25                                          & 0.041                                                        & 0.084                                 & 0.673  & 24     & \tabularCenterstack{c}{"LinkedCells\_SoA,                         \\ VerletClusterLists\_SoA, \\ VerletListsCells\_AoS"} & \tabularCenterstack{c}{"lc\_c04, \\ lc\_c08, \\ lc\_sliced, \\ lc\_sliced\_balanced"} & \tabularCenterstack{c}{"disabled, \\ enabled"}  \\
+        \hline
+        0.906                                            & 20                                          & 0.014                                                        & 0.041                                 & 0.336  & 24     & \tabularCenterstack{c}{VerletClusterLists\_SoA,                   \\ VerletListsCells\_AoS} & \tabularCenterstack{c}{"vcl\_c06, \\ vlc\_c01, \\ vlc\_c18"} & \tabularCenterstack{c}{"disabled, \\ enabled"} \\
+        \hline
+        \vdots                                           & \vdots                                      & \vdots                                                       & \vdots                                & \vdots & \vdots & \vdots                                          & \vdots & \vdots \\
+        \hline
+    \end{tabular}
+    \caption[Aggregated training data for the Component Tuning Approach]{Aggregated training data for the Component Tuning Approach. Each row represents a different tuning phase. The numerical values stem from the LiveInfoData during that tuning phase, and the aggregated configuration terms represent the configuration options that are known to perform well under the given conditions.}
+    \label{tab:trainingDataComponent}
+\end{table}
+
 
 \begin{table}[H]
     \footnotesize
@@ -589,10 +600,10 @@ Afterward, we group all configurations evaluated in the same tuning phase and ag
         \textbf{avgParticlesPC}                         & \textbf{homogeneity}                                & \textbf{particlesPCStdDev}                        & \textbf{threadCount}      & \textbf{ContainerDataLayout}                     \\
 
         \hline
-        \texttt{lower than 3.454}                       & \texttt{lower than 0.05}                            &                                                   & \texttt{lower than 18.0}  & \tabularCenterstack{c}{"VerletClusterLists\_SoA, \\
+        \texttt{lower than 3.45}                        & \texttt{lower than 0.05}                            &                                                   & \texttt{lower than 18.0}  & \tabularCenterstack{c}{"VerletClusterLists\_SoA, \\
         VerletListsCells\_AoS"}                                                                                                                                                                                                                  \\
         \hline
-        \texttt{lower than 3.454}                       & \texttt{higher than 0.05}                           & \texttt{lower than 0.024}                         & \texttt{higher than 18.0} & \tabularCenterstack{c}{"LinkedCells\_SoA,        \\ VerletClusterLists\_SoA,\\ VerletListsCells\_AoS"}  \\
+        \texttt{lower than 3.45}                        & \texttt{higher than 0.05}                           & \texttt{lower than 0.024}                         & \texttt{higher than 18.0} & \tabularCenterstack{c}{"LinkedCells\_SoA,        \\ VerletClusterLists\_SoA,\\ VerletListsCells\_AoS"}  \\
         \hline
         \vdots                                          & \vdots                                              & \vdots                                            & \vdots                    & \vdots                                           \\
         \hline
@@ -641,26 +652,14 @@ Afterward, we group all configurations evaluated in the same tuning phase and ag
         \hline
     \end{tabular}
 
-    \caption[Extracted fuzzy rules for the Individual Tuning Approach]{Extracted fuzzy rules for the Individual Tuning Approach. The table shows a selection of the rules extracted from the decision trees trained on the training data in \autoref{tab:trainingDataIndividual}. The columns of the antecedent represent the different fuzzy sets taking part in the rule.}
-    \label{tab:fuzzyRulesIndividual}
+    \caption[Extracted fuzzy rules from the decision trees for the Component Tuning Approach]{Extracted fuzzy rules from the decision trees for the Component Tuning Approach. The rules are grouped by the tunable parameter they predict. The first row is read as:
+        \footnotesize{$\text{IF} \;  (\text{avgParticlesPC} = \text{lower than 3.454})  \land   (\text{homogeneity} = \text{lower than 0.05})   \land (\text{threadCount} = \text{lower than 18.0}) \; \text{THEN} \; (\text{ContainerDataLayout} = \text{"VerletClusterLists\_SoA, VerletListsCells\_AoS"})$}}
+    \label{tab:fuzzyRulesComponent}
 \end{table}
 
+\newpage
 
-We can also visualize the training data in a scatterplot as shown in \autoref{fig:scatterContainerDataLayout}.
-
-% scatter_container_datalayout
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[height=8cm,trim={0cm 0.7cm 1cm 1.5cm},clip]{figures/DataAnalytics/scatter_container_datalayout.png}
-    \caption[Scatterplot of the ContainerDataLayout parameter]{The scatterplot shows the influence of the variables \texttt{homogeneity}, \texttt{particlesPerCellStdDev} and \texttt{threadCount} on the optimal \texttt{ContainerDataLayout} parameter. We can see regions that will be learned by the decision tree.}
-    \label{fig:scatterContainerDataLayout}
-
-\end{figure}
-
-
-
-As described previously, we use \texttt{gaussian} membership functions for each linguistic term of the consequent linguistic variables. The placement of the  values is irrelevant, and we place them in a way that does not overlap. \autoref{fig:homogenityLinguisticVariable} and \autoref{fig:newton3LinguisticVariable_individual} show the resulting linguistic variables for an antecedent linguistic variable (homogeneity) and a consequent linguistic variable (Newton3), respectively. The visualization of the other variables follows a similar pattern but is more complex due to the higher number of terms, which are therefore not shown here.
+As described previously, we use \texttt{gaussian} membership functions for each linguistic term of the consequent linguistic variables. The placement of the values is irrelevant as we will use the \gls{mom} defuzzification method. \autoref{fig:homogenityLinguisticVariable} and \autoref{fig:newton3LinguisticVariable_component} show the resulting linguistic variables for the homogeneity linguistic variable (an input variable) and the Newton3 linguistic variable we want to predict. The visualization of the other variables follows a similar pattern but is more complex due to the higher number of terms and are therefore not shown here.
 
 
 
@@ -682,66 +681,70 @@ As described previously, we use \texttt{gaussian} membership functions for each 
         \caption[Linguistic variable for the Newton3 attribute]{
             This figure shows the linguistic variable for the Newton3 attribute. We see the two \texttt{gaussian} membership functions representing the two possible values for the Newton3 attribute.
         }
-        \label{fig:newton3LinguisticVariable_individual}
+        \label{fig:newton3LinguisticVariable_component}
     \end{figure}
 \end{multicols}
 
-At the end of the process, we have different fuzzy systems for each of the tunable parameters of the simulation of the form shown in \autoref{fig:fuzzyControlSystemIndividual}. The fuzzy system can be seen as a black box that maps the LiveInfo data into a sort of \emph{index} representing the predicted values of the parameter. Using the \gls{mom} method, the output will always correspond to the fuzzy set with the highest membership value and be free of interpolation errors.
+These linguistic variables and fuzzy rules are then used to create the fuzzy control systems for the component tuning approach. In \autoref{sec:comparison_and_evaluation}, we will evaluate the performance of these systems and compare them to the suitability approach.
+
+\todo{add link to full rule file}
 
 
 \subsection{Suitability Approach}
 
-The suitability approach differs from the individual tuning approach in that it tries to predict a configuration's numerical \emph{suitability} value under the current conditions. Therefore, each possible configuration is assigned a unique fuzzy system tailored to just evaluating this configuration—the suitability value of a configuration defined as the relative speedup already described in the previous section.
+The suitability approach differs from the component tuning approach in that it tries to predict a configuration's numerical \emph{suitability} value under the current conditions. Therefore, each possible configuration is assigned a unique fuzzy system tailored to just evaluating this configuration. \autoref{fig:fuzzyControlSystemSuitability} shows the structure of this approach.
 
-The process is similar to the one described in the previous section. However, we do not group the configurations together and directly use the calculated relative speedup as the suitability value.
+To train the decision trees, we again use a classification-based approach with \texttt{terrible}, \texttt{bad}, \texttt{average}, \texttt{good}, and \texttt{excellent} as the possible linguistic terms corresponding to specific ranges of suitability values (see \autoref{fig:suitabilityClasses} for the exact placement). Conveniently, we can use $suitability=speedup$, as the speedup value already measures how well a configuration performs.
 
-To train the decision trees, we again use a classification-based approach with \texttt{terrible}, \texttt{bad}, \texttt{average}, \texttt{good}, and \texttt{excellent} as the possible linguistic terms (see \autoref{fig:suitabilityClasses}). The calculated suitability values of each configuration during a specific tuning phase are mapped to the corresponding class.
-
-The final training data is shown in \autoref{tab:trainingDataSuitability}, and it is again possible to train the decision trees and extract the fuzzy rules from them. It is important to note that each configuration has its own fuzzy system and rules tailored to it. This makes the suitability approach more flexible but also causes more computational overhead during the inference process.
-
-The resulting rules are shown in \autoref{tab:fuzzyRulesSuitability}, and the linguistic variables for the suitability attribute are shown in \autoref{fig:suitabilityClasses}. The output mapping for the suitability approach is shown in \autoref{lst:outputMappingSuitability}.
+We create the training data for the decision trees by adding a new column to the aggregated training data containing the suitability class to which the numeric speedup value mostly belongs. The final training data is shown in \autoref{tab:trainingDataSuitability}. After grouping the data by possible configurations, it is again possible to use these data points to train the decision trees and extract the fuzzy rules from them. Due to the grouping, each configuration receives its own fuzzy system with rules explicitly tailored to it. The resulting rules are shown in \autoref{tab:fuzzyRulesSuitability}.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/membership_suitability_config.png}
+    \includegraphics[width=\columnwidth,trim={0cm 0 0cm 0cm},clip]{figures/ProofOfConcepts/suitability_membership_functions.png}
     \caption[Linguistic variable for the Suitability attribute]{
-        Linguistic terms for the suitability variables. The fuzzy sets consist of  \texttt{sigmoid} membership functions at the borders and \texttt{gaussian} membership functions in the middle. The values are placed coherently. This time, we will use the \gls{cog} defuzzification method and will make use of the interpolation between the values.
+        This figure shows the linguistic variable for the Suitability attribute. The domain between 0\% suitability and 100\% suitability is divided into 7 classes: \texttt{terrible}, \texttt{rubbish}, \texttt{bad}, \texttt{medium}, \texttt{ok}, \texttt{good}, and \texttt{excellent}. The central membership functions have a \texttt{gaussian} shape, while the outer ones have a \texttt{sigmoid} shape to capture the one-sided nature of those boundaries. The choice to use seven classes was made somewhat arbitrarily, with the intention to densely cover the range of suitability values.
     }
     \label{fig:suitabilityClasses}
 \end{figure}
 
+This approach makes it possible to use the \gls{cog} method for defuzzification, as the suitability values are ordinal and have a clear order. In order for the different fuzzy systems to be able to make individual choices, the Suitability values seen in \autoref{fig:suitabilityClasses} have to be duplicated for each configuration.
+
+The resulting fuzzy systems can then be used to predict the suitability of all available configurations. The FuzzyTuningStrategy will combine all these predicted suitabilities and will only keep the configurations with the highest suitability values. In \autoref{sec:comparison_and_evaluation}, we will evaluate the performance of this approach.
+
+\newpage
+
+\definecolor{LightRed}{rgb}{1,0.88,0.88}
+\newcolumntype{u}{>{\columncolor{LightRed}}c}
+
 
 \begin{table}[H]
-    \footnotesize
     \centering
-    \begin{tabular}{|c|c|c|c|c|}
+    \addtolength{\leftskip} {-3cm} % increase (absolute) value if needed
+    \addtolength{\rightskip}{-3cm}
+    \tiny
+    \def\arraystretch{2.5}
+    \begin{tabular}{|c|c|c|c|c|c|c|c|c|c|u|}
+        \cline{1-9}
+        \multicolumn{3}{|c|}{ \textbf{ParticlesPerCell}} & \multicolumn{3}{c|}{\textbf{Miscellaneous}} & \multicolumn{3}{c|}{\textbf{Configuration }}                                                                                                                                                            \\
         \hline
-
-        \textbf{LiveInfo Data} \footnote{
-            The format of the LiveInfo tuple is: (avgParticlesPC, homogeneity, maxDensity,particlesPerCellStdDev, threadCount)
-        }      & \textbf{Configuration} \footnote{
-            The format of the Configuration is: Container, DataLayout, Traversal, Newton3
-        }      & \textbf{Speedup}                  & \textbf{Suitability}          \\
+        \textbf{avg}                                     & \textbf{max}                                & \textbf{stddev}                              & \tabularCenterstack{c}{\textbf{homo-}                                                                                                                    \\ \textbf{genity}} & \tabularCenterstack{c}{\textbf{max-} \\ \textbf{density}} & \textbf{threads} & \tabularCenterstack{c}{\textbf{Container} \\ \textbf{DataLayout}}& \textbf{Traversal} & \textbf{Newton3}& \textbf{Speedup}  & \textbf{Suitability}  \  \\
         \hline
-        \makecell{(0.905797,	0.035496,                                              \\	0.531948,	0.012989,	1) }                                                                                                              & \makecell{LinkedCells, AoS, lc\_sliced, enabled} &0.450641 & "bad"          \\
+        0.905                                            & 15                                          & 0.012                                        & 0.035                                 & 0.531  & 1      & LinkedCells\_AoS                              & lc sliced    & enabled  & 0.450  & "bad”       \\
         \hline
-        \makecell{(0.944637,	0.083797,                                              \\	0.691920	,	0.012989,	28) }                                                                                                              & \makecell{VerletClusterLists, AoS,vcl\_c06, disabled} &0.319094	 & "rubbish"          \\
+        0.944                                            & 25                                          & 0.012                                        & 0.083                                 & 0.691  & 28     & \tabularCenterstack{c}VerletClusterLists\_AoS & vcl\_c06     & disabled & 0.319  & "rubbish"   \\
         \hline
-        \makecell{(0.944637,	0.079441,                                              \\	0.040082	,	0.012989,	12) }                                                                                                              & \makecell{LinkedCells, SoA,lc\_sliced, c02,enabled} &0.989101 & "excellent"          \\
+        0.944                                            & 20                                          & 0.012                                        & 0.079                                 & 0.041  & 12     & LinkedCell\_SoA                               & vlc\_ sliced & enabled  & 0.989  & "excellent" \\
         \hline
-
-        \vdots & \vdots                            & \vdots               & \vdots \\
+        \vdots                                           & \vdots                                      & \vdots                                       & \vdots                                & \vdots & \vdots & \vdots                                        & \vdots       & \vdots   & \vdots & \vdots      \\
         \hline
     \end{tabular}
-    \caption[Prepared training data for the Individual Tuning Approach]{Selection of the prepared training data for the Individual Tuning Approach. The table shows the live info data and the corresponding prediction of top-performing values for each tunable parameter. Each row represents a different tuning phase.}
+    \caption[Training data for the Suitability Approach]{Training data for the Suitability Approach. The dataset contains the LiveInfoData of the simulation, the current configuration and the speedup and suitability values of the configuration. Each row represents a different configuration evaluated in a tuning phase.}
     \label{tab:trainingDataSuitability}
 \end{table}
 
 
 
 
-\definecolor{LightCyan}{rgb}{0.88,1,1}
-\newcolumntype{g}{>{\columncolor{LightCyan}}c}
 
 \begin{table}[H]
     \footnotesize
@@ -752,7 +755,7 @@ The resulting rules are shown in \autoref{tab:fuzzyRulesSuitability}, and the li
     \begin{tabular}{|c|c|c|c|g|}
         \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                  \\
         \hline
-        \textbf{avgParticlesPC}                         & \textbf{homogeneity}                                & \textbf{particlesPCStdDev} & \textbf{threadCount}                              & \textbf{ LinkedCells\_AoS\_lc\_c01\_disabled} \\
+        \textbf{avgParticlesPC}                         & \textbf{homogeneity}                                & \textbf{particlesPCStdDev} & \textbf{threadCount}                              & \tabularCenterstack{c} { \textbf{Suitability} \\ \textbf{ LinkedCells\_AoS\_lc\_c01\_disabled}} \\
 
         \hline
                                                         & \texttt{lower than 0.084}                           & \texttt{higher than 0.029} & \texttt{higher than 26.0 }                        & "medium"                                      \\
@@ -771,7 +774,7 @@ The resulting rules are shown in \autoref{tab:fuzzyRulesSuitability}, and the li
         \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                  \\
 
         \hline
-        \textbf{maxParticlesPerCell}                    & \textbf{homogeneity}                                & \textbf{particlesPCStdDev} & \textbf{threadCount}                              & \textbf{ LinkedCells\_AoS\_lc\_c04\_disabled} \\
+        \textbf{maxParticlesPerCell}                    & \textbf{homogeneity}                                & \textbf{particlesPCStdDev} & \textbf{threadCount}                              & \tabularCenterstack{c} { \textbf{Suitability} \\\textbf{ LinkedCells\_AoS\_lc\_c04\_disabled}}\\
 
         \hline
         \texttt{higher than 18.5	}                       & \texttt{lower than 0.082}                           &                            & \tabularCenterstack{c} {\texttt{higher than 18.0}                                                 \\ $\land$ \texttt{ lower than 26.0}} & "medium" \\
@@ -784,11 +787,10 @@ The resulting rules are shown in \autoref{tab:fuzzyRulesSuitability}, and the li
         \vdots                                          & \vdots                                              & \vdots                     & \vdots                                            & \vdots                                        \\
 
         \hline
+        \multicolumn{2}{c}{}                            & \multicolumn{1}{c}{\Huge{\vdots   }}                                                                                                                                                 \\
     \end{tabular}
 
-    \caption[Extracted fuzzy rules for the Suitability Approach]{Extracted fuzzy rules for the Suitability Approach. The table shows a selection of the rules extracted from the decision trees trained on the training data in \autoref{tab:trainingDataSuitability}. The columns of the antecedent represent the different fuzzy sets taking part in the rule.}
+    \caption[Extracted fuzzy rules from the decision trees for the Suitability Approach]{Some extracted fuzzy rules from the decision trees for the Suitability Approach. The rules are grouped by the configuration they predict. The first row is read as:
+        \footnotesize{$\text{IF} \;   (\text{homogeneity} = \text{lower than 0.084})   \land (\text{particlesPerCellStdDev} = \text{higher than 0.029})   \land (\text{threadCount} = \text{higher than 26.0}) \; \text{THEN} \; (\text{Suitability LinkedCells\_AoS\_lc\_c01\_disabled} = \text{"medium"})$}}
     \label{tab:fuzzyRulesSuitability}
 \end{table}
-
-
-

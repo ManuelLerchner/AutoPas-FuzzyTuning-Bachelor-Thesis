@@ -254,7 +254,7 @@ All those Fuzzy Control Systems should then attempt to predict the best value of
 Another problem of this approach lies in the defuzzification step. As this method relies on defining a single system for all values of a tunable parameter, we must define a numerical \emph{ranking} of all those values. Such a ranking is problematic, as most tunable variables are nominal and thus do not have a natural order. To circumvent this problem, we can choose a defuzzification method that does not perform interpolation between the values and use an arbitrary order for the values. One such method is \gls{mom}. It selects the mean of all $x$-values for which the membership function is maximal. When using Gaussian-shaped membership functions for the output values, this method will always return the mean of the Gaussian with the highest activation and will entirely regard the numerical placements of the values\footnote{There are exceptions when two Gaussians have the same activation. Such cases
   rarely happen in practice and could be resolved with other defuzzification methods such as \gls{som}}.
 
-The OutputMapper is set up such that the mean values of the Gaussian membership functions are directly mapped to the corresponding values of the tunable parameters. After evaluating this ruleset, one ends up with a list of configuration patterns, each demanding a specific value for their parameter. All those patterns are then used to purge the configuration queue, excluding every configuration that does not match all the predicted patterns. \autoref{fig:fuzzyControlSystemIndividual} shows a schematic of the prediction process for the Component Tuning Approach.
+The OutputMapper is set up such that the mean values of the Gaussian membership functions are directly mapped to the corresponding values of the tunable parameters. After evaluating this ruleset, one ends up with a list of configuration patterns, each demanding a specific value for their parameter. All those patterns are then used to purge the configuration queue, excluding every configuration that does not match all the predicted patterns. \autoref{fig:fuzzyControlSystemComponent} shows a schematic of the prediction process for the Component Tuning Approach.
 
 
 
@@ -313,7 +313,7 @@ The OutputMapper is set up such that the mean values of the Gaussian membership 
   \end{tikzpicture}
 
   \caption[Visualization of the fuzzy control systems for the Component Tuning Approach]{Example Visualization of the fuzzy control systems for the Component Tuning Approach. The parameters \texttt{Container}, \texttt{Traversal}, \texttt{DataLayout}, and \texttt{Newton3} are tuned independently. The OutputMapper maps the defuzzified output values to their respective configuration options.}
-  \label{fig:fuzzyControlSystemIndividual}
+  \label{fig:fuzzyControlSystemComponent}
 
 \end{figure}
 

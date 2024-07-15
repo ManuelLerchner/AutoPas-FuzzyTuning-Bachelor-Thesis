@@ -75,3 +75,7 @@
 + Connection AutoPas and LS1Marydin
 
 + Make sections about findings of data collection
+
+
+
+why decision trees? similar to the way humans make decisions, easy to understand, easy to interpret, easy to debug, easy to visualize, easy to explain, easy to implement, easy to handle missing values, easy to handle outliers

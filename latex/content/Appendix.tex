@@ -4,7 +4,54 @@
 
 \newpage
 
-\section{LiveInfoLogger Data Fields}
+
+\section{IterationLogger Fields}
+\label{des:iterationdatafields}
+
+The following fields are currently available in the IterationData file. The IterationData file is a CSV file containing the configuration and performance data for each iteration of the simulation. The data is collected and logged by the \texttt{IterationLogger} class of the \gls{autopas} library.
+
+\begin{description}[style=multiline, leftmargin =40mm]
+  \item[Date] The date and time when the data was collected.
+  \item[Iteration] The current iteration number of the simulation.
+  \item[inTuningPhase] Indicates whether the simulation is in the tuning phase (true/false).
+  \item[Container] The type of container used to store the particles in the simulation (e.g., LinkedCells, VerletLists).
+  \item[CellSizeFactor] A factor that determines the size of the cells relative to the cutoff radius.
+  \item[Traversal] The method used to traverse the cells and calculate interactions between particles.
+  \item[Load Estimator] The strategy used to estimate and balance the computational load across different parts of the simulation domain.
+  \item[Data Layout] The arrangement of particle data in memory (e.g., AoS for Array of Structures, SoA for Structure of Arrays).
+  \item[Newton 3] Indicates whether Newton's third law optimization is used to reduce computation by only calculating forces once per particle pair (enabled/disabled).
+  \item[iteratePairwise] The time taken to iterate over all particle pairs and calculate interactions.
+  \item[remainderTraversal] The time taken to perform any remaining traversal operations.
+  \item[rebuildNeighborLists] The time taken to rebuild the neighbor lists.
+  \item[iteratePairwiseTotal] The total time taken to iterate over all particle pairs and calculate interactions.
+  \item[tuning] The time taken to perform any tuning operations.
+  \item[energyPsys] The energy consumed by the system (in Joules).
+  \item[energyPkg] The energy consumed by the package (CPU) (in Joules).
+  \item[energyRam] The energy consumed by the RAM (in Joules).
+\end{description}
+
+
+\section{TuningDataLogger Fields}
+\label{des:tuningdatafields}
+
+The following fields are currently available in the TuningData file.
+The TuningData file is a CSV file containing the performance information for all tested configurations. The data is collected and logged by the \texttt{TuningDataLogger} class of the \gls{autopas} library.
+
+\begin{description}[style=multiline, leftmargin =40mm]
+  \item[Date] The date and time when the data was collected.
+  \item[Iteration] The current iteration number of the simulation.
+  \item[Container] The type of container used to store the particles in the simulation (e.g., LinkedCells, VerletLists).
+  \item[CellSizeFactor] A factor that determines the size of the cells relative to the cutoff radius.
+  \item[Traversal] The method used to traverse the cells and calculate interactions between particles.
+  \item[Load Estimator] The strategy used to estimate and balance the computational load across different parts of the simulation domain.
+  \item[Data Layout] The arrangement of particle data in memory (e.g., AoS for Array of Structures, SoA for Structure of Arrays).
+  \item[Newton 3] Indicates whether Newton's third law optimization is used to reduce computation by only calculating forces once per particle pair (enabled/disabled).
+  \item[Reduced] The reduced performance data for all sample points is calculated by aggregating the data across all sample points. The specific aggregation method can be configured via the \texttt{.yaml} configuration file.
+  \item[Smoothed] A smoothed version of the reduced performance data.
+
+\end{description}
+
+\section{LiveInfoLogger Fields}
 \label{des:liveinfodatafields}
 
 The following fields are currently available in the LiveInfoData file. The LiveInfoData file is a CSV file containing summary statistics about the simulation state at each iteration. The data is collected and logged by the \texttt{LiveInfoLogger} class of the \gls{autopas} library.
@@ -35,25 +82,6 @@ The following fields are currently available in the LiveInfoData file. The LiveI
 \end{description}
 
 
-\section{TuningData Fields}
-\label{des:tuningdatafields}
-
-The following fields are currently available in the TuningData file.
-The TuningData file is a CSV file containing the performance information for all tested configurations. The data is collected and logged by the \texttt{TuningDataLogger} class of the \gls{autopas} library.
-
-\begin{description}[style=multiline, leftmargin =40mm]
-  \item[Date] The date and time when the data was collected.
-  \item[Iteration] The current iteration number of the simulation.
-  \item[Container] The type of container used to store the particles in the simulation (e.g., LinkedCells, VerletLists).
-  \item[CellSizeFactor] A factor that determines the size of the cells relative to the cutoff radius.
-  \item[Traversal] The method used to traverse the cells and calculate interactions between particles.
-  \item[Load Estimator] The strategy used to estimate and balance the computational load across different parts of the simulation domain.
-  \item[Data Layout] The arrangement of particle data in memory (e.g., AoS for Array of Structures, SoA for Structure of Arrays).
-  \item[Newton 3] Indicates whether Newton's third law optimization is used to reduce computation by only calculating forces once per particle pair (enabled/disabled).
-  \item[Reduced] The reduced performance data for all sample points is calculated by aggregating the data across all sample points. The specific aggregation method can be configured via the \texttt{.yaml} configuration file.
-  \item[Smoothed] A smoothed version of the reduced performance data.
-
-\end{description}
 
 \section{Scenarios used for Data Generation}
 \label{des:scenarios}
