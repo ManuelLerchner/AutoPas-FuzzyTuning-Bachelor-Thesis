@@ -1,0 +1,13 @@
+Date,Iteration,Container,CellSizeFactor,Traversal,Load Estimator,Data Layout,Newton 3,tuning[ns],optimumPerformance[ns]
+2024-07-15 14:33:04,174,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,16103721,16342065
+2024-07-15 14:36:24,5348,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,15080528,18974970
+2024-07-15 14:40:01,10522,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,15299774,21041598
+2024-07-15 14:43:55,15696,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,17891475,22101096
+2024-07-15 14:48:00,20870,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,16180661,23012316
+2024-07-15 14:52:11,26044,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,15327401,24096257
+2024-07-15 14:56:26,31218,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,16137447,25245819
+2024-07-15 15:00:47,36392,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,15534575,25819824
+2024-07-15 15:05:09,41566,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,18012203,26456011
+2024-07-15 15:09:35,46740,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,17787604,26981724
+2024-07-15 15:14:02,51914,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,19887213,27956158
+2024-07-15 15:18:30,57088,VerletListsCells,1.000000,vlc_c18,none,AoS,enabled,18937228,28288420

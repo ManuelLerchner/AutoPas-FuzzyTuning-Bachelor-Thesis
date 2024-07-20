@@ -17,11 +17,12 @@ for filename in os.listdir(folder):
         # parse filename
         # "FuzzyTuning_fallingDrop.yaml_1Threads.4066898.i23r05c03s10"
 
-        find = re.search(r'(.*).yaml_(\d+)Threads', filename)
+        find = re.search(r'(.*)', filename)
         try:
             scenario = find.group(1)
-            threads = find.group(2)
+            threads = 1
         except:
+            print(find)
             print(f"Error parsing filename {filename}")
             continue
             raise Exception("Error parsing filename")
@@ -32,12 +33,14 @@ for filename in os.listdir(folder):
 
         # find line having a timestamp [2024-05-22 21:15:54.174] [AutoPasLog] [info] [AutoPasImpl.h:65] AutoPas Version: 2.0.0-a46cd3a
         for line in lines:
+            print(line)
             if "AutoPas Version" in line:
                 # extract start time hour:minute:second
                 start = re.search(r'\[(.*?)\]', line).group(1)
                 start = start.replace(" ", "_")
                 start = start.replace(":", "_")
                 start = start.split(".")[0]
+
 
                 # store start time
                 if start in out_files:
@@ -90,7 +93,7 @@ for filename in os.listdir(folder):
     if filename.endswith(".csv"):
         # parse filename
         # AutoPas_liveInfoLogger_Rank0_2024-05-22_21-16-57.csv
-        print(filename)
+        print("FN"+filename)
         timestamp = re.search(
             r'Rank\d{1}_(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})', filename).group(1)
 
@@ -106,6 +109,7 @@ for filename in os.listdir(folder):
 
 # make directories
 for timestamp in out_files.keys():
+    print(timestamp)
     (scenario, _, _) = out_files[timestamp]
     for i in range(1, num_repeats + 1):
         print(f"CREATE {folder}/{scenario}_{i}")
@@ -126,11 +130,10 @@ for timestamp in out_files.keys():
                 folder}/{scenario}_{current_repeat[(scenario, threads)]}")
 
             # move file
-            shutil.move(
+            shutil.copy(
                 f"{folder}/{file}", f"{folder}/{scenario}_{current_repeat[(scenario, threads)]}")
 
         current_repeat[(scenario, threads)] += 1
     except KeyError:
         print(f"Error: No csv file for {scenario} {threads} {timestamp}")
-        continue
-        # raise Exception("No csv file")
+        raise Exception("No csv file")

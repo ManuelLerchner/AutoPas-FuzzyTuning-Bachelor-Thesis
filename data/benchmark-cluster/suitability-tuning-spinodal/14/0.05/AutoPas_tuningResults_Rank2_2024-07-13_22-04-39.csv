@@ -1,0 +1,13 @@
+Date,Iteration,Container,CellSizeFactor,Traversal,Load Estimator,Data Layout,Newton 3,tuning[ns],optimumPerformance[ns]
+2024-07-13 22:04:41,3,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,106569,65382485
+2024-07-13 22:10:25,5012,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,67405,39737061
+2024-07-13 22:15:38,10021,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,78976,42018004
+2024-07-13 22:21:34,15036,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,65787,45018605
+2024-07-13 22:28:07,20045,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,68336,47528547
+2024-07-13 22:35:10,25051,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,70126,50933321
+2024-07-13 22:42:58,30057,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,66957,54861481
+2024-07-13 22:50:18,35063,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,76273,58085321
+2024-07-13 22:57:56,40069,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,78679,60827453
+2024-07-13 23:05:54,45075,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,68883,63311737
+2024-07-13 23:14:06,50078,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,74782,70344937
+2024-07-13 23:22:25,55081,LinkedCells,1.000000,lc_sliced,none,SoA,enabled,71560,71723229
