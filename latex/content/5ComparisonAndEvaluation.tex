@@ -125,3 +125,11 @@ In both scenarios, the fuzzy tuning strategies have the best speedup distributio
     \caption[Quality of predictions during tuning phases]{The plot shows the speedup density distribution of all configurations evaluated during the tuning phases of both the Exploding Liquid and Spinodal Decomposition MPI scenarios. Most slow configurations are caused by the very slow Neighbour List rebuilds, especially in the Spinodal Decomposition MPI scenario, as there are many more particles.}
     \label{fig:tuningPhaseSpeedup}
 \end{figure}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\columnwidth]{figures/Benchmark/SuitabilitySearch/SuitabilityExploding_timings_threshold_benchmark-cluster_suitability-tuning-exploding_1.png}
+    \caption[Exploding liquid benchmark with different suitability thresholds]{Exploding liquid benchmark with different suitability thresholds. The suitability threshold specifies the width of the interval around the best configuration, which determines how many configurations are selected for the tuning phase. Very low thresholds perform poorly, as they leave no margin for error and fail to select the best configuration. Very high thresholds also perform poorly, as high suitability values cause the strategy to behave like FullSeach. The optimal threshold for this scenario is between 20\% and 40\%.}
+    \label{fig:suitabilityThreshold}
+\end{figure}
