@@ -86,60 +86,55 @@ Where $r$ is the distance between the particles, $\epsilon$ is the depth of the 
 
 \subsection{Numerical Integration}
 
-Since the simulation domain potentially consists of a vast number of particles all interacting with each other, it is generally not possible to solve the equations of motion analytically. This problem is known under the N-body problem, and it can be shown that there are no general solutions for systems with more than two particles. It is, however, possible to approximate solutions of these equations of motion using numerical integration methods. A standard method for solving such systems is the Verlet algorithm. This integration scheme is derived from the Taylor expansion of the position of the $i$-th object $\vec{r}_i$ at time $t - \Delta t$ and $t + \Delta t$ and is given by:
+Since the simulation domain potentially consists of a vast number of particles all interacting with each other, it is generally not possible to solve the equations of motion analytically. This problem is known under the N-body problem, and it can be shown that there are no general solutions for systems with more than two particles. It is, however, possible to approximate solutions of these equations of motion using numerical integration methods. A widely used method for this purpose is the Velocity-Störmer-Verlet algorithm. It is defined as follows:
 
-\begin{equation}
-      \vec{r}_i(t + \Delta t) = 2 \vec{r}_i(t) - \vec{r}_i(t - \Delta t) + \vec{a}_i(t) \Delta t^2
-\end{equation}
+\begin{align}
+      \vec{r}_i(t + \Delta t) & = \vec{r}_i(t) + \Delta t \cdot \vec{v}_i(t) + (\Delta t)^2 \frac{\vec{F}_i(t)}{2m_i} \label{eq:verlet_position} \\
+      \vec{F}_i(t + \Delta t) & = -\nabla_i U \label{eq:verlet_force}                                                                            \\
+      \vec{v}_i(t + \Delta t) & = \vec{v}_i(t) + \Delta t  \frac{\vec{F}_i(t) + \vec{F}_i(t + \Delta t)}{2m_i} \label{eq:verlet_velocity}
+\end{align}
 
-Where $\vec{a}_i(t)$ is the acceleration of the $i$-th object at time $t$, this acceleration can be calculated from the particle mass and the acting forces using Newton's second law of motion $\vec{a}_i(t) =\frac{F_i}{m_i}= \frac{-\nabla_i U}{m_i}$.
+Where $\vec{r}_i(t)$ is the position, $\vec{v}_i(t)$ is the velocity, $\vec{F}_i(t)$ is the force acting on the $i$-th particle at time $t$. $\Delta t$ is the time step size, and $m_i$ is the mass of the $i$-th particle. The forces acting on the particles can be calculated from the potential energy function $U$ as $\vec{F}_i(t) = -\nabla_i U$.
 
 \subsection{Simulation Loop}
 
 Using the methods described above, it is possible to simulate the behavior of a system of particles over time. The general simulation loop for a molecular dynamics simulation can be described as follows:
 
-\begin{enumerate}
-      \item \textbf{Initialization} \\
-            The simulation starts by initializing the positions and velocities of the particles. The initial positions and velocities can be chosen randomly or based on experimental data, depending on the system under investigation.
 
-      \item \textbf{Position Updates} \\
-            In this step, the positions of the particles are updated using a numerical integration scheme such as the Verlet algorithm.
-
-      \item \textbf{Force Calculation} \\
-            The forces acting on the particles are calculated based on the current positions of the particles and the chosen potential energy function $U$.
-
-      \item \textbf{Acceleration and Velocity Updates} \\
-            The acceleration of each particle is calculated using Newton's second law of motion and the forces acting on the particles. The velocities of the particles are then updated accordingly.
-
-      \item \textbf{External Forces and Constraints} \\
-            In this step, the simulation can be modified by applying external forces or constraints to the particles. For example, it is possible to introduce boundary conditions, temperature control, or other outside influences to the simulation.
-
-      \item \textbf{Update Time and Repeat} \\
-            The simulation time is updated, and the simulation loop (steps 2-5)
-            are repeated until the desired simulation time is reached. The collected data can then be analyzed to study properties of the system.
-\end{enumerate}
+\begin{algorithm}
+      \SetAlgoLined
+      \textbf{Initialize} particle positions and velocities based on initial conditions\;
+      \vspace{0.2cm}
+      \While{simulation time $<$ desired time}{
+            Update all particle positions using \autoref{eq:verlet_position}\;
+            Calculate all forces $\vec{F}_i(t+\Delta t)$ at the new positions using \autoref{eq:verlet_force}\;
+            Update all particle velocities using \autoref{eq:verlet_velocity}\;
+            \vspace{0.2cm}
+            Apply external forces or constraints (if any)\;
+            Increment simulation time\;
+      }
+      \caption{Molecular Dynamics Simulation Loop (Velocity-Störmer-Verlet)}
+\end{algorithm}
 
 
 Many different software packages exist to perform such simulations. Some widely used examples of such systems are LAAMPS\footnote{\url{https://lammps.sandia.gov/}} and GROMACS\footnote{\url{https://www.gromacs.org/}}. Both attempt to efficiently solve the underlying N-body problem and provide the user with a high-level interface to specify the parameters and properties of the simulation.
 
-Many different approaches exist to efficiently solve the N-body problem, and no single best approach works well for all systems as the optimal implementation heavily depends on the simulation state of the hardware used to perform the simulation. However, LAAMPS and GROMACS use a single implementation and cannot adapt their algorithms to the current simulation state.
+Many different approaches exist to efficiently solve the N-body problem, and no single best approach works well for all systems as the optimal implementation heavily depends on the simulation state and the hardware used to perform the simulation. However, LAAMPS and GROMACS use a single implementation and cannot adapt their algorithms to the current simulation state.
 
 In the following section, we will introduce AutoPas, a library designed to efficiently deal with evolving particle simulations, leveraging the idea of automatically switching between different implementations to achieve the best performance for the current simulation state.
 
 \section{AutoPas}
 
-AutoPas is an open-source library designed to achieve optimal node-level performance for short-range particle simulations. On a high level, AutoPas can be seen as a black box performing arbitrary N-body simulations with short-range particle interactions. However, AutoPas differentiates itself from other libraries by providing many algorithmic implementations for the N-body problem, each with different performance and memory usage trade-offs. No implementation is optimal for all simulation scenarios as the optimum can change over time~\autoref{GRATL2022108262}. Consequently, AutoPas is designed to be adaptive and can periodically switch between different implementations to remain reasonably close to the current optimal configuration.
+AutoPas is an open-source library designed to achieve optimal node-level performance for short-range particle simulations. On a high level, AutoPas can be seen as a black box performing arbitrary N-body simulations with short-range particle interactions. However, AutoPas differentiates itself from other libraries by providing many algorithmic implementations for the N-body problem, each with different performance and memory usage trade-offs. No implementation is optimal for all simulation scenarios, and the optimum can even change during the course of the simulation~\autoref{GRATL2022108262}. Consequently, AutoPas is designed to be adaptive and can periodically switch between different implementations to remain reasonably close to the current optimal configuration.
 
 Since AutoPas provides a high-level interface for short-range N-body simulations, the user must specify the desired model and simulation parameters. Fortunately, AutoPas also provides some example implementations, such as \texttt{\gls{mdflexible}}. \texttt{\gls{mdflexible}} is a simple molecular dynamics framework built on top of AutoPas that allows users to specify the desired simulation parameters and run simulations. This work will primarily focus on \texttt{\gls{mdflexible}}, but the concepts can be easily transferred to other simulation frameworks.
 
 \subsection{Autotuning in AutoPas}
 
-AutoPas internally alternates between two phases of operation. The first phase is the \emph{tuning phase}, where AutoPas tries to find the best configuration of parameters that minimize a chosen performance metric (e.g., time, energy usage) for the current simulation state. This is achieved by trying out different configurations of parameters and measuring their performance. The configuration that optimizes the chosen performance metric is then used in the following \emph{simulation phase}, assuming that the optimal configuration found in the tuning phase still performs reasonably well during this phase.
+AutoPas internally alternates between two phases of operation. The first phase is the \emph{tuning phase}, where AutoPas tries to find the best configuration of parameters that minimize a chosen performance metric (e.g., time, energy usage) for the current simulation state. This is achieved by trying out different configurations of parameters and measuring their performance. The configuration that optimizes the chosen performance metric is then used in the following \emph{simulation phase}, assuming that the optimal configuration found in the tuning phase still performs reasonably well.
 As the simulation progresses and the characteristics of the system change, the previously chosen configuration can drift arbitrarily far from the actual optimal configuration. To counteract this, AutoPas periodically alternates between tuning and simulation phases to ensure that the used configuration remains close to optimal.
 
-The power of AutoPas comes from its vast amount of tunable parameters and the enormous search space associated with them. Other software packages, such as LAAMPS and GROMACS, are limited to just one implementation and can operate outside the theoretically achievable performance regime.
-
-In the following section, we will discuss the tunable parameters in AutoPas and the different tuning strategies available to find the best configuration of parameters for the current simulation state.
+The power of AutoPas comes from its vast amount of tunable parameters and the enormous search space associated with them. In the following sections, we will discuss all currently tunable parameters in AutoPas and briefly introduce the different tuning strategies used to guide the search for the best configuration of parameters.
 
 \subsection{Tunable Parameters}
 
@@ -155,7 +150,7 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
                   \item \textbf{LinkedCells} \\
                         LinkedCells segments the domain into a regular cell grid and only considers interactions between particles from neighboring cells. This results in the trade-off that particles further away are not considered for the force calculation. In practice, this is not a big issue, as all short-range forces drop off quickly with distance anyway.
                         LinkedCells also provides a high cache hit rate as particles inside the same cell can be stored contiguously in memory. Typically, the cell size is chosen to equal the force cutoff radius $r_c$, meaning each particle only needs to check interactions between particles inside the $3\times3\times3$ cell grid around the current cell. All other particles are guaranteed to be further away than the cutoff radius and, therefore, cannot contribute to the acting forces.
-                        This reduction in possible interactions can result in a complexity of just $O(N)$ distance checks in each iteration if the particles are spread evenly. However, there is room for improvement as the constant overhead factor can be pretty high, as most distance checks performed by LinkedCells still do not contribute to the force calculation. Due to the uneven scaling of sphere and cube volumes, only about 15.5\% of all particles present in the $3\times3\times3$ cell grid around a particle are within the cutoff radius ~\cite{GRATL2019748}.\\
+                        This reduction in possible interactions can result in a complexity of just $O(N)$ distance checks in each iteration if the particles are spread evenly. However, there is room for improvement as the constant overhead factor can be pretty high, as most distance checks performed by LinkedCells still do not contribute to the force calculation when using $r_{cell}=r_c$ ~\cite{GRATL2019748}.\\
                         \textit{However, still generally good for large, homogeneous\footnote{Homogeneous in this context, the particles are distributed evenly across the domain.} systems.}
 
                   \item \textbf{VerletLists} \\
@@ -180,7 +175,7 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
             The Load Estimator Options relate to how the simulation behaves in a parallelized setting. The load estimator estimates each MPI rank's computational load and guides the simulation's load balancing. In this thesis, however, we will not further describe the Load Estimator Options as we primarily focus on the tuning aspect of single-node simulations.
 
       \item \textbf{Traversal Options:} \\
-            These options are related to the traversal algorithm used to calculate the forces between the particles. The traversal determines the order in which the particles are visited and how the forces are applied to the particles. Furthermore, traversal options should prevent race conditions when using multiple threads and can automatically provide load balancing at the node level~\cite{SECKLER2021101296}.
+            These options are related to the traversal algorithm used to calculate the forces between the particles. The traversal determines the order in which the particles are visited and how the forces are applied to the particles. Furthermore, traversal options should prevent race conditions when using multiple threads and can automatically provide static or dynamic load balancing at the node level~\cite{SECKLER2021101296}.
 
             Some avaialble traversal options are:
 
@@ -219,7 +214,7 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
                         The SoA (Structure of Arrays) data layout stores the particles' properties in separate arrays. For example, all particles' x-,y- and z-coordinates are stored in separate arrays. This data layout is beneficial for vectorization as the properties of the particles are stored contiguously in memory. This allows for efficient vectorization of the force calculations as the properties of the particles can be loaded into vector registers in a single instruction.
 
                   \item \textbf{AoS} \\
-                        The AoS (Array of Structures) data layout stores all particle properties in different structures. This allows for efficient cache utilization when working on particles, as all properties are close to each other in memory. However, this data layout is not beneficial for vectorization as the same properties of different particles are not stored contiguously in memory. Consequently, they need to be loaded into vector registers individually, which can result in inefficient vectorization of the force calculations.
+                        The AoS (Array of Structures) data layout stores all particle properties in different structures. This allows for efficient cache utilization when working on particles, as all properties are close to each other in memory. As the same properties of different particles are not stored contiguously, they need to be loaded into vector registers separately, leading to inefficient vectorization.\\
             \end{enumerate}
 
       \item \textbf{Newton 3 Options:} \\
@@ -234,23 +229,22 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
             \end{enumerate}
 
       \item \textbf{Cell Size Factor:} \\
-            The Cell Size Factor is a parameter that is used to determine the size of the cells in the LinkedCells-Container\footnote{The option is also relevant for other containers such as VerletLists as those configurations internally also build their neighbor lists using a Cell Grid}. The cell size factor is typically chosen to be equal to the cutoff radius $r_c$, meaning that each particle only needs to check the forces with particles inside the $3\times3\times3$ cell grid around it as all other particles are guaranteed to be further away than the cutoff radius. We saw in the previous section that this could result in many unnecessary distance checks. The amount of spurious distance checks can be reduced by choosing smaller cell sizes. However, the increased overhead of managing more cells can quickly offset the performance gain. A trade-off between the two needs to be found.
+            The Cell Size Factor is a parameter that is used to determine the size of the cells in the LinkedCells-Container\footnote{The option is also relevant for other containers such as VerletLists as those configurations internally also build their neighbor lists using a Cell Grid}. If the cell size factor is set to high, many spurious distance checks are performed, as many particles further away than the cutoff radius are considered for the force calculation. Therefore, it is beneficial to reduce the cell size factor. However, the increased overhead of managing more cells can quickly offset the performance gain, and a trade-off between the two needs to be found.\\
 
 \end{enumerate}
 
 \subsection{Tuning Strategies}
 
-Tuning strategies are the heart of AutoPas and attempt to efficiently find the best parameters for the current simulation state.
+Tuning strategies are the heart of AutoPas and attempt to efficiently find the best parameter combination for the current simulation state.
 
-The default tuning strategy in AutoPas uses a brute-force approach to find the best parameters for the current simulation state by trying out all possible combinations of parameters and choosing the one that performed best. This approach is called \emph{Full Search} and is guaranteed to find the best parameters for the current simulation state. However, it is typically very costly in terms of time and resources as it has to spend a lot of time measuring bad parameter combinations. This is a big issue as the number of possible parameter combinations grows exponentially with the number of parameters, and many potentially perform very poorly. This makes the full search approach infeasible, especially if more tunable options are added to AutoPas.
+AutoPas provides a couple of different tuning strategies that are used to explore the search space of possible configurations. These tuning strategies aim to quickly find a configuration that minimizes the chosen performance metric. The tuning strategies differ in how they explore the search space and how they decide which configurations to test next.
 
-To overcome this issue, AutoPas provides a couple of different tuning strategies that can be used to reduce the number of parameter combinations that need to be tested. This is generally achieved by allowing the tuning strategy to modify the queue of parameters that need to be tested, allowing them to exclude unlikely configurations from the testing process.
+The currently available tuning strategies in AutoPas are:
 
-Developing tuning strategies that can effectively prune the search space is of utmost importance, as bad parameter choices can result in a significant slowdown of the simulation. The following section will introduce the currently available tuning strategies in AutoPas.
 
 \begin{enumerate}
       \item \textbf{Full Search} \\
-            The Full Search strategy is the default tuning strategy in AutoPas. It tries out all possible combinations of parameters and chooses the one that optimizes the chosen performance metric. It is guaranteed to find the best parameters for the current simulation state, but as mentioned before, it is very costly.
+            The Full Search strategy is the default tuning strategy in AutoPas. It tries out all possible combinations of parameters and chooses the one that optimizes the chosen performance metric. This approach is guaranteed to find the best parameters for the current simulation state. However, it is typically very costly in terms of time and resources as it has to spend a lot of time measuring bad parameter combinations. This is a big issue as the number of possible parameter combinations grows exponentially with the number of parameters, and many of them potentially perform very poorly. This makes the full search approach infeasible, especially if more tunable options are added to AutoPas.
 
       \item \textbf{Random Search} \\
             The Random Search strategy is a simple tuning strategy that randomly samples a given number of configurations from the search space and chooses the one that optimizes the chosen performance metric. This approach is faster than the Full Search strategy as it does not need to test all possible combinations of parameters. However, it does not guarantee to find the best parameters for the current simulation state.
@@ -275,7 +269,7 @@ Developing tuning strategies that can effectively prune the search space is of u
 \end{enumerate}
 
 
-This thesis aims to extend these tuning strategies with a new approach based on Fuzzy Logic. Conceptually, this new fuzzy logic-based tuning strategy is very similar to the rule-based tuning strategy as it uses expert knowledge of fuzzy rules to prune the search space. However, contrary to classical rules, fuzzy logic can deal with imprecise and uncertain information, which allows it to only partially activate rules depending on the \emph{degree of truth} of the condition.
+This thesis aims to extend these tuning strategies with a new approach based on Fuzzy Logic. Conceptually, this new fuzzy logic-based tuning strategy is very similar to the rule-based tuning strategy as it uses expert knowledge encoded in fuzzy rules to prune the search space. However, contrary to classical rules, fuzzy logic can deal with imprecise and uncertain information, which allows it to only partially activate rules depending on the \emph{degree of truth} of the condition.
 All the suggestions can then be combined based on their degree of activation rather than just following the binary true/false logic. This allows for a more nuanced approach and allows the tuning strategy to interpolate the effect of many different rules to choose the best possible configuration, even if there is no direct rule for this specific case.
 
 In the following section, we will introduce the basic fuzzy logic concepts.
@@ -283,7 +277,7 @@ In the following section, we will introduce the basic fuzzy logic concepts.
 
 \section{Fuzzy Logic}
 
-Fuzzy Logic is a mathematical framework that allows for reasoning under uncertainty. It is an extension of classical logic and extends the concept of binary truth values ($true$ and $false$) to a continuous range of truth values in the interval $[0, 1]$. This allows for a more nuanced representation of the truth values of statements, which can be beneficial when dealing with imprecise or uncertain information. Instead of just having true or false statements, it is now possible for statements to be, for example, 40\% true. This concept is beneficial when modeling human language, as the words tend to be imprecise. For example, \emph{hot} can mean different things to different people. For some people, a temperature of 30 degrees Celsius might be considered \emph{hot}, while for others, a temperature of 40 degrees Celsius might be considered \emph{hot}. There is no clear boundary between what is considered hot and what is not, but rather a gradual transition between the two. Fuzzy Logic allows modeling such gradual transitions by assigning a degree of truth to each statement.
+Fuzzy Logic is a mathematical framework that allows for reasoning under uncertainty. It is an extension of classical logic and extends the concept of binary truth values ($true$ and $false$) to a continuous range of truth values in the interval $[0, 1]$. Instead of just having true or false statements, it is now possible for statements to be, for example, 40\% true. This concept is beneficial when modeling human language, as the words tend to be imprecise. For example, \emph{hot} can mean different things to different people. For some people, a temperature of 30 degrees Celsius might be considered \emph{hot}, while for others, a temperature of 40 degrees Celsius might be considered \emph{hot}. There is no clear boundary between what is considered hot and what is not, but rather a gradual transition between the two. Fuzzy Logic allows modeling such gradual transitions by assigning a degree of truth to each statement.
 
 \subsection{Fuzzy Sets}
 
@@ -432,7 +426,7 @@ Using this grammar, a typical rule might look like this:
       \text{IF} \;( \tilde{A} = a \; \text{AND} \; \tilde{B} = b )\; \text{THEN} \; \tilde{C} = c
 \end{equation*}
 
-This rule states that if the state of the linguistic variable $A$ is $a$ and the state of the linguistic variable $B$ is $b$, then the state of the linguistic variable $C$ should be $c$. However, contrary to classical logic, the rule does not have to activate fully but can have a degree of activation in the interval $[0, 1]$. If the antecedent is only partially true (for example, if $\mu_{\tilde{A}}(a) = 0.8$ and $\mu_{\tilde{B}}(b) = 0.6$), the rule is only partially applied and the effect of adapting the consequent is reduced accordingly.
+This rule states that if the state of the linguistic variable $A$ is $a$ and the state of the linguistic variable $B$ is $b$, then the state of the linguistic variable $C$ should be $c$. However, contrary to classical logic, the rule does not have to activate fully but can have a degree of activation in the interval $[0, 1]$.
 
 \smallskip
 
@@ -458,7 +452,7 @@ The same steps are performed for every other rule, and the resulting fuzzy sets 
 
 \subsection{Defuzzification}
 
-The final step in a Fuzzy Logic system is the defuzzification step. In this step, the resulting fuzzy set of the previous section is converted back into a crisp, numeric value that can be used to control natural-world systems. There are many ways to defuzzify a fuzzy set, but a common theme is finding a most likely value that maintains certain aspects of the fuzzy set. In the following sections we will make use of the following defuzzification methods:
+The final step in a Fuzzy Logic system is the defuzzification step. In this step, the resulting fuzzy set from the previous section is converted back into a crisp, numeric value that can be used as a concrete output or decision. There are many ways to defuzzify a fuzzy set, but a common theme is finding a representative value that maintains certain aspects of the fuzzy set. In the following sections, we will explore several defuzzification methods:
 
 \begin{itemize}
       \item \textbf{Centroid} \\
