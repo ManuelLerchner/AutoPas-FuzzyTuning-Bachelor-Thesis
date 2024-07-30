@@ -361,7 +361,7 @@ class Trapezoid(FuzzySet):
         prefix = ""
         # if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
         #     prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Trapezoid({np.round(self.left, 0)}, {np.round(self.center_left, 0)}, {np.round(self.center_right, 0)}, {np.round(self.right, 0)})"
+        return f"{prefix}\"{self.linguistic_term}\": Trapezoid({self.left}, {self.center_left}, {self.center_right}, {self.right})"
 
 
 class Gaussian(FuzzySet):
@@ -390,7 +390,7 @@ class Gaussian(FuzzySet):
         prefix = ""
         # if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
         #     prefix = next(iter(self.crisp_set.dimensions))[0] + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Gaussian({np.round(self.mean, 0)}, {np.round(self.sigma, 0)})"
+        return f"{prefix}\"{self.linguistic_term}\": Gaussian({self.mean}, {self.sigma})"
 
 
 class Sigmoid(FuzzySet):
@@ -419,7 +419,7 @@ class Sigmoid(FuzzySet):
         prefix = ""
         # if (self.crisp_set and len(self.crisp_set.dimensions) == 1):
         #     prefix = str(next(iter(self.crisp_set.dimensions))[0]) + " is "
-        return f"{prefix}\"{self.linguistic_term}\": Sigmoid({np.round(self.center, 0)}, {np.round(self.width, 2)})"
+        return f"{prefix}\"{self.linguistic_term}\": Sigmoid({self.center}, {self.width})"
 
 
 class SigmoidFinite(FuzzySet):

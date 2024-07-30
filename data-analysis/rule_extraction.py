@@ -987,6 +987,42 @@ def create_output_membership_functions(y_train):
 
 # In[183]:
 
+def format_linguistic_variables(variables):
+    variableString = ""
+    for linguistic_var in variables.values():
+        (name, cset) = next(iter(linguistic_var.crisp_set.dimensions))
+        (rl, ru) = cset.values
+
+        variableString += (f"FuzzyVariable: domain: \"{
+                           name}\" range: ({rl}, {ru})\n")
+        for func in sorted(linguistic_var.linguistic_terms.values(), key=lambda x: x.peak()):
+            func.crisp_set = None
+            variableString += (f"  {func}\n")
+        variableString += "\n"
+
+    return variableString
+
+
+def format_rules(rules):
+    rule_outputs: dict[str, Rule] = {}
+
+    for rule in rules:
+        if rule.prediction.feature not in rule_outputs:
+            rule_outputs[rule.prediction.feature] = []
+
+        rule_outputs[rule.prediction.feature].append(rule)
+
+    ruleString = ""
+    for rules in rule_outputs.values():
+        for rule in rules:
+            if len(rule.conditions) == 0:
+                continue
+            ruleString += (f"{rule}\n")
+        ruleString += "\n"
+
+    return ruleString
+
+
 def save_linguistic_variables(variables, filename):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w") as f:
@@ -1002,7 +1038,6 @@ def save_linguistic_variables(variables, filename):
 
 
 # In[184]:
-
 def save_fuzzy_rules(rules, filename):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     rule_outputs: dict[str, Rule] = {}

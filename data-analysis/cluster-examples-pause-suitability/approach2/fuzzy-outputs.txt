@@ -1,9 +1,0 @@
-FuzzyVariable: domain: "Configuration_i" range: (0, 1)
-	"terrible": Sigmoid(0.0, -30)
-	"rubbish": Gaussian(0.0, 0.0)
-	"bad": Gaussian(0.0, 0.0)
-	"medium": Gaussian(0.0, 0.0)
-	"ok": Gaussian(1.0, 0.0)
-	"good": Gaussian(1.0, 0.0)
-	"excellent": Sigmoid(1.0, 30)
-
