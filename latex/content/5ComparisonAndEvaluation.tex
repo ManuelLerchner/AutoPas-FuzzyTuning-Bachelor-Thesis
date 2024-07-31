@@ -99,11 +99,12 @@ Currently, the rule file for the suitability approach specifies that only the to
 
 As described above, a tremendous slowdown of the classical tuning strategies is caused by very bad configurations that are sometimes encountered during the tuning phases. To further illustrate this, we will investigate the speedup density distribution of all configurations evaluated during the tuning phases of the different strategies. In particular, we will look at the Exploding Liquid and Spinodal Decomposition MPI scenarios described above, as they represent \emph{small} and \emph{large} scenarios, respectively.
 
-The plots in \autoref{fig:tuningPhaseSpeedup} show these relative speedup distributions. All non-rule-based tuning strategies tend to encounter configurations with extremely low speedups during the tuning phases. Some of those bad configurations are $\approx100$ times slower than the best configurations of the tuning phase. As seen in the previous plots, those very slow configurations completely ruin the performance of the classical tuning strategies during the tuning phases.
+The plots in \autoref{fig:tuningPhaseSpeedup} show these relative speedup distributions. All classical tuning strategies tend to encounter configurations with extremely low speedups during the tuning phases. In the exploding-liquid benchmark, some bad configurations are $\sim10$ times slower than the winning configurations, while we observe iterations $\sim100$ times slower in the Spinodal Decomposition MPI scenario.
 
-It is also interesting to note that most of those bad performances are caused by very slow Neighbour List rebuilds, especially in the Spinodal Decomposition MPI scenario. This means that tuning strategies with very short tuning phases, like the fuzzy tuning strategies, have a significant advantage, as they only tend to evaluate configurations expected to suit the current state.
+The fuzzy tuning strategies, especially the suitability approach, predict much better configurations during the tuning phases. Combined with the relatively small number of configurations evaluated during the tuning phases, this leads to very short tuning phases for this strategy while still finding close to optimal configurations, as shown in the previous sections.
 
-In both scenarios, the fuzzy tuning strategies have the best speedup distributions and, by far, the highest mean speedup during the tuning phases. However, this does not automatically mean they will perform their best in the following simulation phase, as they could fail to predict the optimal configuration.
+A possible improvement to AutoPas would be to automatically detect such bad configurations while evaluating them and discard them early if they are significantly worse than the current best configuration. Such an improvement could drastically benefit every tuning strategy by significantly reducing the time spent in the tuning phases while still finding the same optimal configuration.
+
 
 \newpage
 
@@ -124,7 +125,7 @@ In both scenarios, the fuzzy tuning strategies have the best speedup distributio
     \end{subfigure}
 
 
-    \caption[Quality of predictions during tuning phases]{The plot shows the speedup density distribution of all configurations evaluated during the tuning phases of both the Exploding Liquid and Spinodal Decomposition MPI scenarios. Most slow configurations are caused by the very slow Neighbour List rebuilds, especially in the Spinodal Decomposition MPI scenario, as there are many more particles.}
+    \caption[Quality of predictions during tuning phases]{The plot shows the speedup density distribution of all configurations evaluated during the tuning phases of both the Exploding Liquid and Spinodal Decomposition MPI scenarios calculated from the smoothed timings (see \autoref*{des:tuningdatafields}). The fuzzy tuning strategies generally encounter better configurations during the tuning phases, which improves their total performance.}
     \label{fig:tuningPhaseSpeedup}
 \end{figure}
 
