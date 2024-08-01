@@ -7,6 +7,7 @@ To measure the performance of the fuzzy tuning strategy, we also use the scenari
 
 
 \section{Exploding Liquid Benchmark (Included in Training Data)}
+\label{sec:explodingLiquidBenchmark}
 
 The exploding liquid benchmark simulates a high-density liquid that expands outwards as the simulation progresses. As the data of this scenario was included in the training data, we expect the fuzzy tuning technique to perform well. We only include the benchmark results with one thread for brevity, as the results for the other thread counts are very similar.
 
@@ -41,26 +42,26 @@ The plot in \autoref{fig:spinodalTimings_14thread} shows the time spent calculat
     \centering
 
     \begin{subfigure}[c]{\textwidth}
-        \includegraphics[width=\columnwidth,trim={0cm 0 0cm 0.9cm},clip]{figures/Benchmark/ExplodingLiquid/timing_explodingLiquid_1.png}
+        \includegraphics[width=\columnwidth,trim={0cm 0cm 0cm 0.9cm},clip]{figures/Benchmark/ExplodingLiquid/timing_explodingLiquid_1.png}
         \caption{}
         \label{fig:explodingTimings_1thread}
     \end{subfigure}
 
 
     \begin{subfigure}[c]{\textwidth}
-        \includegraphics[width=\columnwidth,trim={0cm 0 0cm 1cm},clip]{figures/Benchmark/ExplodingLiquid/boxplot_explodingLiquid_1.png}
+        \includegraphics[width=\columnwidth,trim={0cm 0.5cm 0cm 1cm},clip]{figures/Benchmark/ExplodingLiquid/boxplot_explodingLiquid_1.png}
         \caption{}
         \label{fig:explodingLiquidBoxplot_1thread}
     \end{subfigure}
 
     \begin{subfigure}[b]{\textwidth}
-        \includegraphics[width=\columnwidth,trim={0cm 0 0cm 0.9cm},clip]{figures/Benchmark/ExplodingLiquid/total_time_explodingLiquid_1.png}
+        \includegraphics[width=\columnwidth,trim={0cm 0.5cm 0cm 0.9cm},clip]{figures/Benchmark/ExplodingLiquid/total_time_explodingLiquid_1.png}
         \caption{}
         \label{fig:explodingLiquidTotalTime_1thread}
     \end{subfigure}
 
 
-    \caption[Exploding liquid benchmark with 1 thread]{Exploding liquid benchmark with 1 thread. (a) Time spent calculating forces for every iteration. (b) Boxplots of time spent calculating forces divided into tuning- and simulation phases. (c) Total time spent calculating forces for tuning- and simulation phases. The Suitability approach uses a threshold of 10\%, which is not optimal for this scenario (See \autoref{fig:suitabilityThreshold})}
+    \caption[Exploding liquid benchmark with 1 thread]{Exploding liquid benchmark with 1 thread. (a) Time spent calculating forces for every iteration. (b) Boxplots of time spent calculating forces divided into tuning- and simulation phases. (c) Total time spent calculating forces for tuning- and simulation phases. The Suitability approach uses a non-optimal threshold of 10\% (see \autoref{sec:suitabilityThreshold}).}
     \label{fig:explodingLiquid_1thread}
 \end{figure}
 
@@ -68,32 +69,32 @@ The plot in \autoref{fig:spinodalTimings_14thread} shows the time spent calculat
     \centering
 
     \begin{subfigure}[c]{\textwidth}
-        \includegraphics[width=\columnwidth,trim={0cm 0 0cm 0.9cm},clip]{figures/Benchmark/SpinodalDecompositionMPI/SpinodalDecompositionMPI_timings_SpinodalDecompositionMPI_14_0.png}
+        \includegraphics[width=\columnwidth,trim={0cm 0.2cm 0cm 0.9cm},clip]{figures/Benchmark/SpinodalDecompositionMPI/SpinodalDecompositionMPI_timings_SpinodalDecompositionMPI_14_0.png}
         \caption{}
         \label{fig:spinodalTimings_14thread}
     \end{subfigure}
 
 
     \begin{subfigure}[c]{\textwidth}
-        \includegraphics[width=\columnwidth,trim={0cm 0 0cm 1cm},clip]{figures/Benchmark/SpinodalDecompositionMPI/SpinodalDecompositionMPI_timings_boxplot_SpinodalDecompositionMPI_14_0.png}
+        \includegraphics[width=\columnwidth,trim={0cm 0.5cm 0cm 1cm},clip]{figures/Benchmark/SpinodalDecompositionMPI/SpinodalDecompositionMPI_timings_boxplot_SpinodalDecompositionMPI_14_0.png}
         \caption{}
         \label{fig:spinodalBoxplot_14thread}
     \end{subfigure}
 
     \begin{subfigure}[b]{\textwidth}
-        \includegraphics[width=\columnwidth,trim={0cm 0 0cm 0.9cm},clip]{figures/Benchmark/SpinodalDecompositionMPI/SpinodalDecompositionMPI_timings_total_SpinodalDecompositionMPI_14_0.png}
+        \includegraphics[width=\columnwidth,trim={0cm 0.5cm 0cm 0.9cm},clip]{figures/Benchmark/SpinodalDecompositionMPI/SpinodalDecompositionMPI_timings_total_SpinodalDecompositionMPI_14_0.png}
         \caption{}
         \label{fig:spinodalTotalTime_14thread}
     \end{subfigure}
 
 
-    \caption[Spinodal decomposition benchmark MPI with 14 threads]{0th Rank of the Spinodal decomposition benchmark (Total: 4 MPI ranks, 14 threads each). (a) Time spent calculating forces. (b) Boxplots of time spent calculating forces divided into simulation and tuning phases. (c) Total time spent calculating forces}
+    \caption[Spinodal decomposition benchmark MPI with 14 threads]{0th Rank of the Spinodal decomposition benchmark (Total: 4 MPI ranks, 14 threads each). (a) Time spent calculating forces for every iteration. (b) Boxplots of time spent calculating forces divided into tuning- and simulation phases. (c) Total time spent calculating forces for tuning- and simulation phases. The suitability approach uses a non-optimal threshold of 10\% (see \autoref{sec:suitabilityThreshold}).}
     \label{fig:spinodal_14thread}
 \end{figure}
 
 
 
-\section{General Observations}
+\section{Further Analysis}
 
 \subsection{Quality of Predictions During Tuning Phases}
 
@@ -148,6 +149,24 @@ Therefore, we recommend using a slightly higher suitability threshold for the su
 \begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth]{figures/Benchmark/SuitabilitySearch/SuitabilityExploding_timings_threshold_benchmark-cluster_suitability-tuning-exploding_1.png}
-    \caption[Exploding liquid benchmark with different suitability thresholds]{Exploding liquid benchmark with different suitability thresholds. The suitability threshold specifies the percentage of configurations with the highest suitability that are selected for the tuning phases. The fastest runtimes are achieved with a threshold between 20\% and 40\%.}
+    \caption[Exploding liquid benchmark with different suitability thresholds]{Exploding liquid benchmark with different suitability thresholds. The fastest runtimes are achieved with a threshold between 20\% and 40\%.}
     \label{fig:suitabilityThreshold}
+\end{figure}
+
+\newpage
+
+\subsection{Robustness of the Fuzzy Tuning Strategies}
+
+Previous measurements carried out in \autoref{sec:explodingLiquidBenchmark} directly included the Exploding Liquid benchmark in the training data, which could have biased the results in favor of the fuzzy tuning strategies. To investigate the robustness of the fuzzy tuning strategies, we reran the rule extraction process without the Exploding Liquid scenario in the training data and performed the Exploding Liquid benchmark again.
+
+The results in \autoref{fig:explodingTimings_1thread_noTrainingData} show that the fuzzy tuning strategies still perform remarkably well, even without ever encountering the Exploding Liquid scenario during the rule extraction process. Therefore, we conclude that the rule extraction process is robust and can be generalized to similar scenarios, even if they were not included in the training data.
+
+\begin{figure}[H]
+    \centering
+
+    \includegraphics[width=\columnwidth,trim={0cm 0 0cm 0.9cm},clip]{figures/Benchmark/ExplodingLiquidHoldout/total_time_explodingLiquid_1.png}
+    \caption{
+        Total time spent calculating forces for tuning- and simulation phases for the Exploding Liquid benchmark without the scenario being included in the training data. The fuzzy tuning strategies still perform best, with comparable performance to the previous measurements.
+    }
+    \label{fig:explodingTimings_1thread_noTrainingData}
 \end{figure}

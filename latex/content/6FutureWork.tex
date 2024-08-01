@@ -1,19 +1,24 @@
 \chapter{Future Work}
 \label{sec:future_work}
 
+In this chapter, we discuss some of the possible improvements that could be made to the current system to improve its performance and usability.
 
-We demonstrated that the expert knowledge extracted from the collected dataset can lead to a significant reduction of tuning time and can provide an overall improvement in the performance of the simulation. However, the expert knowledge is imperfect and can be improved in several ways. In this chapter, we discuss some of the possible improvements that can be made to the expert knowledge and the data collection process.
+\section{Dynamic Rule Generation}
 
-\section{Better Data Collection}
+The current rule extraction process is static and requires a pre-collected dataset of selected scenarios. This is an obvious limitation, as users cannot be expected to collect a dataset of scenarios prior to using the library. Another issue is that the generated rules will only generalize well to scenarios similar to the ones in the dataset, preventing the rules from being shared between different use cases.
 
-The data collection process can be improved in several ways. One of the main limitations of the current data collection process is that it is challenging and possibly impossible to collect a dataset representative of all possible scenarios. The current dataset is limited to a few scenarios, and the expert knowledge extracted from this dataset may not apply to other scenarios.
-
-We showed that using the fuzzy-tuning strategy leads to a near-optimal prediction of configurations when the current scenario is represented in the dataset, as it is probably impossible to account for all possible scenarios. One could look into adaptively updating the expert knowledge as new scenarios are encountered. This could be done by spending extra time during the simulation to evaluate the performance data of recently executed configurations and update the expert knowledge accordingly.
-
-\section{Verification of Expert Knowledge}
-
-The currently used expert knowledge is directly extracted from the collected dataset without further validation. It would be interesting to investigate ways of validating the expert knowledge to rule out implausible rules and insert concepts not currently covered by the expert knowledge.
+One could look into ways of adaptively updating the expert knowledge as new scenarios are encountered. This could be done by spending extra time during the simulation to evaluate the performance data of recently executed configurations and update the expert knowledge accordingly.
 
 \section{Future Work on Tuning Strategies}
 
-Another follow-up tuning strategy that could be investigated is using adaptive neuro-fuzzy inference systems (ANFIS). Those systems combine neural networks and fuzzy logic and the learning capabilities of neural networks with the uncertainty-handling capabilities of fuzzy logic. ANFIS systems could be used to predict the suitability values of the configurations with way more flexibility than currently allowed by expert knowledge.
+The executed benchmarks showed that all classical tuning strategies suffer from bad configurations that are evaluated during the tuning phases, which causes a significant increase in total simulation time. To solve this issue, one could look into ways of prematurely aborting evaluations of configurations that are unlikely to be selected as the best configuration.
+
+One could just keep track of the configuration used in the previous simulation phase and reject any configuration that does not significantly improve the performance.
+Such a system would drastically improve every existing tuning strategy and could drastically improve the library's performance.
+
+\section{Simplification of the Fuzzy System to Decision Trees}
+
+As the current way of generating the Fuzzy Systems with the data-driven approach already makes use of Decision Trees, one could look into ways of directly using the Decision Trees to make decisions.
+As the Component Tuning approach doesn't make use of the power of defuzzification, it is possible that the Fuzzy Tuning approach could be simplified to a Decision Tree approach without losing any performance.
+
+To test this hypothesis, one could change membership functions to crisp splits as originally depicted in \autoref{fig:fuzzyMembershipFunctions} and rerun the benchmarks to see if the performance is still comparable. This essentially emulates (Crisp) Decision Trees trained from the same dataset.

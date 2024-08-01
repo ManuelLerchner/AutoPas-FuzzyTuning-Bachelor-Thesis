@@ -83,53 +83,27 @@ The following fields are currently available in the LiveInfoData file. The LiveI
 
 
 
-\section{Scenarios used for Data Generation}
-\label{des:scenarios}
+\section{Density Plots of Relative Speed present in the Dataset}
 
-The scenarios used for data generation stem directly from the examples provided in the \texttt{AutoPas} library. Their state at the time of the data generation can be looked up at \small{
-  \url{
-    https://github.com/AutoPas/AutoPas/tree/563528b4ef55d29b8ec148f6387f0be1adb400ed/examples/md-flexible/input
-  }
-}
-
-The specific scenarios used are: \texttt{explodingLiquid}, \texttt{spinodalDecompositionEquilibration}, \texttt{spinodalDecomposition}, and \texttt{fallingDrop}.
-
-
-\section{Data Analysis}
-
-We performed some exploratory data analysis to gain insights into the collected dataset. The results are presented in the following figures.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\columnwidth,trim={0 0 0 0.5cm},clip]{figures/DataAnalytics/input_analysis.png}
-  \caption[Boxplot of the collected Dataset]{Boxplot showing the distribution of the collected data of the LiveInfoData files}
-  \label{fig:inputAnalysisBoxplot}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[height=5cm,trim={0cm 0 2cm 0cm},clip]{figures/DataAnalytics/correlation_matrix.png}
-  \caption[Correlation Matrix of the collected Dataset]{Correlation matrix showing the correlation between the collected parameters of the LiveInfoData files. We can see that many of the collected parameters are slightly positively correlated with each other.}
-  \label{fig:corrMatrix}
-\end{figure}
+To investigate the collected data, we performed some exploratory data analysis to identify patterns and trends in the dataset. We created density plots to visualize the distribution of the relative speed based on different configuration options.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_Newton 3.png}
-  \caption[Speedup density plot based on the Newton 3 option]{Density plot showing the distribution of the relative speedup based on the Newton 3 option. We can see that Newton3=enabled is generally the better option as it generally allows for a higher relative speedup. All performances with relative speedups of at least 80\% use the Newton3 optimization. Therefore, we can confirm that Newton 3 is generally a good option.}
+  \caption[Speedup density plot based on the Newton 3 option]{Density plot showing the distribution of the relative speed based on the Newton 3 option. We can see that Newton3=enabled is generally the better option as it generally allows for a higher relative speed. All performances with relative speed of at least 80\% use the Newton3 optimization. Therefore, we can confirm that Newton 3 is generally a good option to enable.}
   \label{fig:inputAnalysisDensityNewton3}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_Traversal.png}
-  \caption[Speedup density plot based on the Traversal option]{Density plot showing the distribution of the relative speedup based on the Traversal option. We can see that the vlc\_sliced\_balanced option generally performed better than the other options on this dataset with an expected relative speedup of 66\%.}
+  \caption[Speedup density plot based on the Traversal option]{Density plot showing the distribution of the relative speed based on the Traversal option. We can see that the vlc\_sliced\_balanced option generally performed better than the other options on this dataset with an expected relative speed of 66\%.}
   \label{fig:inputAnalysisDensityTraversal}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_ContainerDataLayout.png}
-  \caption[Speedup density plot of Configuration-Datalayout option]{Density plot showing the distribution of the relative speedup based on the ContainerDatalayout option. The VerletListCells\_AoS ContainerDatalayout performed best on this dataset with an expected relative speedup of 68.8\%.}
+  \caption[Speedup density plot of Configuration-Datalayout option]{Density plot showing the distribution of the relative speed based on the ContainerDatalayout option. The VerletListCells\_AoS ContainerDatalayout performed best on this dataset with an expected relative speed of 68.8\%.}
   \label{fig:inputAnalysisDensityDatalayout}
 \end{figure}
