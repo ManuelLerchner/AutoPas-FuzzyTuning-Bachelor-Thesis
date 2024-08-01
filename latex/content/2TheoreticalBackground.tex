@@ -4,29 +4,6 @@
 
 \section{Molecular Dynamics}
 
-Molecular Dynamics (MD) is a computational method used to simulate the behavior of atoms and molecules over time. In recent years, MD simulations have become essential in many scientific fields, including chemistry, physics, biology, and materials science. Such simulations are used to study various systems, ranging from simple gases and liquids to complex biological molecules and new materials.
-
-MD simulations act on an atomic level and attempt to explain macroscopic properties of a system from the interactions between the individual atoms and molecules. The recent advances in computational power have made it possible to simulate systems with millions of particles over long time scales, allowing researchers to study complex systems in unprecedented detail. Contrary to experimental methods, MD simulations can provide detailed information about the behavior of atoms and molecules, sometimes inaccessible to experimental methods~\cite{Perilla2017}.
-
-Two illustrations of such simulations are shown in \autoref{fig:hiv_capsid} and \autoref{fig:md_simulation_loop}. The first image shows a simulation of the HIV-1 capsid, a protein shell that surrounds the genetic material of the human immunodeficiency virus (HIV). Using a simulation-based approach, researchers could study critical properties of the HIV-1 capsid, which would be difficult to access using other methods~\cite{Perilla2017}. The second image shows a simulation of shear band formation around a precipitate in metallic glass. This simulation found evidence that depending on the precipitate size, shear bands can either dissolve, wrap around, or be blocked by the precipitate~\cite{Brink2016}. This information is crucial for understanding the mechanical properties of metallic glasses and can be used to design new materials with improved properties.
-
-
-\begin{multicols*}{2}
-      \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.9\columnwidth, trim={0cm 0 0cm 0cm}]{figures/Intro/HIV-1.png}
-            \caption{MD simulation with 64,423,983 atoms of the HIV-1 capsid. Perilla et al.~\cite{Perilla2017} investigated properties of the HIV-1 capsid at an atomic resolution.}
-            \label{fig:hiv_capsid}
-      \end{figure}
-
-      \begin{figure}[H]
-            \centering
-            \includegraphics[width=0.9\columnwidth,trim={0cm 0 0cm 0cm}]{figures/Intro/metallic-glass-crack.jpg}
-            \caption{MD simulations of shear band formation around a precipitate in metallic glass, as demonstrated by Brink et al.~\cite{Brink2016}.}
-            \label{fig:md_simulation_loop}
-      \end{figure}
-\end{multicols*}
-
 \subsection{Quantum Mechanial Background}
 
 Our current knowledge of physics suggests that the behavior of atoms and molecules is governed by the laws of quantum mechanics, where particles are described by probabilistic wave functions evolving over time. In 1926, Austrian physicist Erwin Schrödinger formulated a mathematical model describing this concept, which has since gained widespread acceptance and is now generally known as the Schrödinger equation. The Schrödinger equation is a partial differential equation describing the time evolution of a quantum system and is given by:
@@ -250,7 +227,7 @@ The currently available tuning strategies in AutoPas are:
             The Random Search strategy is a simple tuning strategy that randomly samples a given number of configurations from the search space and chooses the one that optimizes the chosen performance metric. This approach is faster than the Full Search strategy as it does not need to test all possible combinations of parameters. However, it does not guarantee to find the best parameters for the current simulation state.
 
       \item \textbf{Predictive Tuning} \\
-            The Predictive Tuning strategy attempts to extrapolate previous measurements to predict how the configuration would perform in the current simulation state. It filters the search space and only keeps configurations predicted to perform reasonably well. The extrapolations are accomplished using methods such as linear regression or constructing polynomial functions through the data points.
+            The Predictive Tuning strategy attempts to extrapolate previous measurements to predict how the configuration would perform in the current simulation state. It filters the search space and only keeps configurations predicted to perform reasonably well. The extrapolations are accomplished using methods such as linear regression or constructing polynomial functions through the previous measurements.
 
       \item \textbf{Bayesian Search} \\
             Two implementations of Bayesian tuning exist in AutoPas. Those methods apply Bayesian optimization techniques to predict suitable configurations using performance evidence from previous measurements.
@@ -455,11 +432,11 @@ The same steps are performed for every other rule, and the resulting fuzzy sets 
 The final step in a Fuzzy Logic system is the defuzzification step. In this step, the resulting fuzzy set from the previous section is converted back into a crisp, numeric value that can be used as a concrete output or decision. There are many ways to defuzzify a fuzzy set, but a common theme is finding a representative value that maintains certain aspects of the fuzzy set. In the following sections, we will explore several defuzzification methods:
 
 \begin{itemize}
-      \item \textbf{Centroid} \\
+      \item \textbf{Center of Gravity} \\
             The Centroid method calculates the center of mass of the fuzzy set and returns this value as the crisp output. This method tries to find a weighted interpolation of all the activated fuzzy sets and tries to find an optimal compromise between all the possible values. The Centroid method is the most common defuzzification method and is often used in practice due to its simplicity and robustness. It is defined as:
 
             \begin{equation}
-                  \text{Centroid} = \frac{\int_X x \cdot \mu_{\tilde{C}}(x) \, dx}{\int_X \mu_{\tilde{C}}(x) \, dx}
+                  \text{Center of Gravity} = \frac{\int_X x \cdot \mu_{\tilde{C}}(x) \, dx}{\int_X \mu_{\tilde{C}}(x) \, dx}
             \end{equation}
 
       \item \textbf{Mean of Maximum} \\
