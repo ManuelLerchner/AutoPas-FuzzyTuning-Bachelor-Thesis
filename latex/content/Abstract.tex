@@ -6,12 +6,16 @@
 \end{center}
 \vspace{1cm}
 
-AutoPas is a high-performance, auto-tuned particle simulation library for many-body systems, capable of dynamically switching between algorithms and data structures based on their performance in the current simulation state.
-This thesis introduces a novel fuzzy logic-based tuning strategy for AutoPas, allowing users to guide tuning phases by specifying custom Fuzzy Systems, which can be used to efficiently prune the search space of possible parameter configurations. Efficient tuning strategies are crucial, as they allow for discarding poor parameter configurations without evaluating them, thus reducing tuning time and improving overall library performance.
+AutoPas is a high-performance, auto-tuned particle simulation library for many-body systems, capable of dynamically switching between algorithms and data structures to guarantee optimal performance throughout the simulation.
+This thesis introduces a novel fuzzy logic-based tuning strategy for AutoPas, allowing users to guide the tuning process by specifying custom Fuzzy Systems, which can be used to efficiently prune the search space of possible parameter configurations. Efficient tuning strategies are crucial, as they allow for discarding poor parameter configurations without evaluating them, thus reducing tuning time and improving overall library performance.
 
-We demonstrate that a data-driven approach can automatically generate Fuzzy Systems that significantly outperform existing tuning strategies on specific benchmarks. The proposed Fuzzy Tuning Strategy achieves speedups of up to 1.96x compared to the FullSearch Strategy on scenarios included in the training data and up to 1.35x on scenarios not directly included.
+\smallskip
 
-The Fuzzy Tuning Strategy can drastically reduce the number of evaluated configurations during tuning phases while achieving comparable tuning results, making it a viable alternative to the existing tuning strategies.
+We demonstrate that a data-driven approach can automatically generate Fuzzy Systems that significantly outperform existing tuning strategies on specific benchmarks, resulting in speedups of up to 1.96x compared to the FullSearch Strategy on scenarios included in the training data and up to 1.35x on scenarios not directly included.
+
+\smallskip
+
+The Fuzzy Tuning Strategy can drastically reduce the number of evaluated configurations during tuning phases while achieving comparable tuning results, making it a promising alternative to the existing tuning strategies.
 
 \cleardoublepage
 
@@ -23,12 +27,16 @@ The Fuzzy Tuning Strategy can drastically reduce the number of evaluated configu
 \end{center}
 \vspace{1cm}
 
-AutoPas ist eine hochperformante, selbstoptimierende Teilchensimulationsbibliothek für Mehrkörpersysteme, welche in der Lage ist, dynamisch zwischen verschiedenen Algorithmen und Datenstrukturen zu wechseln und diese entsprechend ihrer Leistung im aktuellen Simulationszustand anzupassen.
-In dieser Arbeit wird eine neuartige, auf Fuzzy-Logik basierende Tuning-Strategie für AutoPas vorgestellt, die es dem Benutzer ermöglicht, Tuning-Phasen durch die Vorgabe von benutzerdefinierten Fuzzy-Systemen zu steuern, um so den Suchraum möglicher Parameterkonfigurationen effizient zu verkleinern. Solche effizienten Suchstrategien sind von entscheidender Bedeutung für AutoPas, da sie den Ausschluss ungünstiger Parameter-Konfigurationen ermöglichen, ohne diese zu evaluieren.
+AutoPas ist eine hochperformante, selbstoptimierende Teilchensimulationsbibliothek für Mehrkörpersysteme, welche in der Lage ist, dynamisch zwischen verschiedenen Algorithmen und Datenstrukturen zu wechseln, um eine optimale Leistung während der Simulation zu gewährleisten.
+In dieser Arbeit wird eine neuartige, auf Fuzzy-Logik basierende Tuning-Strategie für AutoPas vorgestellt, die es dem Benutzer ermöglicht, Tuning-Phasen durch die Vorgabe von benutzerdefinierten Fuzzy-Systemen zu steuern, um so den Suchraum möglicher Parameterkonfigurationen effizient zu verkleinern. Solche effizienten Suchstrategien sind von entscheidender Bedeutung für AutoPas, da sie es ermöglichen, schlechte Parameterkonfigurationen auszuschließen, ohne sie zu evaluieren, wodurch die Tuning-Zeit reduziert und die Gesamtleistung der Bibliothek verbessert wird.
 
-Wir zeigen, dass ein datengetriebener Ansatz zur automatischen Generierung von Fuzzy-Systemen in bestimmten Tests eine deutlich bessere Leistung als bestehende Tuning-Strategien erbringen kann. Die vorgeschlagene Fuzzy- Tuning-Strategie erreicht eine bis zu 1,96-fache Leistungssteigerung im Vergleich zur FullSearch-Strategie für Szenarien, die in den Trainingsdaten enthalten sind, und eine bis zu 1,35-fache Steigerung für Szenarien, die nicht unmittelbar in den Trainingsdaten enthalten sind.
+\smallskip
 
-Die Fuzzy-Tuning-Strategie kann die Anzahl der evaluierten Konfigurationen während der Tuning-Phasen drastisch reduzieren, während sie vergleichbare Tuning-Ergebnisse erzielt, wodurch sie eine vielversprechende Alternative zu den bestehenden Tuning-Strategien darstellt.
+Wir zeigen, dass ein datengesteuerter Ansatz zur automatischen Generierung von Fuzzy-Systemen in bestimmten Tests eine deutlich bessere Leistung als bestehende Tuning-Strategien erbringen kann. Im Vergleich zur FullSearch-Strategie kann die Fuzzy-Tuning-Strategie eine Geschwindigkeitssteigerung von bis zu 1,96x bei Szenarien aus den Trainingsdaten und bis zu 1,35x bei Szenarien, die nicht direkt in den Trainingsdaten enthalten sind, erzielen.
+
+\smallskip
+
+Die Fuzzy-Tuning-Strategie kann die Anzahl der evaluierten Konfigurationen während der Tuning-Phasen drastisch reduzieren, während sie dennoch vergleichbare Tuning-Ergebnisse erzielt, was sie zu einer vielversprechenden Alternative zu den bestehenden Tuning-Strategien macht.
 
 
 \cleardoublepage
