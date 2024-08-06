@@ -1,33 +1,28 @@
 \chapter{Appendix}
 
-\printglossaries
-
-\newpage
-
-
 \section{IterationLogger Fields}
 \label{des:iterationdatafields}
 
-The following fields are currently available in the IterationData file. The IterationData file is a CSV file containing the configuration and performance data for each iteration of the simulation. The data is collected and logged by the \texttt{IterationLogger} class of the \gls{autopas} library.
+The following fields are currently available in the IterationData file. The IterationData file is a CSV file containing the configuration and performance data for each iteration of the simulation. The data is collected and logged by the \texttt{IterationLogger} class of the AutoPas library.
 
 \begin{description}[style=multiline, leftmargin =40mm]
-  \item[Date] The date and time when the data was collected.
-  \item[Iteration] The current iteration number of the simulation.
+  \item[Date] Date and time when the data was collected.
+  \item[Iteration] Current iteration number of the simulation.
   \item[inTuningPhase] Indicates whether the simulation is in the tuning phase (true/false).
-  \item[Container] The type of container used to store the particles in the simulation (e.g., LinkedCells, VerletLists).
-  \item[CellSizeFactor] A factor that determines the size of the cells relative to the cutoff radius.
-  \item[Traversal] The method used to traverse the cells and calculate interactions between particles.
-  \item[Load Estimator] The strategy used to estimate and balance the computational load across different parts of the simulation domain.
-  \item[Data Layout] The arrangement of particle data in memory (e.g., AoS for Array of Structures, SoA for Structure of Arrays).
+  \item[Container] Type of container used to store the particles in the simulation (e.g., LinkedCells, VerletLists).
+  \item[CellSizeFactor] Determines the size of the cells relative to the cutoff radius.
+  \item[Traversal] Method used to traverse the cells and calculate interactions between particles.
+  \item[Load Estimator] Strategy used to estimate and balance the computational load across different parts of the simulation domain.
+  \item[Data Layout] Arrangement of particle data in memory (e.g., AoS for Array of Structures, SoA for Structure of Arrays).
   \item[Newton 3] Indicates whether Newton's third law optimization is used to reduce computation by only calculating forces once per particle pair (enabled/disabled).
-  \item[iteratePairwise] The time taken to iterate over all particle pairs and calculate interactions.
-  \item[remainderTraversal] The time taken to perform any remaining traversal operations.
-  \item[rebuildNeighborLists] The time taken to rebuild the neighbor lists.
-  \item[iteratePairwiseTotal] The total time taken to iterate over all particle pairs and calculate interactions.
-  \item[tuning] The time taken to perform any tuning operations.
-  \item[energyPsys] The energy consumed by the system (in Joules).
-  \item[energyPkg] The energy consumed by the package (CPU) (in Joules).
-  \item[energyRam] The energy consumed by the RAM (in Joules).
+  \item[iteratePairwise] Time taken to iterate over all particle pairs and calculate interactions.
+  \item[remainderTraversal] Time taken to perform any remaining traversal operations.
+  \item[rebuildNeighborLists] Time taken to rebuild the neighbor lists.
+  \item[iteratePairwiseTotal] Total time taken to iterate over all particle pairs and calculate interactions.
+  \item[tuning] Time taken to perform any tuning operations.
+  \item[energyPsys] Energy consumed by the system (in Joules).
+  \item[energyPkg] Energy consumed by the package (CPU) (in Joules).
+  \item[energyRam] Energy consumed by the RAM (in Joules).
 \end{description}
 
 
@@ -35,7 +30,7 @@ The following fields are currently available in the IterationData file. The Iter
 \label{des:tuningdatafields}
 
 The following fields are currently available in the TuningData file.
-The TuningData file is a CSV file containing the performance information for all tested configurations. The data is collected and logged by the \texttt{TuningDataLogger} class of the \gls{autopas} library.
+The TuningData file is a CSV file containing the performance information for all tested configurations. The data is collected and logged by the \texttt{TuningDataLogger} class of the AutoPas library.
 
 \begin{description}[style=multiline, leftmargin =40mm]
   \item[Date] The date and time when the data was collected.
@@ -54,7 +49,7 @@ The TuningData file is a CSV file containing the performance information for all
 \section{LiveInfoLogger Fields}
 \label{des:liveinfodatafields}
 
-The following fields are currently available in the LiveInfoData file. The LiveInfoData file is a CSV file containing summary statistics about the simulation state at each iteration. The data is collected and logged by the \texttt{LiveInfoLogger} class of the \gls{autopas} library.
+The following fields are currently available in the LiveInfoData file. The LiveInfoData file is a CSV file containing summary statistics about the simulation state at each iteration. The data is collected and logged by the \texttt{LiveInfoLogger} class of the AutoPas library.
 
 \begin{description}[style=multiline, leftmargin =40mm]
   \item [Iteration] The current iteration number of the simulation.
@@ -90,14 +85,14 @@ To investigate the collected data, we performed some exploratory data analysis t
 \begin{figure}[H]
   \centering
   \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_Newton 3.png}
-  \caption[Speedup density plot based on the Newton 3 option]{Density plot showing the distribution of the relative speed based on the Newton 3 option. We can see that Newton3=enabled is generally the better option as it generally allows for a higher relative speed. All performances with relative speed of at least 80\% use the Newton3 optimization. Therefore, we can confirm that Newton 3 is generally a good option to enable.}
+  \caption[Speedup density plot based on the Newton 3 option]{Density plot showing the distribution of the relative speed based on the Newton 3 option. We can see that enabling Newton3 is generally the better option, allowing for a higher relative speeds. All performances with relative speed of at least 80\% use the Newton3 optimization. Therefore, we can confirm that Newton 3 is generally a good option to enable.}
   \label{fig:inputAnalysisDensityNewton3}
 \end{figure}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\columnwidth,trim={1cm 0 2cm 1.5cm},clip]{figures/DataAnalytics/speedup_Traversal.png}
-  \caption[Speedup density plot based on the Traversal option]{Density plot showing the distribution of the relative speed based on the Traversal option. We can see that the vlc\_sliced\_balanced option generally performed better than the other options on this dataset with an expected relative speed of 66\%.}
+  \caption[Speedup density plot based on the Traversal option]{Density plot showing the distribution of the relative speed based on the Traversal option.  The vlc\_sliced\_balanced option generally performed better than the other options on this dataset with an expected relative speed of 66\%.}
   \label{fig:inputAnalysisDensityTraversal}
 \end{figure}
 

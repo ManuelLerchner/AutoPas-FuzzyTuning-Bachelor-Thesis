@@ -104,7 +104,7 @@ In the following section, we will introduce AutoPas, a library designed to effic
 
 AutoPas is an open-source library designed to achieve optimal node-level performance for short-range particle simulations. On a high level, AutoPas can be seen as a black box performing arbitrary N-body simulations with short-range particle interactions. However, AutoPas differentiates itself from other libraries by providing many algorithmic implementations for the N-body problem, each with different performance and memory usage trade-offs. No implementation is optimal for all simulation scenarios, and the optimum can even change during the course of the simulation ~\cite{GRATL2022108262}. Consequently, AutoPas is designed to be adaptive and can periodically switch between different implementations to remain reasonably close to the current optimal configuration.
 
-Since AutoPas provides a high-level interface for short-range N-body simulations, the user must specify the desired model and simulation parameters. Fortunately, AutoPas also provides some example implementations, such as \texttt{\gls{mdflexible}}. \texttt{\gls{mdflexible}} is a simple molecular dynamics framework built on top of AutoPas that allows users to specify the desired simulation parameters and run simulations. This work will primarily focus on \texttt{\gls{mdflexible}}, but the concepts can be easily transferred to other simulation frameworks.
+Since AutoPas provides a high-level interface for short-range N-body simulations, the user must specify the desired model and simulation parameters. Fortunately, AutoPas also provides some example implementations, such as \texttt{mdflexible}. \texttt{mdflexible} is a simple molecular dynamics framework built on top of AutoPas that allows users to specify the desired simulation parameters and run simulations. This work will primarily focus on \texttt{mdflexible}, but the concepts can be easily transferred to other simulation frameworks.
 
 \subsection{Autotuning in AutoPas}
 
@@ -144,7 +144,8 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
             \begin{figure}[H]
                   \centering
                   \includegraphics[width=0.9\columnwidth]{figures/Intro/containers.jpg}
-                  \caption{Visualization of different container options. \small{Source: Gratl et al.~\cite{GRATL2022108262}}}
+                  \caption[Visualization of different container options in AutoPas.]
+                  {Visualization of different container options. \small{Source: Gratl et al.~\cite{GRATL2022108262}}}
                   \label{fig:containers}
             \end{figure}
 
@@ -177,7 +178,7 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
                         \begin{figure}[H]
                               \centering
                               \includegraphics[width=0.7\columnwidth]{figures/Intro/traversals.jpg}
-                              \caption{Visualization of different color-based traversal options. \small{Source: Newcome et al.~\cite{Newcome2023}}}
+                              \caption[Visualization of different color-based traversal options in AutoPas.]                             {Visualization of different color-based traversal options. \small{Source: Newcome et al.~\cite{Newcome2023}}}
                               \label{fig:traversals}
                         \end{figure}
 
@@ -273,7 +274,7 @@ The shape of the function can be chosen freely and depends on the specific appli
 \begin{figure}[H]
       \centering
       \includegraphics[width=0.8\columnwidth,trim={0 0 0 1cm},clip]{figures/Intro/age-fuzzy-sets.png}
-      \caption{Example of fuzzy sets for the age of a person. Fuzzy sets can be used to model the gradual transition between age groups. The distributions could be derived from survey data on how people perceive age groups. In this example, most people would consider a person middle-aged if they are between 35 and 55; there are, however, outliers ranging as low as 20 and as high as 70.}
+      \caption[Example of fuzzy sets for the age of a person.]      {Example of fuzzy sets for the age of a person. Fuzzy sets can be used to model the gradual transition between age groups. The distributions could be derived from survey data on how people perceive age groups. In this example, most people would consider a person middle-aged if they are between 35 and 55; there are, however, outliers ranging as low as 20 and as high as 70.}
       \label{fig:fuzzy_sets}
 \end{figure}
 
@@ -325,7 +326,8 @@ Some common choices for t-norms and t-conorms used in practice are shown in Tabl
                   \hline
             \end{tabular}
       }
-      \caption{Common t-Norms and corresponding t-Conorms concerning the standard negation operator $\neg x = 1 - x$}
+      \caption[
+            Commonly used t-norms and t-conorms in Fuzzy Logic]{Common t-Norms and corresponding t-Conorms concerning the standard negation operator $\neg x = 1 - x$}
       \label{tab:tnorms}
 \end{table}
 
@@ -361,7 +363,7 @@ With these choices of t-norms, t-conorms, and negation operators, it is possible
 \begin{figure}
       \centering
       \includegraphics[width=0.9\columnwidth,trim={0 0 0 0.85cm},clip]{figures/Intro/tnorms.png}
-      \caption{Effect of different t-norms on the intersection of two fuzzy sets $\tilde{A}$ and $\tilde{B}$. We can see that the choice of t-norm significantly affects the shape of the resulting fuzzy set.}
+      \caption[Effect of different t-norms on the intersection of two fuzzy sets]{Effect of different t-norms on the intersection of two fuzzy sets $\tilde{A}$ and $\tilde{B}$. We can see that the choice of t-norm significantly affects the shape of the resulting fuzzy set.}
       \label{fig:tnorms}
 \end{figure}
 
