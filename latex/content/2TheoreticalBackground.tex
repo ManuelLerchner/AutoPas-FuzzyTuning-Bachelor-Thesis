@@ -381,8 +381,6 @@ For example, all fuzzy sets depicted in \autoref{fig:fuzzy_sets} form the lingui
 Fuzzy Logic Rules are a way to encode expert knowledge into a Fuzzy Logic system. The rules specify the relationship between the system's input and output variables.
 The rules are typically encoded in a human-readable way and often have the form \emph{$\text{IF} \; \text{antecedent} \; \text{THEN} \; \text{consequent}$} where both the antecedent and the consequent are fuzzy sets. The antecedent is a condition that must be satisfied for the rule to be applied, while the consequent is the action taken if the rule is applied. Since we are not dealing with binary truth values, it is possible that the antecedent is only partially satisfied, which causes the rule to be only partially activated. Consequently, the effect of the consequent is also only partially applied.
 
-\medskip
-
 The antecedent of the rule can be arbitrarily complicated and may consist of multiple fuzzy sets connected with fuzzy logic operators. The consequent is typically a single fuzzy but could theoretically also be arbitrarily complicated. For this thesis, we will only consider rules with a simple assignment as their effect. Therefore, the general form of a fuzzy rule is:
 
 %makro for fuzzy set
@@ -399,12 +397,7 @@ The antecedent of the rule can be arbitrarily complicated and may consist of mul
                                & | \;\text{LinguisticVariable} = \tilde{A}                                    &  & \text{(Selection)}
 \end{align*}
 
-The boolean operators AND, OR, and NOT represent the set operations of intersection, union, and complement, respectively. The selection operator $\text{LinguisticVariable} = \tilde{A}$ states that we are interested in the fuzzy set $\tilde{A}$ part of the linguistic variable. It is not an assignment but rather acts as syntactic sugar to make the rules more readable.
-
-\medskip
-
-
-Using this grammar, a typical rule might look like this:
+The boolean operators AND, OR, and NOT represent the set operations of intersection, union, and complement, respectively. The selection operator $\text{LinguisticVariable} = \tilde{A}$ states that we are interested in the fuzzy set $\tilde{A}$ part of the linguistic variable. It is not an assignment but rather acts as syntactic sugar to make the rules more readable. A typical rule could look like this:
 
 \begin{equation*}
       \text{IF} \;( age = \text{"young"} \; \text{AND} \; height = \text{"tall"} ) \; \text{THEN} \; \text{fitness} = \text{"good"}
@@ -412,7 +405,7 @@ Using this grammar, a typical rule might look like this:
 
 This rule states that if the state of the linguistic variable \emph{age} is \emph{"young"} and the state of the linguistic variable \emph{height} is \emph{"tall"}, then the state of the linguistic variable \emph{fitness} should be \emph{"good"}. The actual ranges of the fuzzy sets \emph{"young"}, \emph{"tall"}, and \emph{"good"} are defined with the corresponding membership functions and are not part of the rule itself.
 
-\subsubsection{Fuzzy Inference}
+\subsection{Fuzzy Inference}
 
 The inference step can be seen as an extension of the boolean implication operator
 
@@ -424,25 +417,25 @@ Instead of deriving the membership function of the implication operator from the
 
 \subsubsection{Evaluation of Fuzzy Logic Rules}
 
-Consider the rule $\text{IF} \; a = \tilde{A} \; \text{THEN} \; c = \tilde{C}$. To calculate the resulting fuzzy set, we perform the following steps:
+Consider the rule $\text{IF} \; a = \tilde{A} \; \text{THEN} \; c = \tilde{C}$. To calculate the result of this rule, we perform the following steps:
 
 \begin{enumerate}
-      \item Obtain the input values $(x_1, x_2, \ldots, x_n) \in X_{A}$ occuring in the crisp set of the antecedent.
-      \item Evaluate the degree of membership $\mu$ of those input values in the antecedent $a = \tilde{A}$.
-      \item Define a new fuzzy set $\tilde{C_{new}}=\tilde{C}\uparrow \mu$ as the result of the rule activation. $\uparrow$ is the cut operator and is defined as $\mu_{\tilde{C}\uparrow \mu}(x) = \min(\mu_{\tilde{C}}(x), \mu)$ following the Mamdani implication.
+      \item \textbf{\emph{Fuzzification}:} Obtain the crisp input values $(x_1, x_2, \ldots, x_n) \in X_{A}$ occurring in the crisp set of the antecedent and evaluate the degree of membership $\mu_i$ of each fuzzy set $\tilde{A_i}$ contained in the antecedent for each fuzzy rule.
+      \item \textbf{\emph{Rule Activation}:} Calculate the total degree of activation $\mu$ by combining all membership values with the corresponding fuzzy logic operators.
+      \item \textbf{\emph{Rule Evaluation}} Define a new fuzzy set $\tilde{C}_{new}=\tilde{C}\uparrow \mu$ as the result of the rule activation, where $\tilde{C}$ is the the consequent and $\uparrow$ is the cut operator. The cut operator is defined as $\mu_{\tilde{C}\uparrow \mu}(x) = \min(\mu_{\tilde{C}}(x), \mu)$ following the Mamdani implication.
+      \item \textbf{\emph{Aggregation}:}  Combine the resulting fuzzy sets of each rule acting on the same linguistic variable using the fuzzy union operator (maximum t-conorm). This ensures all rules are considered when determining the final output.
+      \item \textbf{\emph{Defuzzification}:} Calculate the defuzzified value of the fuzzy set $\tilde{C}_{new}$ to obtain the crisp output value.
 \end{enumerate}
 
-The obtained fuzzy set $\tilde{C_{new}}$ represents the new value of the fuzzy set $\tilde{C}$ after the rule has been applied. This process is repeated for all rules in the system. All resulting fuzzy sets part of the same linguistic variable are then aggregated together to form the final output of the system using the fuzzy union operator (maximum t-conorm).
+After all rules have been applied and the results have been aggregated, we obtain a single fuzzy set for each linguistic variable, which can then be defuzzified to obtain a crisp output value. A visual depiction of these steps is shown in \autoref{fig:fuzzy_inference_full}.
 
-After all rules have been applied and the results have been aggregated, we obtain a single fuzzy set for each linguistic variable. Those fuzzy sets encode the system's predictions and can be used to make decisions after they have been defuzzified.
+\subsubsection{Defuzzification}
 
-\subsection{Defuzzification}
-
-The final step in a Fuzzy Logic system is the defuzzification step. In this step, the resulting fuzzy set from the previous section is converted back into a crisp, numeric value that can be used as a concrete output or decision. There are many ways to defuzzify a fuzzy set, but a common theme is finding a representative value that maintains certain aspects of the fuzzy set. In the following sections, we will explore several defuzzification methods:
+The final step in a Fuzzy Logic system is the defuzzification step. In this step, the resulting fuzzy set from the previous section is converted back into a crisp, numeric value that can be used as a concrete output or decision. There are many ways to defuzzify a fuzzy set, but a common theme is finding a representative value that maintains certain aspects of the fuzzy set. Some common defuzzification methods are:
 
 \begin{itemize}
       \item \textbf{Center of Gravity} \\
-            The Centroid method calculates the center of mass of the fuzzy set and returns this value as the crisp output. This method tries to find a weighted interpolation of all the activated fuzzy sets and tries to find an optimal compromise between all the possible values. The Centroid method is the most common defuzzification method and is often used in practice due to its simplicity and robustness. It is defined as:
+            The Centroid method calculates the center of mass of the fuzzy set and returns this value as the crisp output. This method tries to find a weighted interpolation of all the activated fuzzy sets and tries to find an optimal compromise between all the possible values. The Centroid method is the most common defuzzification method in practice due to its simplicity and robustness. It is defined as:
 
             \begin{equation}
                   \text{Center of Gravity} = \frac{\int_X x \cdot \mu_{\tilde{C}}(x) \, dx}{\int_X \mu_{\tilde{C}}(x) \, dx}
@@ -456,3 +449,12 @@ The final step in a Fuzzy Logic system is the defuzzification step. In this step
             \end{equation}
             where $X'$ is the set of all input values resulting in the maximum membership value of the fuzzy set.
 \end{itemize}
+
+
+\begin{figure}[H]
+      \centering
+      \includegraphics[width=1\columnwidth]{figures/TheoreticalBackground/FullInferenceProcess.png}
+      \caption[Visualization of the full fuzzy logic inference process.]
+      {Visualization of the full fuzzy logic inference process. The system consists of three fuzzy rules connecting the linguistic variables \emph{service} and \emph{food} to the linguistic variable \emph{tip}. Applying each rule yields a resulting fuzzy set (depicted on the rightmost column for each rule), which is then aggregated using the fuzzy union operator to form the final output (depicted on the bottom right). This final fuzzy is then defuzzified to obtain a crisp output value. \small{Source: \href{https://de.mathworks.com/help/fuzzy/fuzzy-inference-process.html}{MathWorks - Fuzzy Inference Process}}}
+      \label{fig:fuzzy_inference_full}
+\end{figure}
