@@ -114,23 +114,23 @@
 
 % -------------------------------------------------------------------------------
 
-This chapter presents a proof of concept for the fuzzy tuning technique. We will develop two different knowledge bases to predict the optimal configurations for \texttt{md\_flexible} simulations.
+This chapter presents a proof of concept for the fuzzy tuning technique and will develop working instantiations of the approaches introduced in the previous chapter.
 
-Creating the knowledge base is one of the most complex parts of developing a fuzzy system, as it typically requires a profound understanding of the system to create meaningful rules, which may be difficult to obtain. Luckily, methods such as data-driven approaches exist to semi-automate this process. Such data-driven methods do not require prior expert knowledge about the system and provide a good initial set of rules that can be further refined by experts if desired.
+\smallskip
 
-In this work, we will use a decision tree approach proposed by Crockett et al.~\cite{CROCKETT20062809}. This proposed method uses machine learning to first train decision trees on the dataset to create an initial crisp rule base. In the second step, the decision trees are converted into so-called fuzzy decision trees, which can then be used to extract the linguistic variables and fuzzy rules.
+\noindent Creating rule bases for fuzzy systems is challenging, as it typically requires a profound prior understanding of the system to create meaningful rules. In practice, such knowledge may be difficult to acquire and formalize, as experts may struggle to express their intuition and experience in the precise, structured form required for a fuzzy rule base. However, data-driven approaches can help semi-automate this process by generating an initial set of rules without prior expert knowledge, which can be refined later.
+
+In this work, we will use a data-driven approach based on decision trees proposed by Crockett et al.~\cite{CROCKETT20062809}. This method first trains decision trees to create an initial set of crisp rules. In the second step, the decision trees are converted into so-called fuzzy decision trees, which can then be used to extract the linguistic variables and fuzzy rules.
 
 \section{Data Driven Rule Extraction}
 
 \subsection{Decision Trees}
 
-Decision trees are prevalent machine learning algorithms used for classification and regression tasks. They work by recursively partitioning the input using axis-parallel splits so that the resulting subsets are as pure as possible. Concretely, they try to minimize a given impurity metric, such as the Gini impurity $I_G = \sum_{i=1}^{n} p_i(1-p_i)$ of the subsets~\cite{10.5555/2380985}. The probability $p_i$ is the fraction of samples in the subset that belong to class $i$, and $n$ is the total number of classes.
+Decision trees are prevalent machine learning algorithms used for classification and regression tasks. They work by recursively partitioning the input using axis-parallel splits so that the resulting subsets are as pure as possible. In particular, they try to minimize a given impurity metric, such as the Gini impurity $I_G = \sum_{i=1}^{n} p_i(1-p_i)$ of the subsets~\cite{10.5555/2380985}. Since decision trees directly partition the input space into regions with different classes, they can also be depicted using their decision surface if the dimensionality allows it. The decision surface of a decision tree is a piecewise constant function that assigns the predicted class label to each point in the input space of the decision tree. An example decision tree and its decision surface are shown in \autoref{fig:decisionTreeExample} and \autoref{fig:decisionBoundaryExample}, respectively.
 
-Since decision trees directly partition the input space into regions with different classes, they can also be depicted using their decision surface if the dimensionality allows it. The decision surface of a decision tree is a piecewise constant function that assigns the predicted class label to each point in the input space of the decision tree. An example decision tree and its decision surface are shown in \autoref{fig:decisionTreeExample} and \autoref{fig:decisionBoundaryExample}.
-
-% Image of a decision tree
-\begin{multicols}{2}
-    \begin{figure}[H] % [H] for HERE
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \begin{tikzpicture}[scale=1.1,font=\tiny]
             \node [circle, draw] (A) at (0,0) {$x \leq 3$};
@@ -161,15 +161,11 @@ Since decision trees directly partition the input space into regions with differ
             \draw[->] (E) -- (I) node [midway, right, above right] {no};
 
         \end{tikzpicture}
-
-        \caption[Example decision tree for a dataset with two features $x$ and $y$.
-        ]{An example decision tree for a dataset with two features $x$ and $y$. There are three distinct classes in the dataset}
+        \caption[Example decision tree]{Example decision tree}
         \label{fig:decisionTreeExample}
-    \end{figure}
-
-    \columnbreak    % start next column
-
-    \begin{figure}[H]
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \begin{tikzpicture}[scale=1.1,font=\tiny]
 
@@ -190,6 +186,7 @@ Since decision trees directly partition the input space into regions with differ
 
             \draw[line width=1.5pt,] (3,0) node [below] {3}  -- (3,3) ;
             \draw[line width=1pt] (0,2) node [left] {2} -- (3,2);
+            \draw[line width=1pt] (3,1) --  (4,1);
 
             \draw[] (2,0) node [below] {2}-- (2,2);
 
@@ -209,10 +206,12 @@ Since decision trees directly partition the input space into regions with differ
             \node [] at (3.5,0.5) {Class 1};
 
         \end{tikzpicture}
-        \caption[Decision surface of the example decision tree]{The decision surface of the decision tree from \autoref{fig:decisionTreeExample} on $\mathcal{D}=[0,4]\times[0,3]$. }
+        \caption[Decision surface of the example decision tree]{Decision surface over $\mathcal{D}=[0,4]\times[0,3]$}
         \label{fig:decisionBoundaryExample}
-    \end{figure}
-\end{multicols}
+    \end{subfigure}
+    \caption{Example decision tree and its decision surface}
+\end{figure}
+
 
 
 \subsection{Conversion of Decision Trees to Fuzzy Systems}
@@ -221,18 +220,17 @@ This section will demonstrate how to convert a classical decision tree into a fu
 
 \subsubsection{Fuzzy Decision Trees}
 
-As the conversion makes use of so-called fuzzy decision trees, we will briefly introduce them here. Fuzzy decision trees are a generalization of classical decision trees and allow for fuzzy logic to be used in the decision-making process. Instead of following the classical \texttt{if then else} logic to descend into the decision tree, it uses fuzzy sets at each node of the tree to fuzzily calculate the contribution of each branch to the final decision based on the degree of truth of both possible paths. Contrary to classical decision trees, which follow a single path from the root to a leaf node, fuzzy decision trees explore all possible paths simultaneously and make a final decision by aggregating the results of the paths using fuzzy logic operations.
+Fuzzy decision trees are a generalization of classical decision trees and allow for fuzzy logic to be used in the decision-making process. Instead of following the classical \texttt{if then else} logic to descend into the decision tree, it uses fuzzy sets at each node of the tree to fuzzily calculate the contribution of each branch to the final decision based on the degree of truth of both possible paths. Contrary to classical decision trees, which follow a single path from the root to a leaf node, fuzzy decision trees explore all possible paths simultaneously and make a final decision by aggregating the results of the paths using fuzzy logic operations.
 
 \subsubsection{Conversion}
 
 
-A classical decision tree is converted into a fuzzy decision tree by replacing the crisp decision (e.g., $x \leq 3$) at each internal node of the decision tree with a fuzzy set. Those fuzzy sets should maintain the same semantics as the crisp decision but should provide a continuous value in the range $[0,1]$ specifying the degree of how much each branch should be considered. Classical decision trees can only make binary decisions (${0,1}$), which causes them to only consider a single path of the decision tree. Allowing them to consider multiple paths simultaneously can drastically increase the decision-making capabilities of the decision tree, especially in boundary cases where the decision can be ambiguous.
+A classical decision tree is converted into a fuzzy decision tree by replacing the crisp decision (e.g., $x \leq 3$) at each internal node of the decision tree with a fuzzy set. Those fuzzy sets should maintain the same semantics as the crisp decision but should provide a continuous value in the range $[0,1]$ specifying the degree of how much each branch should be considered. Classical decision trees can only make binary decisions (${0,1}$), which causes them to only consider a single path of the decision tree. Allowing the decision trees to consider multiple paths simultaneously can drastically increase the decision-making capabilities of the decision tree, especially in boundary cases where the decision can be ambiguous.
 
 
-The shape of the membership functions of the fuzzy sets can be chosen arbitrarily, but since trees work with one-sided boundaries, typical choices include complementary \texttt{sigmoid}-shaped functions that are centered around the crisp decision boundary (See \autoref{fig:fuzzyMembershipFunctions}), as those function shapes maintain the semantics of the branching idea. Crockett et al.~\cite{CROCKETT20062809} suggested creating those sigmoid shapes with a \emph{width} proportional to the standard deviation of the attribute. In Particular, the authors suggested an interval $[t-n\cdot \sigma, t+n\cdot \sigma]$ for the membership function, where  $t$ is the value of the decision boundary, $\sigma$ is the standard deviation of the attribute and $n$ is a parameter that can be adjusted to control the \emph{width} of the membership function. This interval specifies the region of the membership function where most of the change in membership occurs. The value of $n$ is typically chosen from the interval $n\in [0,5]$ as the membership function can become too broad otherwise and could even weaken the decision-making process~\cite{CROCKETT20062809}. In this work, we will use $n=2$ as a default value. Using this method, it is possible to fully automate the conversion of a decision tree into a fuzzy decision tree, which we will utilize in this work.
+The shape of the membership functions of the fuzzy sets can be chosen arbitrarily, but typical choices include complementary \texttt{sigmoid}-shaped functions that are centered around the crisp decision boundary (See \autoref{fig:fuzzyMembershipFunctions}), as those function shapes maintain the semantics of the branching idea. Crockett et al.~\cite{CROCKETT20062809} suggested creating those sigmoid shapes with a \emph{width} proportional to the standard deviation of the attribute. In Particular, the authors suggested an interval $[t-n\cdot \sigma, t+n\cdot \sigma]$ for the membership function, where  $t$ is the value of the decision boundary, $\sigma$ is the standard deviation of the attribute and $n$ is a parameter that can be adjusted to control the \emph{width} of the membership function. This interval specifies the region of the membership function where most of the change in membership occurs. The value of $n$ is typically chosen from the interval $n\in [0,5]$ as the membership function can become too broad otherwise and could even weaken the decision-making process~\cite{CROCKETT20062809}. In this work, we will use $n=2$ as a default value.
 
-
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \begin{tikzpicture}[scale=2,font=\tiny]
         \node [rectangle,rounded corners,draw,inner sep=2pt] (A) at (0.5,0) {
@@ -250,15 +248,15 @@ The shape of the membership functions of the fuzzy sets can be chosen arbitraril
         (1.5,0) to [bend left] (2.5,0);
 
     \end{tikzpicture}
-    \caption[Conversion of crisp tree node into fuzzy tree node]{Conversion of crisp set membership functions to fuzzy set membership functions. The classical membership functions $x \leq 3$ and $x>3$ of a decision tree node are replaced by two \texttt{sigmoid}-shaped membership functions \textcolor{red}{$\mu_{\text{xsmaller3}}$} and \textcolor{blue}{$\mu_{\text{xgreater3}}$} that specify to which degree one should traverse left or right. The \emph{width} of the membership functions is data dependent and is set to $n\cdot \sigma = 2 \cdot \sigma$. }
+    \caption[Conversion of crisp tree node into fuzzy tree node]{Conversion of crisp membership functions to fuzzy membership functions. The crisp membership functions $x \leq 3$ and $x>3$ of a decision tree node are replaced by two \texttt{sigmoid}-shaped membership functions \textcolor{red}{$\mu_{\text{xsmaller3}}$} and \textcolor{blue}{$\mu_{\text{xgreater3}}$}.}
     \label{fig:fuzzyMembershipFunctions}
 \end{figure}
 
-Once the internal nodes of the decision tree have been converted, the next step is to convert the leaf nodes of the decision tree to fuzzy leaf nodes. As the outputs of decision trees are specific class labels, we can define a single linguistic variable consisting of all possible class labels together with a corresponding fuzzy set. The shapes of the membership functions for the fuzzy sets can again be chosen mostly arbitrarily, but we will use \texttt{gaussian} functions with a different mean as they are a good choice for representing class labels in a continuous domain. This way of placing the fuzzy sets is not directly obvious, and the placement can significantly influence the defuzzification process depending on the chosen defuzzification function, as we will see later. However, we can minimize this issue by carefully choosing a suitable defuzzification method.
+Once the internal nodes of the decision tree have been converted, the next step is to convert the leaf nodes of the decision tree to fuzzy leaf nodes. As the outputs of decision trees are specific class labels, we can define a single linguistic variable consisting of all possible class labels each associated with a fuzzy set. The shapes of the membership functions for the base fuzzy sets can again be chosen mostly arbitrarily, but we will use \texttt{gaussian} functions with a different mean as they are a good choice for representing class labels in a continuous domain.
 The resulting conversion of the decision tree in \autoref{fig:decisionTreeExample} into a fuzzy decision tree is shown in \autoref{fig:fuzzyDecisionTreeExample}.
 
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \begin{tikzpicture}[scale=1.9,font=\tiny]
 
@@ -287,11 +285,11 @@ The resulting conversion of the decision tree in \autoref{fig:decisionTreeExampl
             \fuzzyTreeLeaf{1}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=orange!20] (G) at (-2.6,-4.7) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=red!20] (G) at (-2.6,-4.7) {
             \fuzzyTreeLeaf{2}
         };
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=orange!20] (H) at (-1.5,-4.7) {
+        \node [rectangle,rounded corners,draw,inner sep=2pt,fill=red!20] (H) at (-1.5,-4.7) {
             \fuzzyTreeLeaf{2}
         };
 
@@ -330,7 +328,7 @@ The resulting conversion of the decision tree in \autoref{fig:decisionTreeExampl
     \label{fig:fuzzyDecisionTreeExample}
 \end{figure}
 
-It is now possible to fully extract all linguistic variables from the fuzzy decision tree. Every fuzzy set defined over the same variable can be collected into a single linguistic variable. This results in linguistic variables consisting of a bunch of different \texttt{sigmoid} membership functions for input variables (internal nodes) and a single linguistic variable with different \texttt{gaussian} membership functions for the output variable (leaf nodes). The resulting linguistic variables are shown in \autoref{fig:fuzzyDecisionTreeLinguisticVariables}.
+It is now possible to fully extract all linguistic variables from the fuzzy decision tree. Every fuzzy set can be collected into a corresponding linguistic variable. This results in linguistic variables consisting of a bunch of different \texttt{sigmoid} membership functions for input variables (internal nodes) and a single linguistic variable with different \texttt{gaussian} membership functions for the output variable (leaf nodes). The resulting linguistic variables \autoref{fig:fuzzyDecisionTreeLinguisticVariables} are shown in \autoref{fig:fuzzyDecisionTreeLinguisticVariables}.
 
 
 \begin{figure}[h]
@@ -338,16 +336,15 @@ It is now possible to fully extract all linguistic variables from the fuzzy deci
 
     \includegraphics[width=\linewidth]{figures/ProofOfConcepts/fuzzy_sets.png}
 
-    \caption[Linguistic variables for the converted fuzzy decision tree]{Linguistic variables used in the fuzzy decision tree of \autoref{fig:fuzzyDecisionTreeExample}. The standard deviation of the attributes is assumed to be $\sigma \approx 0.5$ such that the \emph{width} of the sigmoid membership functions is $n\cdot \sigma \approx 1$. The standard deviation of the class values is chosen so that they do not overlap too much.}
+    \caption[Linguistic variables for the converted fuzzy decision tree]{Linguistic variables used in the fuzzy decision tree of \autoref{fig:fuzzyDecisionTreeExample}. The standard deviation of the attributes is assumed to be $\sigma \approx 0.5$ such that the \emph{width} of the sigmoid membership functions is $n\cdot \sigma \approx 1$. The standard deviation and placement of the class values are chosen so that they do not overlap too much.}
     \label{fig:fuzzyDecisionTreeLinguisticVariables}
 \end{figure}
 
 \subsubsection{Rule Extraction}
 
-The final step is to extract the fuzzy rules from the tree. This can be done by traversing the tree in a depth-first manner and collecting the correct membership functions for each path ending in a leaf node along the way. As all conditions of this path have to hold simultaneously, all fuzzy sets are connected using the \texttt{AND} operation. This newly created fuzzy set, which consists of the intersection of all fuzzy sets along the way, is the premise of selecting the fuzzy set of the leaf node. Consequently, both fuzzy sets are connected using the Mamdani \texttt{IMPLICATION} operator. This implication then forms a rule for the fuzzy system. Therefore, each unique path traversing the tree results in a unique rule. This process essentially mimics the decision surface seen in \autoref{fig:decisionBoundaryExample}, as we create precisely one rule for each region of the decision surface. The rules extracted from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} using this method are shown in \autoref{tab:fuzzyRulesExample}.
+The final step is to extract the fuzzy rules from the tree. This can be done by traversing and aggregating the tree in a depth-first manner and collecting the correct membership functions for each path ending in a leaf node along the way. As all conditions of this path have to hold simultaneously, all fuzzy sets are connected using the \texttt{AND} operation. This newly created fuzzy set represents the antecedent of the rule. The fuzzy set representing the class of the leaf node is the consequent of the rule. Therefore, each unique path traversing the tree results in a unique rule of the form $\textbf{IF} \text{ Antecedent } \textbf{THEN} \text{ Consequent }$. This process essentially mimics the decision surface seen in \autoref{fig:decisionBoundaryExample}, as we create precisely one rule for each region of the decision surface. The rules extracted from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} using this method are shown in \autoref{tab:fuzzyRulesExample}.
 
 
-\newpage
 \newcommand{\is}{\textit{ is }}
 
 
@@ -367,92 +364,39 @@ The final step is to extract the fuzzy rules from the tree. This can be done by 
     \label{tab:fuzzyRulesExample}
 \end{table}
 
-\subsubsection{Fuzzy System}
+\newpage
 
-With the linguistic variables and fuzzy rules extracted from the decision tree, we can finally use them to create a fuzzy system that can predict the class of a new data point based on its features. Since the fuzzy system can be seen as a black box mapping continuous input features to continuous output classes, we represent them as shown in \autoref{fig:fuzzySystem} from now on. It is also possible to visualize the fuzzy system's decision surface by evaluating the system for each point in the input space, as shown in \autoref{fig:fuzzyDecisionSurfaceComparison} for two different defuzzification methods. Such visualizations can help understand the decision-making process of the fuzzy system but, unfortunately, are not possible for higher-dimensional input spaces.
+\subsubsection{Effect of an Unsuitable Defuzzification Method}
 
+This section briefly discusses the effect of an unsuitable defuzzification method on the resulting fuzzy system.
 
-\begin{figure}[h]
-    \centering
-    \begin{tikzpicture}[scale=2,font=\small]
+To show the problem, we use the previously extracted rules from \autoref{tab:fuzzyRulesExample} and evaluate the resulting Fuzzy Set for a critical data point $(x=2.95, y=2.5)$ using both the Center of Gravity (COG) and the Mean of Maximum (MOM) defuzzification methods. The resulting fuzzy sets are shown in \autoref{fig:fuzzySetForDataCOG} and \autoref{fig:fuzzySetForDataMOM}.
 
-        \node [rectangle,rounded corners,draw,inner sep=2pt] (B) at (0,1.2) {
-            Rules, Linguistic Variables \& Defuzzification Method
-        };
-
-
-        \node [rectangle, rounded corners, draw, inner sep=2pt,fill=white!80!black, fill ] (A) at (0,0) {
-            \begin{tikzpicture}[scale=2,font=\tiny]
-                \begin{axis}%
-                    [
-                        title={FCS},
-                        width=3cm,
-                        height=2cm,
-                        axis lines=center,
-                        xmin=0,
-                        xmax=4,
-                        xlabel={$\mathbb{R}$},
-                        x label style={at={(axis description cs:1,0.2)},anchor=west},
-                        ylabel=$\mu$,
-                        y label style={at={(axis description cs:0,0.8)},anchor=east},
-                        xtick={},
-                        xticklabels= {},
-                        ytick={},
-                        yticklabels={},
-                        ymax=1,
-                        every axis plot/.append style={thick},
-                        domain=0:4
-                    ]
-                    \addplot[blue, samples=17] {gaussian(x,1,0.2)};
-                    \addplot[red,samples=15] {gaussian(x,2,0.2)};
-                    \addplot[green,samples=17] {gaussian(x,3,0.2)};
-                \end{axis}
-            \end{tikzpicture}
-        };
-
-
-
-        \draw[->,thick] (B) -- (A);
-
-        \draw[->,ultra thick] (-2.5,+0.2) -- (A) node [left, pos=0] {$x \in \mathbb{R}$};
-        \draw[->,ultra thick] (-2.5,-0.2) -- (A) node [left, pos=0] {$y \in \mathbb{R}$};
-        \draw[->,ultra thick] (A) -- (2.5,0) node [right, pos=1] {$class \in \mathbb{R}$};
-    \end{tikzpicture}
-
-    \caption[Fuzzy system created from the fuzzy decision tree seen as a black box]{The fuzzy system created from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} can be seen as a black box that maps continuous input features to continuous output classes.}
-
-    \label{fig:fuzzySystem}
-\end{figure}
-
-\subsubsection{Choice of Defuzzification Method}
-
-The exact shape of the decision surface depends on the specific defuzzification method used. The most common choice in literature is the COG method, which calculates the $x$-position of the center of gravity of the membership function of the final fuzzy set.
-However, using the COG method can lead to undesired results when using nominal values for the output classes, which we will see later. The main problem is that the values have no concept of order. Without such an ordering, the interpolation between the different classes performed by methods such as COG is not meaningful and leads to wrong predictions. Other methods, such as the MOM method, can be used instead. This method calculates the mean value of the maximum membership functions. In most cases, this method will return precisely the center of the membership function with the highest value and is a good choice for such types of knowledge bases. A direct comparison of the two methods on a critical datapoint is shown in \autoref{fig:fuzzySetForDataCOG} and \autoref{fig:fuzzySetForDataMOM}. Using the COG method results in an opposite class than originally predicted from the fuzzy system, while the MOM method correctly predicts the class.
-
-\begin{figure}
+\begin{figure}[H]
     \centering
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth,trim={0 0 0 1cm},clip]{figures/ProofOfConcepts/fuzzy_set_for_data_cog.png}
-        \caption[Resulting Fuzzy Set after applying the Rules on specific Data, COG Method]{Defuzzification on the fuzzy obtained by applying the rules from \autoref{tab:fuzzyRulesExample} on the data point $(x=2.95, y=2.5)$. There are clear peaks at the class values 1 and 3. However, the COG method incorrectly suggests values close to class 2.}
+        \caption[Resulting Fuzzy Set after applying the Rules on specific Data, COG Method]{Defuzzification using the COG method. Due to the interpolation, the COG method incorrectly suggests results in a class value close to 2.0 without it being a prominent class.}
         \label{fig:fuzzySetForDataCOG}
     \end{subfigure}
     \hfill
     \begin{subfigure}[t]{0.48\textwidth}
         \centering
         \includegraphics[width=\textwidth,trim={0 0 0 1cm},clip]{figures/ProofOfConcepts/fuzzy_set_for_data_mom.png}
-        \caption[Resulting Fuzzy Set after applying the Rules on specific Data, MOM Method]{Defuzzification on the fuzzy obtained by applying the rules from \autoref{tab:fuzzyRulesExample} on the data point $(x=2.95, y=2.5)$. The MOM method correctly suggests the class value 1, as it is the class with the highest membership value.}
+        \caption[Resulting Fuzzy Set after applying the Rules on specific Data, MOM Method]{Defuzzification using the MOM method. The MOM method correctly suggests the class value 1.0 as it is the most prominent class in the fuzzy set.}
         \label{fig:fuzzySetForDataMOM}
     \end{subfigure}
-    \caption{Comparison of COG and MOM defuzzification methods}
+    \caption{Comparison of COG and MOM on data point $(x,y)=(2.95, 2.5)$. }
     \label{fig:fuzzySetComparison}
 \end{figure}
 
-As previously mentioned, we can recreate the process depicted in \autoref{fig:fuzzySystem} for every possible input data point to visualize the fuzzy systems' decision surface. Both resulting decision surfaces are shown in \autoref{fig:fuzzyDecisionSurfaceExampleCOG} and \autoref{fig:fuzzyDecisionSurfaceExampleMOM}, respectively. The decision surface using the COG tries to smoothly interpolate between the different classes, which causes interpolation errors if there are other classes in between. The decision surface using the MOM method is valid and closely resembles the decision surface of the crisp decision tree in \autoref{fig:decisionBoundaryExample}.
+
+To get a full understanding of this problem, we create the full decision surfaces for both fuzzy systems shown in \autoref{fig:fuzzyDecisionSurfaceExampleCOG} and \autoref{fig:fuzzyDecisionSurfaceExampleMOM}, respectively. The decision surface using COG tries to smoothly interpolate between the different classes, which causes interpolation errors if there are other classes in between. The decision surface using MOM is mostly valid and closely resembles the decision surface of the crisp decision tree in \autoref{fig:decisionBoundaryExample}. Consequently, we should always use the MOM method for these fuzzy systems.
 
 \begin{figure}[H]
     \centering
-    \begin{subfigure}[t]{0.48\textwidth}
+    \begin{subfigure}[t]{0.45\textwidth}
         \centering
         \begin{tikzpicture}
             \node[anchor=south west,inner sep=0] (image) at (0,0) { \includegraphics[width=\textwidth,trim={0 0 0 1.25cm},clip]{figures/ProofOfConcepts/fuzzy_system_cog.png}};
@@ -465,16 +409,16 @@ As previously mentioned, we can recreate the process depicted in \autoref{fig:fu
                 \draw[yellow, arrow] (A) -- (.6,.48);
             \end{scope}
         \end{tikzpicture}
-        \caption[Decision surface of the fuzzy rules using COG method]{Decision surface of the fuzzy-system using the COG method. The highlighted areas show interpolation errors caused by the defuzzification.}
+        \caption[Decision surface of the fuzzy rules using COG method]{Decision surface when using the COG method. The highlighted areas show interpolation errors.}
         \label{fig:fuzzyDecisionSurfaceExampleCOG}
     \end{subfigure}
     \hfill
-    \begin{subfigure}[t]{0.48\textwidth}
+    \begin{subfigure}[t]{0.45\textwidth}
         \centering
         \begin{tikzpicture}
             \node[anchor=south west,inner sep=0] (image) at (0,0) { \includegraphics[width=\textwidth,trim={0 0 0 1.25cm},clip]{figures/ProofOfConcepts/fuzzy_system_mom.png}};
         \end{tikzpicture}
-        \caption[Decision surface of the fuzzy rules using MOM method]{Decision surface of the fuzzy-system using the MOM method. There are no invalid regions in the decision surface.}
+        \caption[Decision surface of the fuzzy rules using MOM method]{Decision surface when using the MOM method. There are only minor invalid regions in the decision surface.}
         \label{fig:fuzzyDecisionSurfaceExampleMOM}
     \end{subfigure}
     \caption{Comparison of COG and MOM defuzzification methods on decision surfaces}
@@ -484,7 +428,7 @@ As previously mentioned, we can recreate the process depicted in \autoref{fig:fu
 
 \section{Fuzzy Systems for \texttt{md\_flexible}}
 
-This section will demonstrate how to generate fuzzy systems for \texttt{md\_flexible} simulations using the approach described in the previous section. The first section will describe the data collection process needed to train the classic decision trees, and the later sections will use the obtained data to generate two different styles of fuzzy systems for making predictions about the optimal configuration of the current simulation.
+This section will demonstrate how to generate fuzzy systems for \texttt{md\_flexible} simulations using the approach described in the previous section. The first section will describe the data collection process needed to train the classic decision trees, and the later sections will use the obtained data to generate two different styles of fuzzy systems introduced in the previous chapters.
 
 \subsection{Data Collection}
 
@@ -492,26 +436,26 @@ This section will demonstrate how to generate fuzzy systems for \texttt{md\_flex
 
 We chose to include the prominent example scenarios provided by \texttt{md\_flexible} such as \href{https://github.com/AutoPas/AutoPas/blob/c25dc770f173ff160630d7e58f59b38e277032a1/examples/md-flexible/input/fallingDrop.yaml}{\color{blue}\texttt{fallingDrop.yaml}}, \href{https://github.com/AutoPas/AutoPas/blob/c25dc770f173ff160630d7e58f59b38e277032a1/examples/md-flexible/input/explodingLiquid.yaml}{\color{blue} \texttt{explodingLiquid.yaml}} and \href{https://github.com/AutoPas/AutoPas/blob/c25dc770f173ff160630d7e58f59b38e277032a1/examples/md-flexible/input/SpinodalDecomposition.yaml}{\color{blue} \texttt{SpinodalDecomposition.yaml}} as the primary source of data. Additionally, we included some simulations of uniform cubes with different densities and particle counts to gather more data about the performance of the different configurations under lab-like conditions.
 
-All simulations were run on the serial partition of the CoolMUC-2 cluster (see \ref*{CoolMucSpecs})  and were repeated twice to account for fluctuations in performance. Furthermore, every simulation was repeated with 1, 4, 12, 24, and 28 threads to additionally gather data on how parallelization affects the ideal configuration.
+All simulations were run on the serial partition of the CoolMUC-2 cluster\textsuperscript{\ref{CoolMucSpecs}} and were repeated twice to account for fluctuations in performance. Furthermore, every simulation was repeated with 1, 4, 12, 24, and 28 threads to additionally gather data on how parallelization affects the ideal configuration.
 
-All the values were collected with the newly created \texttt{PAUSE\_SIMULATION\_DURING\_TUNING} CMake option enabled to ensure that the simulation state does not change during the tuning phases. This guarantees a fair comparison of the tested configurations, as all of them are evaluated under the exact same conditions. To gather the maximal amount of data, we used the \texttt{FullSeach} tuning strategy, which executes all possible configurations during the tuning phases.
+All the values were collected with the newly created \texttt{PAUSE\_SIMULATION\_DURING\_TUNING} CMake option to ensure that the simulation state does not change during the tuning phases. This guarantees a fair comparison of the tested configurations, as all of them are evaluated under the exact same conditions. To gather the maximal amount of data, we used the \texttt{FullSeach} tuning strategy, which executes all possible configurations during the tuning phases.
 
 
 \subsubsection{Collected Parameters}
 
 The existing \texttt{TuningDataLogger} and the newly created \texttt{LiveInfoLogger} classes of the AutoPas framework allow us to collect a wide variety of parameters during the simulation, such as the used configuration, information about the state of the simulation, and the measured timing data for each iteration of the simulation.
 
-The complete shape of the collected data can be found in \autoref{des:tuningdatafields} and \autoref{des:liveinfodatafields}, respectively. We will however only make use of a subset of the available LiveInfo data, as we are only interested in \emph{relative} values that do not change when the simulation is scaled up or down and are therefore only primarily focus on: \texttt{avgParticlesPerCell}, \texttt{maxParticlesPerCell}, \texttt{homogeneity}, \texttt{maxDensity}, \texttt{particlesPerCellStdDev} and \texttt{threadCount}. This focus should help the fuzzy systems generalize better to unseen data, as they are less likely to overfit the training data.
+The complete shape of the collected data can be found in \autoref{des:tuningdatafields} and \autoref{des:liveinfodatafields}, respectively. We will however only make use of a subset of the available LiveInfo data, as we are only interested in \emph{relative} values that do not change when the simulation is scaled up or down and are therefore primarily interested in: \texttt{avgParticlesPerCell}, \texttt{maxParticlesPerCell}, \texttt{homogeneity}, \texttt{maxDensity}, \texttt{particlesPerCellStdDev} and \texttt{threadCount}. This focus should help the fuzzy systems generalize better to unseen data, as they are less likely to overfit the training data.
 
 
 \subsubsection{Limitations}
 
 As the performance of machine learning models may degrade quickly when confronted with significantly different data than the data they were trained on, it is essential to collect a wide variety of scenarios to cover as many possible use cases as possible. As we only included a limited number of scenarios, we have to keep in mind that the generated fuzzy systems will only be able to make confident predictions about scenarios similar to the included ones, and we should not expect them to generalize well to unseen data.
-To guarantee a fair evaluation of this tuning approach, we will only focus on slight variations of the included scenarios in the following evaluation section.
+To guarantee a fair evaluation of this tuning approach, we will only focus on slight variations of the included scenarios during the later evaluation phase in \autoref{sec:comparison_and_evaluation}.
 
 \subsection{Data Preprocessing}
 
-In order to make predictions about the performance of different configurations, we first need to define an appropriate metric to compare them. As we \emph{froze} the simulation during the tuning process with the \texttt{PAUSE\_SIMULATION\_DURING\_TUNING} option, we can safely use the runtimes of the different configurations to compare them. Those runtimes are, however, absolute values and may differ significantly between tuning phases as the underlying simulation changes. To compare runtimes between different tuning phases, we introduce the concept of \emph{relative speed}, which measures how well a configuration performs compared to the best configuration in the same tuning phase, and augment the collected timing data with this metric. The relative speed is calculated as
+In order to make predictions about the performance of different configurations, we first need to define an appropriate metric to compare them. As we \emph{paused} the simulation during the tuning process with the \texttt{PAUSE\_SIMULATION\_DURING\_TUNING} option, we can safely use the runtimes of the different configurations to compare them. Those runtimes are, however, absolute values and may differ significantly between tuning phases as the underlying simulation changes. To compare runtimes between different tuning phases, we introduce the concept of \emph{relative speed}, which measures how well a configuration performs compared to the best configuration in the same tuning phase, and augment the collected timing data with this metric. The relative speed is calculated as
 
 
 \begin{equation}
@@ -520,9 +464,11 @@ In order to make predictions about the performance of different configurations, 
 
 Where $t_{\text{best}}^{(i)}$ is the runtime of the best configuration during the $i$-th tuning phase and $t_{\text{config}}^{(i)}$ is the runtime of the configuration we are interested in.
 
-This value will range from 0 (being infinitely worse than the best configuration) to 1 (being equally good as the best configuration) for each configuration. Additionally, we chose to combine the fields \texttt{Container} and \texttt{DataLayout} of the configuration into a single field \texttt{ContainerDataLayout} as they are closely related, and the performance of one is heavily dependent on the other.
+This value will range from 0 (being infinitely worse than the best configuration) to 1 (being equally good as the best configuration) for each configuration. Additionally, we chose to combine the fields \texttt{Container} and \texttt{DataLayout} of the configuration into a single field \texttt{ContainerDataLayout} as they are closely related and should be tuned together.
 
-We can now create the augmented dataset shown in \autoref{tab:trainingData}, which will be used in the following sections to train the decision trees and generate the fuzzy systems.
+\medskip
+
+\autoref{tab:trainingData} shows the augmented dataset for creating the fuzzy systems. The next sections sections will describe how this dataset can be used to create fuzzy systems for the so-called \emph{Component Tuning Approach} and the \emph{Suitability Tuning Approach}.
 
 
 \definecolor{LightCyan}{rgb}{0.88,1,1}
@@ -535,7 +481,7 @@ We can now create the augmented dataset shown in \autoref{tab:trainingData}, whi
         \cline{1-9}
         \multicolumn{3}{|c|}{ \textbf{ParticlesPerCell}} & \multicolumn{3}{c|}{\textbf{Miscellaneous}} & \multicolumn{3}{c|}{\textbf{Configuration}}                                                                                                                           \\
         \hline
-        \textbf{avg}                                     & \textbf{max}                                & \textbf{stddev}                             & \tabularCenterstack{c}{\textbf{homo-}                                                                                   \\ \textbf{genity}} & \tabularCenterstack{c}{\textbf{max-} \\ \textbf{density}} & \textbf{threads} & \tabularCenterstack{c}{\textbf{Container} \\ \textbf{DataLayout}}& \textbf{Traversal} & \textbf{Newton3} & \textbf{Relative speed} \\
+        \textbf{avg}                                     & \textbf{max}                                & \textbf{stddev}                             & \tabularCenterstack{c}{\textbf{homo-}                                                                                   \\ \textbf{genity}} & \tabularCenterstack{c}{\textbf{max-} \\ \textbf{density}} & \textbf{threads} & \tabularCenterstack{c}{\textbf{Container} \\ \textbf{DataLayout}}& \textbf{Traversal} & \textbf{Newton3} & \tabularCenterstack{c}{\textbf{Relative} \\ \textbf{Speed}} \\
         \hline
         0.905                                            & 23                                          & 0.0129                                      & 0.0354                                & 0.531  & 1      & LinkedCells\_AoS      & lc\_sliced      & enabled  & 0.450641 \\
         2.201                                            & 13                                          & 0.0144                                      & 0.0861                                & 0.627  & 24     & VerletListsCells\_AoS & vlc\_sliced     & disabled & 0.594117 \\
@@ -544,18 +490,17 @@ We can now create the augmented dataset shown in \autoref{tab:trainingData}, whi
         \hline
     \end{tabular}
     \caption[Augmented dataset used for creating the fuzzy systems in \texttt{md\_flexible}
-    ]{Augmented dataset used for creating the fuzzy systems. The dataset contains the average, maximum, and standard deviation of the particles per cell, the homogeneity, density, and thread count of the simulation, as well as the configuration options and the relative speed of the configuration compared to the best configuration in the same tuning phase.}
+    ]{Augmented dataset used for creating the fuzzy systems. The dataset contains all collected parameters and the relative speed of the configuration compared to the best configuration in the same tuning phase.}
     \label{tab:trainingData}
 \end{table}
 
 
-As described previously, we will create two different kinds of knowledge bases using this dataset. The first attempt is called \emph{Component Tuning Approach} and tries to independently predict the best options for each tunable parameter. The second attempt is the \emph{Suitability Tuning Approach}, which tries to predict the $relative speed$ values for all possible configurations and then selects the configurations expected to perform best. Both approaches will be described in the following sections.
 
 \subsection{Component Tuning Approach}
 
 This approach makes use of three different \texttt{FuzzySystems}, one for each of the tunable parameters of the simulation (\texttt{ContainerDataLayout}, \texttt{Traversal}, and \texttt{Newton3}). All those systems should independently predict the best configuration for their respective parameter based on the current LiveInfoData. \autoref{fig:fuzzySystemComponent} shows the structure of this approach.
 
-As we only want to create a fuzzy system predicting appropriate configurations, we naively remove all configurations performing worse than a certain suitability threshold (we chose 70\%) as depicted in \autoref{fig:relativeSpeed}. The remaining configurations, which are known to perform well, are then used to create the fuzzy systems.
+As we only want to create a fuzzy system predicting good-performing configurations, we naively remove all configurations performing worse than a certain suitability threshold (we chose 70\%) as depicted in \autoref{fig:relativeSpeed}. The remaining configurations, which are known to perform well, are then used to create the fuzzy systems.
 
 
 \begin{figure}[H]
@@ -565,7 +510,7 @@ As we only want to create a fuzzy system predicting appropriate configurations, 
     \label{fig:relativeSpeed}
 \end{figure}
 
-Afterward, we group all configurations evaluated in the same tuning phase and aggregate all the present values of tunable parameters into a single term. As we \emph{froze} the simulation during the tuning phase, the LiveInfoData will be equal for such configurations, and the aggregated terms will therefore represent all \emph{good} values for the parameters in this simulation state (as they occur in configurations with $\geq 70\%$ suitability). The aggregated training data is shown in \autoref{tab:trainingDataComponent} and is used to fit three decision trees, which are then converted into fuzzy systems using the method described in the previous section. A few of the extracted fuzzy rules are shown in \autoref{tab:fuzzyRulesComponent}. The linguistic variables are omitted for brevity.
+Afterward, we group all configurations evaluated in the same tuning phase and aggregate all the present values of tunable parameters into a single term. As we \emph{paused} the simulation during the tuning phase, the LiveInfoData will be equal for such configurations, and the aggregated terms will therefore represent all \emph{good} values for the parameters in this simulation state (as they occur in configurations with $\geq 70\%$ suitability). The aggregated training data is shown in \autoref{tab:trainingDataComponent} and is used to fit three decision trees, which are then converted into fuzzy systems using the method described in the previous section. A few of the extracted fuzzy rules are shown in \autoref{tab:fuzzyRulesComponent}.
 
 \begin{table}[H]
     \centering
@@ -662,7 +607,7 @@ Afterward, we group all configurations evaluated in the same tuning phase and ag
 
 \newpage
 
-As described previously, we use \texttt{gaussian} membership functions for each linguistic term of the consequent linguistic variables. The placement of the values is irrelevant as we will use the MOM defuzzification method. \autoref{fig:homogenityLinguisticVariable} and \autoref{fig:newton3LinguisticVariable_component} show the resulting linguistic variables for the homogeneity linguistic variable (an input variable) and the Newton3 linguistic variable we want to predict. The visualization of the other variables follows a similar pattern but is more complex due to the higher number of terms and are therefore not shown here.
+As described previously, we use \texttt{gaussian} membership functions for each linguistic term of the consequent linguistic variables. The exact placement of the values is irrelevant as we will use the MOM defuzzification method, but they should be chosen so that they do not overlap completely. \autoref{fig:homogenityLinguisticVariable} and \autoref{fig:newton3LinguisticVariable_component} show the resulting linguistic variables for the homogeneity linguistic variable (an input variable) and the Newton3 linguistic variable (an output variable). The visualizations of the other variables follow a similar pattern but are more complex due to the higher number of terms and are therefore not shown here.
 
 
 
@@ -688,31 +633,35 @@ As described previously, we use \texttt{gaussian} membership functions for each 
     \end{figure}
 \end{multicols}
 
-These linguistic variables and fuzzy rules are then used to create the fuzzy systems for the component tuning approach. The final Rule File for the component tuning approach can be looked up at \href{https://github.com/AutoPas/AutoPas/blob/f77f10f72c19a86d5471bce287ae3a4ae344c012/examples/md-flexible/input/fuzzyRulesComponents.frule}{\color{blue}\texttt{fuzzyRulesComponents.frule}}.
+\noindent These linguistic variables and fuzzy rules are then used to create the fuzzy systems for the component tuning approach. After creating a suitable OutputMapper, we construct the final rule file for the component tuning approach, which can be looked up at \href{https://github.com/AutoPas/AutoPas/blob/f77f10f72c19a86d5471bce287ae3a4ae344c012/examples/md-flexible/input/fuzzyRulesComponents.frule}{\color{blue}\texttt{fuzzyRulesComponents.frule}}.
 
+\newpage
 
 \subsection{Suitability Tuning Approach}
 
-The suitability approach differs from the component tuning approach in that it tries to predict a configuration's numerical \emph{suitability} value under the current conditions. Therefore, each possible configuration is assigned a unique fuzzy system tailored to just evaluating this configuration. \autoref{fig:fuzzySystemSuitability} shows the structure of this approach.
+The suitability approach differs from the component tuning approach in that it tries to predict a configuration's numerical \emph{suitability} value under the current conditions. Therefore, each possible configuration is assigned a unique fuzzy system tailored to evaluate the suitability of its assigned configuration. \autoref{fig:fuzzySystemSuitability} shows the structure of this approach.
 
-To train the decision trees, we again use a classification-based approach with \texttt{terrible},\texttt{poor}, \texttt{bad}, \texttt{medium}, \texttt{ok}, \texttt{good}, and \texttt{excellent} as the possible linguistic terms corresponding to specific ranges of suitability values (see \autoref{fig:suitabilityClasses} for the exact placement). Conveniently, we can use $suitability= relative speed$, as the relative speed value already measures how well a configuration performs.
+\smallskip
 
-We create the training data for the decision trees by adding a new column to the aggregated training data containing the suitability class to which the numeric relative speed value mostly belongs. The final training data is shown in \autoref{tab:trainingDataSuitability}. After grouping the data by possible configurations, it is again possible to use these data points to train the decision trees and extract the fuzzy rules from them. Due to the grouping, each configuration receives its own fuzzy system with rules explicitly tailored to it. The resulting rules are shown in \autoref{tab:fuzzyRulesSuitability}.
+To train the decision trees, we again use a classification-based approach with the terms \texttt{terrible}, \texttt{poor}, \texttt{bad}, \texttt{medium}, \texttt{ok}, \texttt{good}, and \texttt{excellent} each corresponding to specific ranges of suitability values (see \autoref{fig:suitabilityClasses} for the exact placement). Conveniently, we can use $suitability = relative \ speed$, as the relative speed value already measures how well a configuration performs.
+
+\smallskip
+
+We create the training data for the decision trees by adding a new column to the aggregated training data containing the suitability class to which the numeric relative speed value mostly belongs. The final training data is shown in \autoref{tab:trainingDataSuitability}. After grouping the data by possible configurations, it is again possible to use these data points to train the decision trees and extract the fuzzy rules from them. Due to the grouping, each configuration receives its fuzzy system with rules explicitly tailored to it. The resulting rules are shown in \autoref{tab:fuzzyRulesSuitability}.
+
+\medskip
+
+\noindent By again constructing corresponding linguistic variables and a suitable OutputMapper, we can create the final rule file for the suitability approach, which can be looked up at \href{https://github.com/AutoPas/AutoPas/blob/f77f10f72c19a86d5471bce287ae3a4ae344c012/examples/md-flexible/input/fuzzyRulesSuitability.frule}{\color{blue}\texttt{fuzzyRulesSuitability.frule}}.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\columnwidth,trim={0cm 0 0cm 0cm},clip]{figures/ProofOfConcepts/suitability_membership_functions.png}
     \caption[Linguistic variable for the Suitability attribute]{
-        This figure shows the linguistic variable for the Suitability attribute. The domain between 0\% suitability and 100\% suitability is divided into 7 classes: \texttt{terrible}, \texttt{poor}, \texttt{bad}, \texttt{medium}, \texttt{ok}, \texttt{good}, and \texttt{excellent}. The central membership functions have a \texttt{gaussian} shape, while the outer ones have a \texttt{sigmoid} shape to capture the one-sided nature of those boundaries. The choice to use seven classes was made somewhat arbitrarily, with the intention to densely cover the range of suitability values.
+        Linguistic variable for the Suitability attribute. The domain between 0\% suitability and 100\% suitability is divided into 7 classes: \texttt{terrible}, \texttt{poor}, \texttt{bad}, \texttt{medium}, \texttt{ok}, \texttt{good}, and \texttt{excellent}. The inner membership functions have a \texttt{gaussian} shape, while the outer ones have a \texttt{sigmoid} shape to capture the one-sided nature of those boundaries. The choice to use seven classes was made somewhat arbitrarily, with the intention to densely cover the range of suitability values with enough precision.
     }
     \label{fig:suitabilityClasses}
 \end{figure}
 
-This approach makes it possible to use the COG method for defuzzification, as the suitability values are ordinal. In order for the different fuzzy systems to be able to make individual choices, the Suitability values seen in \autoref{fig:suitabilityClasses} have to be duplicated for each configuration.
-
-The resulting fuzzy systems can then be used to predict the suitability of all available configurations. The FuzzyTuningStrategy will combine all these predicted suitabilities and will only keep the configurations with the highest suitability values.
-
-\newpage
 
 \definecolor{LightRed}{rgb}{1,0.88,0.88}
 \newcolumntype{u}{>{\columncolor{LightRed}}c}
@@ -756,7 +705,7 @@ The resulting fuzzy systems can then be used to predict the suitability of all a
     \begin{tabular}{|c|c|c|c|g|}
         \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                  \\
         \hline
-        \textbf{avgParticlesPC}                         & \textbf{homogeneity}                                & \textbf{particlesPCStdDev} & \textbf{threadCount}                              & \tabularCenterstack{c} { \textbf{Suitability} \\ \textbf{ LinkedCells\_AoS\_lc\_c01\_disabled}} \\
+        \textbf{avgParticlesPC}                         & \textbf{homogeneity}                                & \textbf{particlesPCStdDev} & \textbf{threadCount}                              & \tabularCenterstack{c} { \textbf{Suitability} \\ \textbf{ LinkedCells\_AoS} \\ \textbf{lc\_c01\_disabled}} \\
 
         \hline
                                                         & \texttt{lower than 0.084}                           & \texttt{higher than 0.029} & \texttt{higher than 26.0 }                        & "medium"                                      \\
@@ -775,7 +724,7 @@ The resulting fuzzy systems can then be used to predict the suitability of all a
         \multicolumn{4}{c}{\large{\textbf{Antecedent}}} & \multicolumn{1}{c}{\large{\textbf{Consequent}    }}                                                                                                                                  \\
 
         \hline
-        \textbf{maxParticlesPerCell}                    & \textbf{homogeneity}                                & \textbf{particlesPCStdDev} & \textbf{threadCount}                              & \tabularCenterstack{c} { \textbf{Suitability} \\\textbf{ LinkedCells\_AoS\_lc\_c04\_disabled}}\\
+        \textbf{maxParticlesPerCell}                    & \textbf{homogeneity}                                & \textbf{particlesPCStdDev} & \textbf{threadCount}                              & \tabularCenterstack{c} { \textbf{Suitability} \\\textbf{ LinkedCells\_AoS}\\ \textbf{lc\_c04\_disabled}}\\
 
         \hline
         \texttt{higher than 18.5	}                       & \texttt{lower than 0.082}                           &                            & \tabularCenterstack{c} {\texttt{higher than 18.0}                                                 \\ $\land$ \texttt{ lower than 26.0}} & "medium" \\
@@ -796,4 +745,3 @@ The resulting fuzzy systems can then be used to predict the suitability of all a
     \label{tab:fuzzyRulesSuitability}
 \end{table}
 
-The full Rule File for the suitability approach can be looked up at \href{https://github.com/AutoPas/AutoPas/blob/f77f10f72c19a86d5471bce287ae3a4ae344c012/examples/md-flexible/input/fuzzyRulesSuitability.frule}{\color{blue}\texttt{fuzzyRulesSuitability.frule}}.

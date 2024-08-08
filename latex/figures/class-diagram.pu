@@ -32,7 +32,7 @@ namespace autopas::FuzzyLogic {
     +FuzzySet apply(Data data)
   }
 
-  class FuzzyControlSystem {
+  class FuzzySystem {
     +void addRule(FuzzyRule rule)
     +FuzzySet applyRules(Data data)
     +double predict(Data data)
@@ -48,7 +48,7 @@ class OutputMapper {
   -std::map<double, Configurations> map
 }
 
-class FuzzyTuning {
+class FuzzyTuningStrategy {
   -FuzzyFile parseFuzzyRuleFile(std::string path)
   -void evaluateSuitability(Configurations &configQueue)
   -void evaluateIndividual(Configurations &configQueue)
@@ -63,19 +63,19 @@ class FuzzyTuning {
 interface TuningStrategyInterface {}
 
 
-FuzzySet "1" *-- "1" CrispSet 
-FuzzySet "parent 1" *-- "children 0..2" FuzzySet : based on
+FuzzySet "1  " *-- "1  " CrispSet 
+FuzzySet " parent 1" *-- "children 0..2" FuzzySet : based on
 
-LinguisticVariable "1" *-- "*" FuzzySet 
-FuzzyRule "1" *-- "2" FuzzySet 
+LinguisticVariable "1  " *-- "‎ *  " FuzzySet 
+FuzzyRule "‎1    " *-- "2 " FuzzySet 
 
-FuzzyControlSystem "1" *-- "*" FuzzyRule 
+FuzzySystem "1  " *-- "‎ *   " FuzzyRule 
 
-FuzzyTuning "1" o-- "*" FuzzyControlSystem
-FuzzyTuning "1" *-r- "*" OutputMapper 
-FuzzyTuning .u.|> TuningStrategyInterface
+FuzzyTuningStrategy "1  " o-- "‎ *  " FuzzySystem 
+FuzzyTuningStrategy "1" *-r- "‎*" OutputMapper 
+FuzzyTuningStrategy .u.|> TuningStrategyInterface
 
 
 LinguisticVariable -r[hidden]- FuzzyRule
-LinguisticVariable -u[hidden]- FuzzyControlSystem
+LinguisticVariable -u[hidden]- FuzzySystem 
 @enduml
