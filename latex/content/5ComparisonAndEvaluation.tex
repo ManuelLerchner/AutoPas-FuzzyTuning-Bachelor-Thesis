@@ -113,6 +113,7 @@ The component tuning approach also encounters such bad configurations, but they 
 The suitability approach performs very well in both scenarios, predicting configurations with the highest median relative speed. The high relative speed of the suitability could be caused by the low suitability threshold of 10\%, which caused the strategy to predict only very few configurations, which were all reasonably good. As mentioned previously, we will investigate the impact of the suitability threshold in more detail in \autoref{sec:suitabilityThreshold}.
 
 \subsubsection{Potential Improvement: Early Stopping of Bad Configurations}
+\label{sec:earlyStopping}
 
 As most tuning strategies are plagued by evaluating extremely bad configurations during the tuning phases, it would be highly beneficial to AutoPas if such configurations could be detected during their evaluation and discarded early. Such an improvement could drastically benefit every tuning strategy by significantly reducing the time spent in the tuning phases while still finding the same optimal configuration.
 
@@ -160,7 +161,7 @@ The optimal suitability threshold for this scenario lies between 20\% and 40\%, 
 
 \newpage
 
-\subsection{Generalization of Rule Extraction}
+\subsection{Generalization of Rule Extraction Process}
 
 Previous measurements of the Exploding Liquid and the Spinodal Decomposition MPI benchmark showed that the fuzzy tuning strategies perform well. However, all previously tested scenarios were in some way included in the training data, which could have biased the results in favor of the fuzzy tuning strategies.
 

@@ -5,6 +5,75 @@ The thesis was written at the `Chair of Scientific Computing` under the supervis
 
 The thesis explores a novel tuning technique for molecular dynamics simulations in the [AutoPas](https://github.com/AutoPas/AutoPas) framework. The technique is based on fuzzy logic and aims to predict close-to-optimal simulation configurations from a set of live data collected during the simulation. The goal of this thesis is to evaluate the feasibility of the fuzzy tuning technique and to compare it with existing tuning techniques.
 
+### Abstract
+
+AutoPas is a high-performance, auto-tuned particle simulation library for many-body systems, capable of dynamically switching between algorithms and data structures to guarantee optimal performance throughout the simulation.
+This thesis introduces a novel fuzzy logic-based tuning strategy for AutoPas, allowing users to guide the tuning process by specifying custom Fuzzy Systems, which can be used to efficiently prune the search space of possible parameter configurations. Efficient tuning strategies are crucial, as they allow for discarding poor parameter configurations without evaluating them, thus reducing tuning time and improving overall library performance.
+
+We demonstrate that a data-driven approach can automatically generate Fuzzy Systems that significantly outperform existing tuning strategies on specific benchmarks, resulting in speedups of up to 1.96x compared to the FullSearch Strategy on scenarios included in the training data and up to 1.35x on scenarios not directly included.
+
+The Fuzzy Tuning Strategy can drastically reduce the number of evaluated configurations during tuning phases while achieving comparable tuning results, making it a promising alternative to the existing tuning strategies.
+
+### Table of Contents
+
+1. **Introduction**
+2. **Theoretical Background**
+   + Molecular Dynamics
+     + Quantum Mechanical Background
+     + Classical Molecular Dynamics
+     + Potential Energy Function
+     + Numerical Integration
+     + Simulation Loop
+   + AutoPas
+     + Autotuning in AutoPas
+     + Tunable Parameters
+     + Tuning Strategies
+   + Fuzzy Logic
+     + Fuzzy Sets
+     + Fuzzy Logic Operations
+     + Linguistic Variables
+     + Fuzzy Logic Rules
+     + Fuzzy Inference
+3. **Implementation**
+   + Fuzzy Logic Framework
+   + Rule Parser
+   + Fuzzy Tuning Strategy
+     + Component Tuning Approach
+     + Suitability Tuning Approach
+4. **Proof of Concept**
+   + Data-Driven Rule Extraction
+     + Decision Trees
+     + Conversion of Decision Trees to Fuzzy Systems
+   + Fuzzy Systems for md flexible
+     + Data Collection
+     + Data Preprocessing
+     + Component Tuning Approach
+     + Suitability Tuning Approach
+5. **Comparison and Evaluation**
+   + Exploding Liquid Benchmark (Included in Training Data)
+   + Spinodal Decomposition MPI (Related to Training Data)
+   + Further Analysis
+     + Quality of Predictions During Tuning Phases
+     + Optimal Suitability Threshold
+     + Generalization of Rule Extraction Process
+6. **Future Work**
+   + Dynamic Rule Generation
+   + Improving Tuning Strategies
+   + Simplification of the Fuzzy System to Decision Trees
+7. **Conclusion**
+
+## Thesis
+
+The thesis is available in LaTeX format in this repository. You can access the rendered version in PDF format by clicking the following link:
+
+[Read the Thesis (PDF)](latex/Manuel_Lerchner_Fuzzy_Tuning.pdf)
+
+## Slides
+
+The presentation slides are available in PDF format and can be accessed via the following link:
+
+[View the Slides (PDF)](presentation/slides.pdf)
+
 ## Quick Guide for Creating New Rule Sets
 
 This section provides a quick guide on how to create new rule sets similar to the ones developed in this thesis. (
@@ -40,23 +109,3 @@ This section provides a quick guide on how to create new rule sets similar to th
 >    + The resulting `*.frule` files can now be used in AutoPas with the Fuzzy Tuning Strategy by adding `--fuzzy-rule-filename {RULES}.frule` to the command line arguments.
 >
 >    + If you want you can format the rules to your liking and make them more readable.
-
-## Thesis
-
-The thesis is available in LaTeX format in this repository. You can access the rendered version in PDF format by clicking the following link:
-
-[Read the Thesis (PDF)](latex/Manuel_Lerchner_Fuzzy_Tuning.pdf)
-
-### Table of Contents
-
-TODO
-
-### Abstract
-
-TODO
-
-## Slides
-
-The presentation slides are available in PDF format and can be accessed via the following link:
-
-[View the Slides (PDF)](presentation/slides.pdf)

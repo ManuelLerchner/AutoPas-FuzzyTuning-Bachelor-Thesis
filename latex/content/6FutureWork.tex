@@ -5,20 +5,18 @@ In this chapter, we discuss some of the possible improvements that could be made
 
 \section{Dynamic Rule Generation}
 
-The current rule extraction process is static and requires a pre-collected dataset of selected scenarios. This is an obvious limitation, as users cannot be expected to collect a dataset of scenarios prior to using the library. Another issue is that the generated rules will only generalize well to scenarios similar to the ones in the dataset, preventing the rules from being shared between different use cases.
+The current rule extraction process is static and requires a pre-collected dataset of selected scenarios. This is an obvious limitation, as users cannot be expected to collect a dataset of scenarios prior to using the library. Another issue is that the generated rules can only be expected to perform well in scenarios similar to the ones in the dataset, preventing the rules from being shared between vastly different use cases.
 
-One could look into ways of adaptively updating the expert knowledge as new scenarios are encountered. This could be done by spending extra time during the simulation to evaluate the performance data of recently executed configurations and update the expert knowledge accordingly.
+One could look into ways of adaptively updating the expert knowledge as new scenarios are encountered. This could be done by spending extra time during the simulation to evaluate the performance data of recently or additionally executed configurations and update the expert knowledge accordingly by retraining the underlying Decision Trees on the fly.
 
-\section{Future Work on Tuning Strategies}
+\section{Improving Tuning Strategies}
 
-The executed benchmarks showed that all classical tuning strategies suffer from bad configurations that are evaluated during the tuning phases, which causes a significant increase in total simulation time. To solve this issue, one could look into ways of prematurely aborting evaluations of configurations that are unlikely to be selected as the best configuration.
-
-One could just keep track of the configuration used in the previous simulation phase and reject any configuration that does not significantly improve the performance.
-Such a system would drastically improve every existing tuning strategy and could drastically improve the library's performance.
+As previously discussed in \autoref{sec:earlyStopping}, all current tuning strategies suffer from evaluating extremely bad configurations during the tuning phases. Especially for strategies without rule-based selection, this is a significant issue and causes enormous tuning overhead that could be avoided. Implementing an early stopping mechanism could drastically improve all tuning strategies and thus benefit the core idea of AutoPas.
 
 \section{Simplification of the Fuzzy System to Decision Trees}
 
 As the current way of generating the Fuzzy Systems with the data-driven approach already makes use of Decision Trees, one could look into ways of directly using the Decision Trees to make decisions.
-As the Component Tuning approach doesn't make use of the power of defuzzification, it is possible that the Fuzzy Tuning approach could be simplified to a Decision Tree approach without losing any performance.
 
-To test this hypothesis, one could change membership functions to crisp splits as originally depicted in \autoref{fig:fuzzyMembershipFunctions} and rerun the benchmarks to see if the performance is still comparable. This essentially emulates (Crisp) Decision Trees trained from the same dataset.
+As the current implementation of the Component Tuning approach, which is already very close to a Decision Tree approach, has shown to work well, it is possible that the Fuzzy Tuning approach could be simplified to a Decision Tree approach without losing any performance. This would make the tuning process more transparent and easier to understand for users, as the complexity of fuzzy sets and membership functions would be removed.
+
+To test this hypothesis using the current system, one could change membership functions to crisp splits as originally depicted in \autoref{fig:fuzzyMembershipFunctions} and rerun the benchmarks to see if the performance is still comparable. Such a rule file would emulate (Crisp) Decision Trees, following the same rules but without the fuzziness.
