@@ -225,7 +225,7 @@ Fuzzy decision trees are a generalization of classical decision trees and allow 
 \subsubsection{Conversion}
 
 
-A classical decision tree is converted into a fuzzy decision tree by replacing the crisp decision (e.g., $x \leq 3$) at each internal node of the decision tree with a fuzzy set. Those fuzzy sets should maintain the same semantics as the crisp decision but should provide a continuous value in the range $[0,1]$ specifying the degree of how much each branch should be considered. Classical decision trees can only make binary decisions (${0,1}$), which causes them to only consider a single path of the decision tree. Allowing the decision trees to consider multiple paths simultaneously can drastically increase the decision-making capabilities of the decision tree, especially in boundary cases where the decision can be ambiguous.
+A classical decision tree is converted into a fuzzy decision tree by replacing the crisp decision (e.g., $x \leq 3$) at each internal node of the decision tree with a fuzzy set. Those fuzzy sets should maintain the same semantics as the crisp decision but should provide a continuous value in the range $[0,1]$ specifying the degree of how much each branch should be considered. Allowing the decision trees to consider multiple paths simultaneously can drastically increase the decision-making capabilities of the decision tree, especially in boundary cases where the decision can be ambiguous.
 
 
 The shape of the membership functions of the fuzzy sets can be chosen arbitrarily, but typical choices include complementary \texttt{sigmoid}-shaped functions that are centered around the crisp decision boundary (See \autoref{fig:fuzzyMembershipFunctions}), as those function shapes maintain the semantics of the branching idea. Crockett et al.~\cite{CROCKETT20062809} suggested creating those sigmoid shapes with a \emph{width} proportional to the standard deviation of the attribute. In Particular, the authors suggested an interval $[t-n\cdot \sigma, t+n\cdot \sigma]$ for the membership function, where  $t$ is the value of the decision boundary, $\sigma$ is the standard deviation of the attribute and $n$ is a parameter that can be adjusted to control the \emph{width} of the membership function. This interval specifies the region of the membership function where most of the change in membership occurs. The value of $n$ is typically chosen from the interval $n\in [0,5]$ as the membership function can become too broad otherwise and could even weaken the decision-making process~\cite{CROCKETT20062809}. In this work, we will use $n=2$ as a default value.
@@ -328,7 +328,7 @@ The resulting conversion of the decision tree in \autoref{fig:decisionTreeExampl
     \label{fig:fuzzyDecisionTreeExample}
 \end{figure}
 
-It is now possible to fully extract all linguistic variables from the fuzzy decision tree. Every fuzzy set can be collected into a corresponding linguistic variable. This results in linguistic variables consisting of a bunch of different \texttt{sigmoid} membership functions for input variables (internal nodes) and a single linguistic variable with different \texttt{gaussian} membership functions for the output variable (leaf nodes). The resulting linguistic variables \autoref{fig:fuzzyDecisionTreeLinguisticVariables} are shown in \autoref{fig:fuzzyDecisionTreeLinguisticVariables}.
+It is now possible to fully extract all linguistic variables from the fuzzy decision tree. Every fuzzy set in the tree can be grouped into a corresponding linguistic variable based on the input variable of the fuzzy set. This results in linguistic variables consisting of a bunch of different \texttt{sigmoid} membership functions for input variables (internal nodes) and a single linguistic variable with different \texttt{gaussian} membership functions for the output variable (leaf nodes). The resulting linguistic variables \autoref{fig:fuzzyDecisionTreeLinguisticVariables} are shown in \autoref{fig:fuzzyDecisionTreeLinguisticVariables}.
 
 
 \begin{figure}[h]
@@ -342,7 +342,7 @@ It is now possible to fully extract all linguistic variables from the fuzzy deci
 
 \subsubsection{Rule Extraction}
 
-The final step is to extract the fuzzy rules from the tree. This can be done by traversing and aggregating the tree in a depth-first manner and collecting the correct membership functions for each path ending in a leaf node along the way. As all conditions of this path have to hold simultaneously, all fuzzy sets are connected using the \texttt{AND} operation. This newly created fuzzy set represents the antecedent of the rule. The fuzzy set representing the class of the leaf node is the consequent of the rule. Therefore, each unique path traversing the tree results in a unique rule of the form $\textbf{IF} \text{ Antecedent } \textbf{THEN} \text{ Consequent }$. This process essentially mimics the decision surface seen in \autoref{fig:decisionBoundaryExample}, as we create precisely one rule for each region of the decision surface. The rules extracted from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} using this method are shown in \autoref{tab:fuzzyRulesExample}.
+The final step is to extract the fuzzy rules from the tree. This can be done by traversing and aggregating the tree in a depth-first manner and collecting the correct membership functions for each path ending in a leaf node along the way. As all conditions of this path have to hold simultaneously, all fuzzy sets are connected using the \texttt{AND} operation. This newly created fuzzy set represents the antecedent of the rule. The fuzzy set representing the class of the leaf node is the consequent of the rule. Therefore, each unique path traversing the tree results in a unique rule of the form $\textbf{IF} { Antecedent } \textbf{THEN} \text{ Consequent }$. This process essentially mimics the decision surface seen in \autoref{fig:decisionBoundaryExample}, as we create precisely one rule for each region of the decision surface. The rules extracted from the fuzzy decision tree in \autoref{fig:fuzzyDecisionTreeExample} using this method are shown in \autoref{tab:fuzzyRulesExample}.
 
 
 \newcommand{\is}{\textit{ is }}
@@ -368,9 +368,7 @@ The final step is to extract the fuzzy rules from the tree. This can be done by 
 
 \subsubsection{Effect of an Unsuitable Defuzzification Method}
 
-This section briefly discusses the effect of an unsuitable defuzzification method on the resulting fuzzy system.
-
-To show the problem, we use the previously extracted rules from \autoref{tab:fuzzyRulesExample} and evaluate the resulting Fuzzy Set for a critical data point $(x=2.95, y=2.5)$ using both the Center of Gravity (COG) and the Mean of Maximum (MOM) defuzzification methods. The resulting fuzzy sets are shown in \autoref{fig:fuzzySetForDataCOG} and \autoref{fig:fuzzySetForDataMOM}.
+This section briefly discusses the effect of an unsuitable defuzzification method on the resulting fuzzy system. To show the problem when defuzzifying nominal variables, we use the previously extracted rules from \autoref{tab:fuzzyRulesExample} and evaluate the resulting Fuzzy Set for a critical data point $(x=2.95, y=2.5)$ using both the Center of Gravity (COG) and the Mean of Maximum (MOM) defuzzification methods. The resulting fuzzy sets are shown in \autoref{fig:fuzzySetForDataCOG} and \autoref{fig:fuzzySetForDataMOM}.
 
 \begin{figure}[H]
     \centering
@@ -392,7 +390,7 @@ To show the problem, we use the previously extracted rules from \autoref{tab:fuz
 \end{figure}
 
 
-To get a full understanding of this problem, we create the full decision surfaces for both fuzzy systems shown in \autoref{fig:fuzzyDecisionSurfaceExampleCOG} and \autoref{fig:fuzzyDecisionSurfaceExampleMOM}, respectively. The decision surface using COG tries to smoothly interpolate between the different classes, which causes interpolation errors if there are other classes in between. The decision surface using MOM is mostly valid and closely resembles the decision surface of the crisp decision tree in \autoref{fig:decisionBoundaryExample}. Consequently, we should always use the MOM method for these fuzzy systems.
+To get a full understanding of this problem, we create the full decision surfaces for both fuzzy systems shown in \autoref{fig:fuzzyDecisionSurfaceExampleCOG} and \autoref{fig:fuzzyDecisionSurfaceExampleMOM}, respectively. The decision surface using COG tries to smoothly interpolate between the different classes, which causes interpolation errors if there are other classes in between. The decision surface using MOM is mostly valid and closely resembles the decision surface of the crisp decision tree in \autoref{fig:decisionBoundaryExample}. Consequently, we should use the MOM method when working with nominal variables.
 
 \begin{figure}[H]
     \centering
@@ -401,12 +399,12 @@ To get a full understanding of this problem, we create the full decision surface
         \begin{tikzpicture}
             \node[anchor=south west,inner sep=0] (image) at (0,0) { \includegraphics[width=\textwidth,trim={0 0 0 1.25cm},clip]{figures/ProofOfConcepts/fuzzy_system_cog.png}};
             \begin{scope}[x={(image.south east)},y={(image.north west)}]
-                \draw[yellow, thin,rounded corners] (.55,.67) rectangle (.65,.95);
-                \draw[yellow, thin,rounded corners] (.6,.32) rectangle (.74,.48);
+                \draw[yellow, thin,rounded corners] (.58,.67) rectangle (.70,.95);
+                \draw[yellow, thin,rounded corners] (.65,.32) rectangle (.79,.48);
                 \node (A) at (.55,.56) [yellow, anchor=east] {\tiny{Interpolation Error}};
 
-                \draw[yellow, arrow] (A) -- (.55,.67);
-                \draw[yellow, arrow] (A) -- (.6,.48);
+                \draw[yellow, arrow] (A) -- (.58,.67);
+                \draw[yellow, arrow] (A) -- (.65,.48);
             \end{scope}
         \end{tikzpicture}
         \caption[Decision surface of the fuzzy rules using COG method]{Decision surface when using the COG method. The highlighted areas show interpolation errors.}
@@ -428,7 +426,7 @@ To get a full understanding of this problem, we create the full decision surface
 
 \section{Fuzzy Systems for \texttt{md\_flexible}}
 
-This section will demonstrate how to generate fuzzy systems for \texttt{md\_flexible} simulations using the approach described in the previous section. The first section will describe the data collection process needed to train the classic decision trees, and the later sections will use the obtained data to generate two different styles of fuzzy systems introduced in the previous chapters.
+This section will use the data-driven approach introduced in the previous section to demonstrate how to generate fuzzy systems for \texttt{md\_flexible} simulations. The first section will describe the data collection process needed to train the classic decision trees, and the later sections will use the obtained data to generate the two different styles of fuzzy systems introduced in \autoref{sec:fuzzyTuningStrategy}.
 
 \subsection{Data Collection}
 
@@ -611,27 +609,24 @@ As described previously, we use \texttt{gaussian} membership functions for each 
 
 
 
-\begin{multicols}{2}
-    \begin{figure}[H]
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{\columnwidth}
         \centering
-        \includegraphics[width=\columnwidth,trim={1cm 0 1cm 1.35cm},clip]{figures/DataAnalytics/homogenity_linguistic_variable.png}
-
-        \caption[Linguistic variable for the Homogeneity attribute]{
-            This figure shows the linguistic variable for the homogeneity attribute. We see the different fuzzy sets created from the decision trees. The background shows the histogram of all homogeneity values present in the dataset.
-        }
+        \includegraphics[width=0.8\textwidth,trim={1cm 0 1cm 1.35cm},clip]{figures/DataAnalytics/homogenity_linguistic_variable.png}
+        \caption{Linguistic variable for the Homogeneity attribute}
         \label{fig:homogenityLinguisticVariable}
-    \end{figure}
-
-    \columnbreak
-
-    \begin{figure}[H]
-        \includegraphics[width=\columnwidth,trim={1cm 0 1cm 1.35cm},clip]{figures/DataAnalytics/newton3_linguistic_variable.png}
-        \caption[Linguistic variable for the Newton3 attribute]{
-            This figure shows the linguistic variable for the Newton3 attribute. We see the two \texttt{gaussian} membership functions representing the two possible values for the Newton3 attribute.
-        }
+    \end{subfigure}
+    \vspace{1cm}
+    \begin{subfigure}{\columnwidth}
+        \centering
+        \includegraphics[width=0.8\textwidth,trim={1cm 0 1cm 1.35cm},clip]{figures/DataAnalytics/newton3_linguistic_variable.png}
+        \caption{Linguistic variable for the Newton3 attribute}
         \label{fig:newton3LinguisticVariable_component}
-    \end{figure}
-\end{multicols}
+    \end{subfigure}
+    \caption{Linguistic variables for Homogeneity and Newton3 attributes. The background shows the histogram values present in the dataset.}
+    \label{fig:linguisticVariables}
+\end{figure}
 
 \noindent These linguistic variables and fuzzy rules are then used to create the fuzzy systems for the component tuning approach. After creating a suitable OutputMapper, we construct the final rule file for the component tuning approach, which can be looked up at \href{https://github.com/AutoPas/AutoPas/blob/f77f10f72c19a86d5471bce287ae3a4ae344c012/examples/md-flexible/input/fuzzyRulesComponents.frule}{\color{blue}\texttt{fuzzyRulesComponents.frule}}.
 
@@ -647,7 +642,7 @@ To train the decision trees, we again use a classification-based approach with t
 
 \smallskip
 
-We create the training data for the decision trees by adding a new column to the aggregated training data containing the suitability class to which the numeric relative speed value mostly belongs. The final training data is shown in \autoref{tab:trainingDataSuitability}. After grouping the data by possible configurations, it is again possible to use these data points to train the decision trees and extract the fuzzy rules from them. Due to the grouping, each configuration receives its fuzzy system with rules explicitly tailored to it. The resulting rules are shown in \autoref{tab:fuzzyRulesSuitability}.
+We create the training data for the decision trees by adding a new column to the aggregated training data containing the suitability class to which the numeric relative speed value mostly belongs. The final training data is shown in \autoref{tab:trainingDataSuitability}. After grouping the data by possible configurations, it is again possible to use these data points to train the decision trees and extract the fuzzy rules from them. Due to the grouping, each configuration receives its fuzzy system with rules explicitly tailored to it. Some resulting rules are shown in \autoref{tab:fuzzyRulesSuitability}.
 
 \medskip
 

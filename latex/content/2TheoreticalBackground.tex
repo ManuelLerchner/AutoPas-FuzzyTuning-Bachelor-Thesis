@@ -28,7 +28,7 @@ As the Schrödinger equation is a partial differential equation, it is computati
 
 Luckily, the Born-Oppenheimer approximation simplifies the Schrödinger equation so that it becomes computationally feasible to simulate even large systems of particles. The approximation exploits the significant mass difference between electrons and nuclei\footnote{
       The mass ratio of a single proton to an electron is approximately 1836:1, illustrating the vast difference in mass between nuclei and electrons.
-}, making it possible to solve both motions independently~\cite{Zielinski2013}. As the forces acting on the heavy nuclei cause way slower movements compared to the same force acting on the electrons, it is possible to approximate the position of the nuclei as entirely stationary. This simplification yields a new potential energy function $U$ combining all electronic and nuclear energies, which depends only on the nuclei's positions.
+}, making it possible to solve both motions independently~\cite{Zielinski2013}. As the forces acting on the heavy nuclei cause way slower movements compared to the same force acting on the electrons, it is possible to approximate the position of the nuclei as entirely stationary. This simplification yields a new potential energy function $U$ combining all electronic and nuclear energies, which only depends on the nuclei's positions. Using this simplification, efficient simulations of systems with many particles become possible.
 
 As the Born-Oppenheimer approximation is based on simplifications of the full model, it is not always accurate. Depending on the system under investigation and the chosen potential energy function $U$, the Born-Oppenheimer approximation may neglect specific quantum mechanical effects, resulting in inaccuracies in the simulation.
 
@@ -66,7 +66,7 @@ Since the simulation domain potentially consists of a vast number of particles a
 
 \begin{align}
       \vec{r}_i(t + \Delta t) & = \vec{r}_i(t) + \Delta t \cdot \vec{v}_i(t) + (\Delta t)^2 \frac{\vec{F}_i(t)}{2m_i} \label{eq:verlet_position} \\
-      \vec{F}_i(t + \Delta t) & = -\nabla_i U (\vec{r}_i(t + \Delta t)) \label{eq:verlet_force}                                                  \\
+      \vec{F}_i(t + \Delta t) & = -\nabla U (\vec{r}_i(t + \Delta t)) \label{eq:verlet_force}                                                    \\
       \vec{v}_i(t + \Delta t) & = \vec{v}_i(t) + \Delta t  \frac{\vec{F}_i(t) + \vec{F}_i(t + \Delta t)}{2m_i} \label{eq:verlet_velocity}
 \end{align}
 
@@ -94,9 +94,9 @@ By using the ideas introduced above, it is possible to simulate the behavior of 
 \end{algorithm}
 
 
-Many different software packages exist to perform such simulations. Some widely used examples of such systems are LAAMPS\footnote{\url{https://lammps.sandia.gov/}} and GROMACS\footnote{\url{https://www.gromacs.org/}}. Both attempt to efficiently solve the underlying N-body problem and provide the user with a high-level interface to specify the parameters and properties of the simulation.
+Many different software packages exist to perform such simulations. Some widely used examples are LAAMPS\footnote{\url{https://lammps.sandia.gov/}} and GROMACS\footnote{\url{https://www.gromacs.org/}}. Both attempt to efficiently solve the underlying N-body problem and provide the user with a high-level interface to specify the parameters and properties of the simulation.
 
-Many different approaches exist to efficiently solve such systems, and no single best approach works well for all scenarios as the optimal implementation heavily depends on the simulation state and the hardware used to perform the simulation. LAAMPS and GROMACS use a single (though highly optimized) implementation, which may result in suboptimal performance for some simulation states.
+Different algorithms and implementation possibilities exist to simulate such systems efficiently. Typically, no single best approach works well for all scenarios and environments, as the optimal implementation heavily depends on the simulation state and the hardware used to perform the simulation. LAAMPS and GROMACS use a single (though highly optimized) implementation, which may result in suboptimal performance for some simulation states.
 
 In the following section, we will introduce AutoPas, a library designed to address this issue by automatically switching between different implementations to guarantee optimal performance.
 
@@ -112,7 +112,7 @@ In this thesis, we will primarily focus on the tuning of \texttt{md\_flexible} s
 
 AutoPas internally alternates between two phases of operation. The first phase is the \emph{tuning phase}, where AutoPas tries to find the best configuration of parameters that minimize a chosen performance metric, such as time or energy usage. This is achieved by trying out different configurations of parameters and measuring their performance. The configuration that optimizes the chosen performance metric is then used in the following \emph{simulation phase}, assuming that the optimal configuration found in the tuning phase still works well in the following simulation steps.
 
-As the simulation progresses and the characteristics of the system change, the previously chosen configuration can drift arbitrarily far from the actual optimal configuration ~\cite{GRATL2022108262}. To counteract this, AutoPas periodically alternates between tuning and simulation phases to ensure that the used configuration remains close to optimal.
+As the simulation progresses and the characteristics of the system change, the previously chosen configuration can drift away from the actual optimal configuration ~\cite{GRATL2022108262}. To counteract this, AutoPas periodically alternates between tuning and simulation phases to ensure that the used configuration remains close to optimal during the entire simulation.
 
 The power of AutoPas comes from its vast amount of tunable parameters and the enormous search space associated with them. In the following sections, we will discuss all currently tunable parameters in AutoPas and briefly present the tuning strategies that are available to efficiently explore the search space.
 
@@ -130,7 +130,7 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
                   \item \textbf{LinkedCells} \\
                         LinkedCells segments the domain into a regular cell grid and only considers interactions between particles from neighboring cells. This results in the trade-off that particles further away are not considered for the force calculation. In practice, this is not a big issue, as all short-range forces drop off quickly with distance anyway.
                         LinkedCells also provides a high cache hit rate as particles inside the same cell can be stored contiguously in memory. Typically, the cell size is chosen to equal the force cutoff radius $r_c$, meaning each particle only needs to check interactions between particles inside the $3\times3\times3$ cell grid around the current cell. All other particles are guaranteed to be further away than the cutoff radius $r_c$ and cannot contribute to the acting forces.
-                        This reduction in possible interactions typically results in a complexity of just $O(N)$ distance checks in each iteration, assuming the particles are spread evenly. However, there is room for improvement as the constant overhead factor can be pretty high, as most distance checks performed by LinkedCells still do not contribute to the force calculation when using $r_{cell}=r_c$ ~\cite{GRATL2019748}.\\
+                        This reduction in possible interactions typically results in a complexity of just $O(N)$ distance checks in each iteration, assuming the particles are spread evenly. However, there is room for improvement as the constant overhead factor can be pretty high, as most distance checks performed by LinkedCells still do not contribute to the force calculation when using $r_{cell}=r_c$. This is caused by many particles inside the $3\times3\times3$ cell grid being still further away than the cutoff radius ~\cite{GRATL2019748}.\\
                         \textit{However, still generally good for large, homogeneous\footnote{Homogeneous in this context, the particles are distributed evenly across the domain.} systems.}
 
                   \item \textbf{VerletLists} \\
@@ -153,28 +153,28 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
             \end{figure}
 
       \item \textbf{Load Estimator Options:} \\
-            The Load Estimator Options relate to how the simulation behaves in a parallelized setting. The load estimator estimates each MPI rank's computational load and guides the simulation's load balancing. This thesis primarily focuses on tuning single-node performance and consequently does not consider the load estimator options.
+            The Load Estimator Options relate to how the simulation behaves in a parallelized setting. As this thesis primarily focuses on tuning single-node performance, we will not go into detail about these options.
 
       \item \textbf{Traversal Options:} \\
-            The Traversal options specify the order in which the particles are visited when calculating the forces between them. Especially in parallelized settings, the traversal options can significantly impact the simulation's performance as different settings can allow more workers to work simultaneously, with varying degrees of synchronization overhead between them. Some avaialble traversal options are:
+            The Traversal options specify the order in which the particles are visited when calculating the forces between them. Especially in parallelized settings, the traversal options can significantly impact the simulation's performance. Different settings can allow more workers to work simultaneously, with varying synchronization overhead. Some avaialble traversal options are:
 
             \begin{enumerate}
 
                   \item \textbf{Sliced Traversals} \\
-                        Sliced Traversals divide the domain into different slices, each assigned to a different thread. The iteration order inside the slices is ideally chosen so that two threads are unlikely to work simultaneously on cells sharing common neighbors. In a sliced setting, data races can only occur at boundaries, and therefore, only those cells can be synchronized using locks~\cite{GRATL2022108262}. The number of slices can be chosen to match the number of available threads, allowing for a high degree of parallelism.
+                        Sliced Traversals divide the domain into different slices, each processed by a different thread. The iteration order inside the slices is ideally chosen so that two threads are unlikely to work simultaneously on cells sharing common neighbors. Data races can only occur at boundaries, and therefore, only those cells can be synchronized using locks~\cite{GRATL2022108262}.
 
                   \item \textbf{Colored Traversal} \\
                         Colored traversals assign a color to each cell in the container so that no same-colored cells share a common neighbor.
                         During the traversal, all threads work on cells of the same color simultaneously, allowing for a high degree of parallelism without the need for synchronization. Some available colorings are:
                         \begin{itemize}
                               \item \textbf{C01} \\
-                                    The C01 traversal only uses a single color. This method is embarrassingly parallel but comes at the cost of being incompatible with the Newton 3 optimization, as there is no way of preventing data races between neighboring cells. However, it provides perfect parallelism and no synchronization overhead.
+                                    The C01 traversal only uses a single color. This method is embarrassingly parallel but comes at the cost of being incompatible with the Newton 3 optimization, as there is no way of preventing data races between neighboring cells. However, it provides perfect parallelism and no overhead.
 
                               \item \textbf{C18} \\
                                     The C18 traversal is a more sophisticated way of coloring the domain. The domain is divided into 18 colors, as depicted in \autoref{fig:traversals}. It is compatible with the Newton 3 optimization, as the coloring prevents simultaneous access to neighboring cells.
 
                               \item \textbf{C08} \\
-                                    The C08 traversal is closely related to the C18 traversal but only uses eight colors. Due to the fewer colors, fewer passes are needed to complete the traversal, resulting in a lower synchronization overhead. A high degree of parallelism can still be achieved and is compatible with the Newton 3 optimization.\\
+                                    The C08 traversal is similar to the C18 traversal but only uses eight colors. Due to the fewer colors, fewer passes are needed to complete the traversal, resulting in a lower synchronization overhead. A high degree of parallelism can still be achieved and is compatible with the Newton 3 optimization.\\
                         \end{itemize}
 
                         \begin{figure}[H]
@@ -199,7 +199,7 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
             \end{enumerate}
 
       \item \textbf{Newton 3 Options:} \\
-            The Newton 3 Options represent an optimization technique to reduce the number of force calculations. Newton's third law states that for every action, there is an equal and opposite reaction, which means that the magnitude of the force between two particles is the same, regardless of which particle is the source and which is the target. This rule can be exploited to reduce the number of force calculations by a factor of 2, as one particle can apply the negation of its experienced force to the other particle.
+            The Newton 3 Option controls an optimization technique to reduce the number of force calculations. Newton's third law states that for every action, there is an equal and opposite reaction, which means that the magnitude of the force between two particles is the same, regardless of which particle is the source and which is the target. This rule can be exploited to reduce the number of force calculations by a factor of 2, as one particle can apply the negation of its experienced force to the other particle.
             \begin{enumerate}
                   \item \textbf{Newton3 Off} \\
                         If Newton 3 is turned off, the forces between all pairs of particles are calculated twice, once for each particle. This results in a constant overhead of factor 2.
@@ -218,7 +218,7 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
 
 Tuning strategies are the heart of AutoPas, as they fundamentally guide the tuning phases. Their goal is to find a good combination of tunable parameters for the current simulation state without spending too much time exploring the search space.
 
-AutoPas provides a couple of different tuning strategies that are used to explore the search space of possible configurations. The tuning strategies differ in how they explore the search space and how they decide which configurations to test next. All strategies follow the same general pattern: They first select a queue of promising configurations to test. All those configurations are then evaluated for a few iterations in the actual simulation, and relevant statistics are collected. In between the iterations, the tuning strategy can use the intermediate performance data to update the configuration queue if desired. After all worthwhile configurations have been tested, the best-performing configuration is chosen for the following simulation phase.
+AutoPas provides a couple of different tuning strategies that are used to explore the search space of possible configurations. The tuning strategies differ in how they explore the search space and how they decide which configurations to test next. However, all strategies follow the same general pattern: They first select a queue of promising configurations to test. All those configurations are then evaluated for a few iterations in the actual simulation, and relevant statistics are collected. In between the iterations, the tuning strategy can use the intermediate performance data to update the configuration queue if desired. After all worthwhile configurations have been tested, the best-performing configuration is chosen for the following simulation phase.
 
 The currently available tuning strategies in AutoPas are:
 
@@ -379,7 +379,7 @@ For example, all fuzzy sets depicted in \autoref{fig:fuzzy_sets} form the lingui
 \subsection{Fuzzy Logic Rules}
 
 Fuzzy Logic Rules are a way to encode expert knowledge into a Fuzzy Logic system. The rules specify the relationship between the system's input and output variables.
-The rules are typically encoded in a human-readable way and often have the form \emph{$\text{IF} \; \text{antecedent} \; \text{THEN} \; \text{consequent}$} where both the antecedent and the consequent are fuzzy sets. The antecedent is a condition that must be satisfied for the rule to be applied, while the consequent is the action taken if the rule is applied. Since we are not dealing with binary truth values, it is possible that the antecedent is only partially satisfied, which causes the rule to be only partially activated. Consequently, the effect of the consequent is also only partially applied.
+The rules are typically encoded in a human-readable way and are written as \emph{$\text{IF} \; \text{antecedent} \; \text{THEN} \; \text{consequent}$} where both the antecedent and the consequent are fuzzy sets. The antecedent is a condition that must be satisfied for the rule to be applied, while the consequent is the action taken if the rule is applied. Since we are not dealing with binary truth values, it is possible that the antecedent is only partially satisfied, which causes the rule to be only partially activated. Consequently, the effect of the consequent is also only partially applied.
 
 The antecedent of the rule can be arbitrarily complicated and may consist of multiple fuzzy sets connected with fuzzy logic operators. The consequent is typically a single fuzzy but could theoretically also be arbitrarily complicated. For this thesis, we will only consider rules with a simple assignment as their effect. Therefore, the general form of a fuzzy rule is:
 
@@ -397,7 +397,7 @@ The antecedent of the rule can be arbitrarily complicated and may consist of mul
                                & | \;\text{LinguisticVariable} = \tilde{A}                                    &  & \text{(Selection)}
 \end{align*}
 
-The boolean operators AND, OR, and NOT represent the set operations of intersection, union, and complement, respectively. The selection operator $\text{LinguisticVariable} = \tilde{A}$ states that we are interested in the fuzzy set $\tilde{A}$ part of the linguistic variable. It is not an assignment but rather acts as syntactic sugar to make the rules more readable. A typical rule could look like this:
+The boolean operators AND, OR, and NOT represent the fuzzy set operations of intersection, union, and complement. The selection operator $\text{LinguisticVariable} = \tilde{A}$ states that we are interested in the fuzzy set $\tilde{A}$ part of the linguistic variable. It is not an assignment but rather acts as syntactic sugar to make the rules more readable. A typical rule could look like this:
 
 \begin{equation*}
       \text{IF} \;( age = \text{"young"} \; \text{AND} \; height = \text{"tall"} ) \; \text{THEN} \; \text{fitness} = \text{"good"}
@@ -413,29 +413,31 @@ The inference step can be seen as an extension of the boolean implication operat
       \text{IF} \; \text{antecedent} \; \text{THEN} \; \text{consequent} \iff (\text{antecedent} \implies \text{consequent})
 \end{equation*}
 
-Instead of deriving the membership function of the implication operator from the t-conorm and the negation operator as in classical logic, the Mamdani implication is typically used in fuzzy logic. This particular implication is defined as the minimum t-norm operation $\min(a,b)$. This choice is counterintuitive as it does not mimic its equivalent in classical logic. However, in the context of fuzzy systems, it is a preferred choice, as instead of evaluating the truthiness of the whole implication, it computes the degree to which the consequent should be activated~\cite{BouchonMeunier1995}.
+Instead of deriving the membership function of the implication operator from the t-conorm and the negation operator as in classical logic, the Mamdani implication is typically used in fuzzy logic. This particular implication is defined as the minimum t-norm operation $\min(a,b)$. This choice is counterintuitive as it does not mimic its equivalent in classical logic; however, in the context of fuzzy systems, it is a preferred choice, as instead of evaluating the truthiness of the whole implication, it computes the degree to which the consequent should be activated~\cite{BouchonMeunier1995}.
 
 \subsubsection{Evaluation of Fuzzy Logic Rules}
 
-Consider the rule $\text{IF} \; a = \tilde{A} \; \text{THEN} \; c = \tilde{C}$. To calculate the result of this rule, we perform the following steps:
+Consider the rule $\text{IF} \; a = \tilde{A} \; \land b = \tilde{B} \; \text{THEN} \; c = \tilde{C}$. To calculate the result of this rule, we perform the following steps:
 
 \begin{enumerate}
-      \item \textbf{\emph{Fuzzification}:} Obtain the crisp input values $(x_1, x_2, \ldots, x_n) \in X_{A}$ occurring in the crisp set of the antecedent and evaluate the degree of membership $\mu_i$ of each fuzzy set $\tilde{A_i}$ contained in the antecedent for each fuzzy rule.
-      \item \textbf{\emph{Rule Activation}:} Calculate the total degree of activation $\mu$ by combining all membership values with the corresponding fuzzy logic operators.
+      \item \textbf{\emph{Fuzzification}:} Obtain the crisp input values $(x_1, x_2, \ldots, x_n) \in X_{A}$ occurring in the crisp set of the antecedent and evaluate the degree of membership $\mu_i$ of each fuzzy set $\tilde{A_i}$ contained in the antecedent for each fuzzy rule (Here: $\mu_{\tilde{A}}(x_1)$ and $\mu_{\tilde{B}}(x_2)$).
+      \item \textbf{\emph{Rule Activation}:} Calculate the total degree of activation $\mu$ by combining all membership values with the appropriate fuzzy logic operators (Here: $\mu = \min(\mu_{\tilde{A}}(x_1), \mu_{\tilde{B}}(x_2))$).
       \item \textbf{\emph{Rule Evaluation}} Define a new fuzzy set $\tilde{C}_{new}=\tilde{C}\uparrow \mu$ as the result of the rule activation, where $\tilde{C}$ is the the consequent and $\uparrow$ is the cut operator. The cut operator is defined as $\mu_{\tilde{C}\uparrow \mu}(x) = \min(\mu_{\tilde{C}}(x), \mu)$ following the Mamdani implication.
       \item \textbf{\emph{Aggregation}:}  Combine the resulting fuzzy sets of each rule acting on the same linguistic variable using the fuzzy union operator (maximum t-conorm). This ensures all rules are considered when determining the final output.
       \item \textbf{\emph{Defuzzification}:} Calculate the defuzzified value of the fuzzy set $\tilde{C}_{new}$ to obtain the crisp output value.
 \end{enumerate}
 
-After all rules have been applied and the results have been aggregated, we obtain a single fuzzy set for each linguistic variable, which can then be defuzzified to obtain a crisp output value. A visual depiction of these steps is shown in \autoref{fig:fuzzy_inference_full}.
+A visual depiction of these steps is shown in \autoref{fig:fuzzy_inference_full}.
+
+\noindent After all rules have been applied and the results have been aggregated, we obtain a single fuzzy set for each linguistic variable, which can then be defuzzified to obtain a crisp output value.
 
 \subsubsection{Defuzzification}
 
-The final step in a Fuzzy Logic system is the defuzzification step. In this step, the resulting fuzzy set from the previous section is converted back into a crisp, numeric value that can be used as a concrete output or decision. There are many ways to defuzzify a fuzzy set, but a common theme is finding a representative value that maintains certain aspects of the fuzzy set. Some common defuzzification methods are:
+The final step in a Fuzzy Logic system is the defuzzification step. In this step, the resulting fuzzy is converted back into a crisp, numeric value that can be used as a concrete output or decision. There are many ways to defuzzify a fuzzy set, but a common theme is finding a representative value that maintains certain aspects of the fuzzy set. Some common defuzzification methods are:
 
 \begin{itemize}
       \item \textbf{Center of Gravity} \\
-            The Centroid method calculates the center of mass of the fuzzy set and returns this value as the crisp output. This method tries to find a weighted interpolation of all the activated fuzzy sets and tries to find an optimal compromise between all the possible values. The Centroid method is the most common defuzzification method in practice due to its simplicity and robustness. It is defined as:
+            The Centroid method calculates the center of mass of the fuzzy set for defuzzification. This method tries to find a weighted interpolation of all the activated fuzzy sets and tries to find an optimal compromise between all the possible values. The Centroid method is the most common defuzzification method in practice due to its simplicity and robustness. It is defined as:
 
             \begin{equation}
                   \text{Center of Gravity} = \frac{\int_X x \cdot \mu_{\tilde{C}}(x) \, dx}{\int_X \mu_{\tilde{C}}(x) \, dx}

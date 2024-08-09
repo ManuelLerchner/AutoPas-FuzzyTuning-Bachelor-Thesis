@@ -220,14 +220,14 @@ FuzzyVariable: domain: "particlesPerCellStdDev" range: (-0.017, 0.072)
     "higher than 0.013":    SigmoidFinite(0.012,  0.013,  0.0639)
   
 FuzzyVariable: domain: "Newton 3" range: (0, 1)
-    "disabled, enabled":     Gaussian(0.3333, 0.1667)
-    "enabled":               Gaussian(0.6667, 0.1667)
+    "disabled, enabled":    Gaussian(0.3333, 0.1667)
+    "enabled":              Gaussian(0.6667, 0.1667)
       
-# Define the interpretation of the output variables in the context of AutoPas
+# Define how the output variables should be decoded into configurations of AutoPas
 OutputMapping:
  "Newton 3":
-     0.333 => [newton3 = "disabled"], [newton3 = "enabled"]
-     0.666 => [newton3 = "enabled"]
+     0.3333 => [newton3 = "disabled"], [newton3 = "enabled"]
+     0.6667 => [newton3 = "enabled"]
 
 # Define rules connecting the input variables to the output variables
 if ("threadCount" == "lower than 18.0") && ("threadCount" == "higher than 8.0") 
@@ -241,8 +241,9 @@ if ("threadCount" == "higher than 26.0") && ("particlesPerCellStdDev" == "lower 
 
 
 \section{Fuzzy Tuning Strategy}
+\label{sec:fuzzyTuningStrategy}
 
-The Fuzzy Tuning Strategy implements the interface between the Fuzzy Logic framework and the AutoPas simulation and is responsible for updating the configuration queue of configurations to be tested next. To achieve this, the strategy evaluates all fuzzy systems present in the rule file using the \emph{LiveInfoData} (See \ref{des:liveinfodatafields}) collected by AutoPas. These data points contain summary statistics about various aspects of the current simulation state, such as the total number of particles, the average particle density, or the average homogeneity of the particle distribution. The fuzzy systems should use those values to calculate the results. As described, each evaluation of a Fuzzy System yields a single numeric value, which is then passed on to the \texttt{OutputMapper} object. The \texttt{OutputMapper} is responsible for mapping the continuous output value of the Fuzzy System to the discrete configuration space of AutoPas.
+The Fuzzy Tuning Strategy implements the interface between the Fuzzy Logic framework and the AutoPas simulation and is responsible for updating the configuration queue of configurations to be tested next. To achieve this, the strategy evaluates all fuzzy systems present in the rule file using the \emph{LiveInfoData} (See \ref{des:liveinfodatafields}) collected by AutoPas. These data points contain summary statistics about various aspects of the current simulation state, such as the total number of particles, the average particle density, or the average homogeneity of the particle distribution. The fuzzy systems should use those values to calculate the results. Each evaluation of a Fuzzy System yields a single numeric value, which is then passed on to the \texttt{OutputMapper} object. The \texttt{OutputMapper} is responsible for mapping the continuous output value of the Fuzzy System to the discrete configuration space of AutoPas.
 
 Internally, the \texttt{OutputMapper} stores an ideal numerical location for each configuration-pattern\footnote{A configuration-pattern is a tuple of all tunable parameters, where each component of the tuple describes a set of possible values for this parameter. The wildcard value \texttt{*} allows any possible value. For example, the configuration-pattern \texttt{(Container=LinkedCells, Traversal=*, DataLayout=SoA, Newton3=enabled)} matches the specified configuration, regardless of the value of the \texttt{Traversal} parameter.} and always selects the option closest to the predicted value. This method of assigning discrete values to the output of fuzzy systems is inspired by Mohammed et al.'s~\cite{Mohammed2022} work on scheduling algorithms, where the authors used a similar approach.
 
@@ -259,9 +260,9 @@ The Component Tuning Approach assumes that each tunable parameter can be tuned i
 
 All those Fuzzy Systems should then attempt to predict the best value of their parameter independent of the other parameters. This approach requires the rule file to only define $\#Parameters$ different Fuzzy Systems and a corresponding \texttt{OutputMapper} for each parameter. Creating such rule files is straightforward and could be reasonably created manually by a domain expert. An obvious drawback of this method is the independence assumption between the parameters, which might not hold in practice. However, the practical Experiments carried out in \autoref{sec:comparison_and_evaluation} still show quite good results, even with this simplification.
 
-Another problem of this approach lies in the defuzzification step. As this method relies on defining a single system for all values of a tunable parameter, we must define a numerical \emph{ranking} of all values the parameter could take. Such a ranking is problematic, as most tunable variables are nominal and thus do not have a natural order (e.g., lc\_c04, lc\_c08, vcl\_c06, vcl\_sliced\_balanced \dots ). To circumvent this problem, we chose the MOM defuzzification method. It selects the mean of all $x$-values for which the membership function is maximal. When using Gaussian-shaped membership functions for the output values, this method will always return the mean of the Gaussian with the highest activation\footnote{There are exceptions when two Gaussians have the same level of activation, in which case the mean of both Gaussians is returned. However, this rarely happens in practice and could be resolved with special defuzzification methods. The current implementation just uses the MOM method as it works well in practice.}.
+Another problem of this approach lies in the defuzzification step. As this method relies on defining a single system for all values of a tunable parameter, we must define a numerical \emph{ranking} of all values the parameter could take. Such a ranking is problematic, as most tunable variables are nominal and thus do not have a natural order (e.g., lc\_c04, lc\_c08, vcl\_c06, vcl\_sliced\_balanced \dots ). To circumvent this problem, we chose the MOM defuzzification method, which selects the mean of all $x$-values for which the membership function is maximal. When using Gaussian-shaped membership functions for the output values, this method will always return the mean of the Gaussian with the highest activation\footnote{There are exceptions when two Gaussians have the same level of activation, in which case the mean of both Gaussians is returned. However, this rarely happens in practice and could be resolved with special defuzzification methods. The current implementation just uses the MOM method as it works well in practice.}.
 
-The OutputMapper is set up such that the mean values of the Gaussian membership functions are directly mapped to the corresponding values of the tunable parameters. After evaluating this ruleset, one ends up with a list of configuration patterns, each describing a different pattern to which the solution should conform. All those patterns are then used to filter the configuration queue, excluding every configuration that does not match all the predicted patterns. \autoref{fig:fuzzySystemComponent} shows a schematic of how the Fuzzy Tuning Strategy could be used for the Component Tuning Approach.
+After evaluating this ruleset, one ends up with a list of configuration patterns, each describing a different pattern to which the solution should conform. All those patterns are then used to filter the configuration queue, excluding every configuration that does not match all the predicted patterns. \autoref{fig:fuzzySystemComponent} shows a schematic of how the Fuzzy Tuning Strategy could be used for the Component Tuning Approach.
 
 
 \begin{figure}[H]
@@ -397,7 +398,7 @@ After evaluating all Fuzzy Systems and using a trivial OutputMapping, the method
 
   \end{tikzpicture}
 
-  \caption[Visualization of the fuzzy systems for the Suitability Tuning Approach]{Example Visualization of the fuzzy systems for the Suitability Tuning Approach. Each fuzzy system is responsible for predicting the suitability of a specific combination of tunable values, resulting in an enormous amount of fuzzy systems. The \texttt{(Configuration, Suitability)} pairs are passed to the Fuzzy Tuning Strategy, which then updates the configuration queue}
+  \caption[Visualization of the fuzzy systems for the Suitability Tuning Approach]{Example Visualization of the fuzzy systems for the Suitability Tuning Approach. Each fuzzy system is responsible for predicting the suitability of a specific combination of tunable values, resulting in an enormous amount of fuzzy systems. The \texttt{(Configuration, Suitability)} pairs are passed to the Fuzzy Tuning Strategy, which then updates the configuration queue based on the highest suitability values.}
   \label{fig:fuzzySystemSuitability}
 \end{figure}
 

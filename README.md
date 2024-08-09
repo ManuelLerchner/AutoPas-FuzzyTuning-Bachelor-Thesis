@@ -5,7 +5,7 @@ The thesis was written at the `Chair of Scientific Computing` under the supervis
 
 The thesis explores a novel tuning technique for molecular dynamics simulations in the [AutoPas](https://github.com/AutoPas/AutoPas) framework. The technique is based on fuzzy logic and aims to predict close-to-optimal simulation configurations from a set of live data collected during the simulation. The goal of this thesis is to evaluate the feasibility of the fuzzy tuning technique and to compare it with existing tuning techniques.
 
-### Abstract
+## Abstract
 
 AutoPas is a high-performance, auto-tuned particle simulation library for many-body systems, capable of dynamically switching between algorithms and data structures to guarantee optimal performance throughout the simulation.
 This thesis introduces a novel fuzzy logic-based tuning strategy for AutoPas, allowing users to guide the tuning process by specifying custom Fuzzy Systems, which can be used to efficiently prune the search space of possible parameter configurations. Efficient tuning strategies are crucial, as they allow for discarding poor parameter configurations without evaluating them, thus reducing tuning time and improving overall library performance.
@@ -14,7 +14,7 @@ We demonstrate that a data-driven approach can automatically generate Fuzzy Syst
 
 The Fuzzy Tuning Strategy can drastically reduce the number of evaluated configurations during tuning phases while achieving comparable tuning results, making it a promising alternative to the existing tuning strategies.
 
-### Table of Contents
+## Table of Contents
 
 1. **Introduction**
 2. **Theoretical Background**

@@ -17,6 +17,6 @@ As previously discussed in \autoref{sec:earlyStopping}, all current tuning strat
 
 As the current way of generating the Fuzzy Systems with the data-driven approach already makes use of Decision Trees, one could look into ways of directly using the Decision Trees to make decisions.
 
-As the current implementation of the Component Tuning approach, which is already very close to a Decision Tree approach, has shown to work well, it is possible that the Fuzzy Tuning approach could be simplified to a Decision Tree approach without losing any performance. This would make the tuning process more transparent and easier to understand for users, as the complexity of fuzzy sets and membership functions would be removed.
+The currently used implementation of the Component Tuning approach, already is quite close to a Decision Tree approach as it used the MOM defuzzification. Since this aproach showed good results, it is possible that the Fuzzy Tuning approach could be simplified to a Decision Tree approach without losing much performance. This would make the tuning process more transparent and easier to understand for users, as the complexity intrpduced by fuzzy sets and membership functions could be avoided.
 
 To test this hypothesis using the current system, one could change membership functions to crisp splits as originally depicted in \autoref{fig:fuzzyMembershipFunctions} and rerun the benchmarks to see if the performance is still comparable. Such a rule file would emulate (Crisp) Decision Trees, following the same rules but without the fuzziness.
