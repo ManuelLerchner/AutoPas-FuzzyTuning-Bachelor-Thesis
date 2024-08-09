@@ -14,8 +14,8 @@ The TuningData file is a CSV file containing the performance information and con
   \item[Traversal] The method used to traverse the cells and calculate interactions between particles.
   \item[Load Estimator] The strategy used to estimate and balance the computational load across different parts of the simulation domain.
   \item[Data Layout] The arrangement of particle data in memory (e.g., AoS for Array of Structures, SoA for Structure of Arrays).
-  \item[Newton 3] Indicates whether Newton's third law optimization is used to reduce computation by only calculating forces once per particle pair (enabled/disabled).
-  \item[Reduced] The reduced performance data for all sample points is calculated by aggregating the data across all sample points. The specific aggregation method can be configured via the \texttt{.yaml} configuration file.
+  \item[Newton 3] Indicates whether Newton's third law optimization is used to reduce computational effort (enabled/disabled).
+  \item[Reduced] The reduced performance data for configuration is calculated by aggregating its timing data across all its evaluated iterations. The specific aggregation method can be configured via the \texttt{.yaml} configuration file.
   \item[Smoothed] A smoothed version of the reduced performance data.
 
 \end{description}

@@ -15,7 +15,7 @@ Our current knowledge of physics suggests that the behavior of atoms and molecul
 Here $\Psi(\vec{r}, t)$ is the system's wave function, evolving over time $t$ and space $\vec{r}$. $\hat{H}$ is the Hamiltonian operator describing the system's energy, $i$ is the imaginary unit, and $\hbar$ is the reduced Planck constant.
 \smallskip
 
-The Schrödinger equation provides a way to calculate the future states of a quantum system given the system's current state. However, the computational complexity of solving this equation increases dramatically with the number of particles involved and quickly becomes infeasible for systems with more than a few particles~\cite{Leimkuhler2015}. To illustrate this complexity, consider simulating a single water molecule. This molecule consists of three nuclei (two hydrogen atoms and one oxygen atom) and 10 electrons. Each of these 13 objects requires three spatial coordinates to describe its position, resulting in a total of $(2+1+10) \times 3 = 39$ variables. Following ~\cite{Leimkuhler2015}, the Schrödinger equation for this system can be written as:
+The Schrödinger equation provides a way to calculate the future states of a quantum system given the system's current state. However, the computational complexity of solving this equation increases dramatically with the number of particles involved and quickly becomes infeasible for systems with more than a few particles~\cite{Leimkuhler2015}. To illustrate this complexity, consider simulating a single water molecule. This molecule consists of three nuclei (two hydrogen atoms and one oxygen atom) and 10 electrons. Each of these 13 objects requires three spatial coordinates to describe its position, resulting in a total of $(2+1+10) \times 3 = 39$ variables. Following \cite{Leimkuhler2015}, the Schrödinger equation for this system can be written as:
 
 \begin{equation}
       i \hbar \frac{\partial \Psi}{\partial t} = -\hbar^2 \sum_{i=1}^{13} \frac{1}{2m_i} \left( \frac{\partial^2 \Psi}{\partial x_i^2} + \frac{\partial^2 \Psi}{\partial y_i^2} + \frac{\partial^2 \Psi}{\partial z_i^2} \right) + U_p (x_1, y_1, z_1, \ldots, x_{13}, y_{13}, z_{13}) \Psi
@@ -112,7 +112,7 @@ In this thesis, we will primarily focus on the tuning of \texttt{md\_flexible} s
 
 AutoPas internally alternates between two phases of operation. The first phase is the \emph{tuning phase}, where AutoPas tries to find the best configuration of parameters that minimize a chosen performance metric, such as time or energy usage. This is achieved by trying out different configurations of parameters and measuring their performance. The configuration that optimizes the chosen performance metric is then used in the following \emph{simulation phase}, assuming that the optimal configuration found in the tuning phase still works well in the following simulation steps.
 
-As the simulation progresses and the characteristics of the system change, the previously chosen configuration can drift away from the actual optimal configuration ~\cite{GRATL2022108262}. To counteract this, AutoPas periodically alternates between tuning and simulation phases to ensure that the used configuration remains close to optimal during the entire simulation.
+As the simulation progresses and the characteristics of the system change, the previously chosen configuration can drift away from the actual optimal configuration \cite{GRATL2022108262}. To counteract this, AutoPas periodically alternates between tuning and simulation phases to ensure that the used configuration remains close to optimal during the entire simulation.
 
 The power of AutoPas comes from its vast amount of tunable parameters and the enormous search space associated with them. In the following sections, we will discuss all currently tunable parameters in AutoPas and briefly present the tuning strategies that are available to efficiently explore the search space.
 
@@ -130,12 +130,12 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
                   \item \textbf{LinkedCells} \\
                         LinkedCells segments the domain into a regular cell grid and only considers interactions between particles from neighboring cells. This results in the trade-off that particles further away are not considered for the force calculation. In practice, this is not a big issue, as all short-range forces drop off quickly with distance anyway.
                         LinkedCells also provides a high cache hit rate as particles inside the same cell can be stored contiguously in memory. Typically, the cell size is chosen to equal the force cutoff radius $r_c$, meaning each particle only needs to check interactions between particles inside the $3\times3\times3$ cell grid around the current cell. All other particles are guaranteed to be further away than the cutoff radius $r_c$ and cannot contribute to the acting forces.
-                        This reduction in possible interactions typically results in a complexity of just $O(N)$ distance checks in each iteration, assuming the particles are spread evenly. However, there is room for improvement as the constant overhead factor can be pretty high, as most distance checks performed by LinkedCells still do not contribute to the force calculation when using $r_{cell}=r_c$. This is caused by many particles inside the $3\times3\times3$ cell grid being still further away than the cutoff radius ~\cite{GRATL2019748}.\\
+                        This reduction in possible interactions typically results in a complexity of just $O(N)$ distance checks in each iteration, assuming the particles are spread evenly. However, there is room for improvement as the constant overhead factor can be pretty high, as most distance checks performed by LinkedCells still do not contribute to the force calculation when using $r_{cell}=r_c$. This is caused by many particles inside the $3\times3\times3$ cell grid being still further away than the cutoff radius \cite{GRATL2019748}.\\
                         \textit{However, still generally good for large, homogeneous\footnote{Homogeneous in this context, the particles are distributed evenly across the domain.} systems.}
 
                   \item \textbf{VerletLists} \\
-                        VerletLists are another approach to creating neighbor lists for the particles. Contrary to LinkedCells, VerletLists does not rely on a regular grid but instead uses a spherical region around each particle to determine its relevant neighbors. The algorithm creates and maintains a list of all particles present in a sphere within radius $r_c \cdot s$ around each particle, where $r_c$ is the cutoff radius and $s>1$ is the skin factor allowing for a buffer zone around the cutoff radius.
-                        By choosing a suitable buffer zone, such that no fast-moving particle can enter the cutoff radius unnoticed, it is possible to only recalculate the neighbor list every few iterations. This method can also result in a complexity of $O(N)$ distance checks in each iteration and can, depending on the skinsize $s$, achieve a lower constant overhead factor compared to LinkedCells, as a higher percentage of distance checks contribute to the force calculation. Ideally, the buffer size should be as small as possible, resulting in very few unnecessary distance checks. This, however, means that the neighbor lists need to be updated more frequently, or the simulation needs to be run at higher temporal precision to prevent particles from entering or leaving the cutoff radius unnoticed. Finding a good skin factor $s$ is crucial for the performance of VerletLists.\\
+                        VerletLists are another approach to creating neighbor lists for the particles. Contrary to LinkedCells, VerletLists do not rely on a regular grid but instead use a spherical region around each particle to determine its relevant neighbors. The algorithm creates and maintains a list of all particles present in a sphere within radius $r_c \cdot s$ around each particle, where $r_c$ is the cutoff radius and $s>1$ is the skin factor allowing for a buffer zone around the cutoff radius.
+                        By choosing a suitable buffer zone, such that no fast-moving particle can enter the cutoff radius unnoticed, it is possible to only recalculate the neighbor list every few iterations. This method can also result in a complexity of $O(N)$ distance checks in each iteration and can, depending on the skin size $s$, achieve a lower constant overhead factor compared to LinkedCells, as a higher percentage of distance checks contribute to the force calculation \cite{GRATL2019748}. Ideally, the buffer size should be as small as possible, resulting in very few unnecessary distance checks. This, however, means that the neighbor lists need to be updated more frequently, or the simulation needs to be run at higher temporal precision to prevent particles from entering or leaving the cutoff radius unnoticed. Finding a good skin factor $s$ is crucial for the performance of VerletLists.\\
                         \textit{Generally good for large systems with high particle density.}
 
                   \item \textbf{VerletClusterLists} \\
@@ -161,7 +161,7 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
             \begin{enumerate}
 
                   \item \textbf{Sliced Traversals} \\
-                        Sliced Traversals divide the domain into different slices, each processed by a different thread. The iteration order inside the slices is ideally chosen so that two threads are unlikely to work simultaneously on cells sharing common neighbors. Data races can only occur at boundaries, and therefore, only those cells can be synchronized using locks~\cite{GRATL2022108262}.
+                        Sliced Traversals divide the domain into different slices, each processed by a different thread. The iteration order inside the slices is ideally chosen so that two threads are unlikely to work simultaneously on cells sharing common neighbors. As data races can occur at boundaries, the slices must be synchronized using a single lock, resulting in only a minor synchronization overhead \cite{GRATL2022108262}.
 
                   \item \textbf{Colored Traversal} \\
                         Colored traversals assign a color to each cell in the container so that no same-colored cells share a common neighbor.
@@ -199,7 +199,7 @@ AutoPas currently provides six tunable parameters, which can mostly\footnote{The
             \end{enumerate}
 
       \item \textbf{Newton 3 Options:} \\
-            The Newton 3 Option controls an optimization technique to reduce the number of force calculations. Newton's third law states that for every action, there is an equal and opposite reaction, which means that the magnitude of the force between two particles is the same, regardless of which particle is the source and which is the target. This rule can be exploited to reduce the number of force calculations by a factor of 2, as one particle can apply the negation of its experienced force to the other particle.
+            The Newton 3 option controls an optimization technique to reduce the number of force calculations. Newton's third law states that for every action, there is an equal and opposite reaction, which means that the magnitude of the force between two particles is the same, regardless of which particle is the source and which is the target. This rule can be exploited to reduce the number of force calculations by a factor of 2, as one particle can apply the negation of its experienced force to the other particle.
             \begin{enumerate}
                   \item \textbf{Newton3 Off} \\
                         If Newton 3 is turned off, the forces between all pairs of particles are calculated twice, once for each particle. This results in a constant overhead of factor 2.
@@ -274,7 +274,7 @@ The shape of the membership function can be chosen freely and depends on the spe
 \begin{figure}[H]
       \centering
       \includegraphics[width=0.8\columnwidth,trim={0 0 0 1cm},clip]{figures/Intro/age-fuzzy-sets.png}
-      \caption[Example of fuzzy sets for the age of a person.]      {Example of fuzzy sets for the age of a person. Fuzzy sets can be used to model the gradual transition between age groups. The distributions could be derived from survey data on how people perceive age groups. In this example, most people would consider a person middle-aged if they are between 35 and 55.}
+      \caption[Example of fuzzy sets for the age of a person.]      {Example of fuzzy sets for the age of a person. Fuzzy sets can be used to model the gradual transition between age groups. The \emph{distributions} could be derived from survey data on how people perceive age groups. In this example, most people would consider a person middle-aged if they are between 35 and 55.}
       \label{fig:fuzzy_sets}
 \end{figure}
 
@@ -297,10 +297,10 @@ For a t-norm $\top$ to be valid, it needs to satisfy the following properties:
 
 A strong complement operator $\neg$ needs to satisfy the following properties:
 \begin{align*}
-      \neg 0        & = 1                                   &  & \text{(Boundary Conditions)} \\
-      \neg 1        & = 0                                   &  & \text{(Boundary Conditions)} \\
-      \neg y        & \leq \neg x \quad \text{if } x \leq y &  & \text{(Monotonicity)}        \\
-      \neg (\neg x) & = x                                   &  & \text{(Involution)}
+      \neg 0        & = 1                                    &  & \text{(Boundary Conditions)} \\
+      \neg 1        & = 0                                    &  & \text{(Boundary Conditions)} \\
+      \neg y        & \leq \neg x \qquad \text{if } x \leq y &  & \text{(Monotonicity)}        \\
+      \neg (\neg x) & = x                                    &  & \text{(Involution)}
 \end{align*}
 
 The default negation operator in fuzzy logic is $\neg x = 1 - x$. This negation operator satisfies all the abovementioned properties and is the most common choice in practice. In the following sections, we will only consider this standard negation operator.
@@ -416,8 +416,7 @@ The inference step can be seen as an extension of the boolean implication operat
 Instead of deriving the membership function of the implication operator from the t-conorm and the negation operator as in classical logic, the Mamdani implication is typically used in fuzzy logic. This particular implication is defined as the minimum t-norm operation $\min(a,b)$. This choice is counterintuitive as it does not mimic its equivalent in classical logic; however, in the context of fuzzy systems, it is a preferred choice, as instead of evaluating the truthiness of the whole implication, it computes the degree to which the consequent should be activated~\cite{BouchonMeunier1995}.
 
 \subsubsection{Evaluation of Fuzzy Logic Rules}
-
-Consider the rule $\text{IF} \; a = \tilde{A} \; \land b = \tilde{B} \; \text{THEN} \; c = \tilde{C}$. To calculate the result of this rule, we perform the following steps:
+Consider the rule \emph{$\text{IF} \; (a = \tilde{A} \; \text{AND} \; b = \tilde{B})\; \text{THEN} \; c = \tilde{C}$}. To calculate the result of this rule, we perform the following steps:
 
 \begin{enumerate}
       \item \textbf{\emph{Fuzzification}:} Obtain the crisp input values $(x_1, x_2, \ldots, x_n) \in X_{A}$ occurring in the crisp set of the antecedent and evaluate the degree of membership $\mu_i$ of each fuzzy set $\tilde{A_i}$ contained in the antecedent for each fuzzy rule (Here: $\mu_{\tilde{A}}(x_1)$ and $\mu_{\tilde{B}}(x_2)$).
@@ -429,27 +428,26 @@ Consider the rule $\text{IF} \; a = \tilde{A} \; \land b = \tilde{B} \; \text{TH
 
 A visual depiction of these steps is shown in \autoref{fig:fuzzy_inference_full}.
 
-\noindent After all rules have been applied and the results have been aggregated, we obtain a single fuzzy set for each linguistic variable, which can then be defuzzified to obtain a crisp output value.
-
 \subsubsection{Defuzzification}
 
-The final step in a Fuzzy Logic system is the defuzzification step. In this step, the resulting fuzzy is converted back into a crisp, numeric value that can be used as a concrete output or decision. There are many ways to defuzzify a fuzzy set, but a common theme is finding a representative value that maintains certain aspects of the fuzzy set. Some common defuzzification methods are:
+The final step in a Fuzzy Logic system is the defuzzification step. In this step, the resulting fuzzy created by the aggregation step is converted back into a crisp, numeric value that can be used as a concrete output or decision. There are different ways to defuzzify a fuzzy set, but a common theme is finding a single representative value that maintains certain aspects of the fuzzy set. In later sections, we will make use of the following two defuzzification methods:
 
 \begin{itemize}
-      \item \textbf{Center of Gravity} \\
-            The Centroid method calculates the center of mass of the fuzzy set for defuzzification. This method tries to find a weighted interpolation of all the activated fuzzy sets and tries to find an optimal compromise between all the possible values. The Centroid method is the most common defuzzification method in practice due to its simplicity and robustness. It is defined as:
+      \item \textbf{Center of Gravity (COG)} \\
+            The centroid method calculates the x-position of the center of mass of the fuzzy set for defuzzification. This method tries to find a weighted interpolation of all the activated fuzzy sets and tries to find an optimal compromise between all the possible terms. The centroid method is the most common defuzzification method in practice due to its simplicity and robustness. It considers every activated fuzzy set and thus makes full use of all available information.
+            It is defined as:
 
             \begin{equation}
-                  \text{Center of Gravity} = \frac{\int_X x \cdot \mu_{\tilde{C}}(x) \, dx}{\int_X \mu_{\tilde{C}}(x) \, dx}
+                  \text{Center of Gravity}_x = \frac{\int_X x \cdot \mu_{\tilde{C}}(x) \, dx}{\int_X \mu_{\tilde{C}}(x) \, dx}
             \end{equation}
 
-      \item \textbf{Mean of Maximum} \\
-            The Mean of Maximum method is simpler than the Centroid method and only considers values, resulting in the highest possible membership value. If multiple such values exist, the arithmetic mean of those values is returned. Contrary to the Centroid method, there is usually no interpolation between the different fuzzy sets, as they usually have different degrees of activation. It is defined as follows:
+      \item \textbf{Mean of Maximum (MOM)} \\
+            The Mean of Maximum method is simpler than the centroid method and only considers values, resulting in the highest possible membership value. If multiple such values exist, the arithmetic mean of those values is returned. Contrary to the centroid method, there is usually no interpolation between the different fuzzy sets, as they usually have different degrees of activation. Consequently, the result is often based on a single linguistic term with the highest membership value. It is defined as follows:
 
             \begin{equation}
                   \text{Mean of Maximum} = \frac{\int_{X'} x \, dx}{\int_{X'}  \, dx}
             \end{equation}
-            where $X'$ is the set of all input values resulting in the maximum membership value of the fuzzy set.
+            where $X'$ is the set of all $x$ where $\mu_{\tilde{C}}(x)$ is maximal.
 \end{itemize}
 
 
@@ -457,6 +455,6 @@ The final step in a Fuzzy Logic system is the defuzzification step. In this step
       \centering
       \includegraphics[width=1\columnwidth]{figures/TheoreticalBackground/FullInferenceProcess.png}
       \caption[Visualization of the full fuzzy logic inference process.]
-      {Visualization of the full fuzzy logic inference process. The system consists of three fuzzy rules connecting the linguistic variables \emph{service} and \emph{food} to the linguistic variable \emph{tip}. Applying each rule yields a resulting fuzzy set (depicted on the rightmost column for each rule), which is then aggregated using the fuzzy union operator to form the final output (depicted on the bottom right). This final fuzzy is then defuzzified to obtain a crisp output value. \small{Source: \href{https://de.mathworks.com/help/fuzzy/fuzzy-inference-process.html}{MathWorks - Fuzzy Inference Process}}}
+      {Visualization of the full fuzzy logic inference process. The system consists of three fuzzy rules connecting the linguistic variables \emph{service} and \emph{food} to the linguistic variable \emph{tip}. Applying each rule yields a resulting fuzzy set (depicted on the rightmost column for each rule), which is then aggregated using the fuzzy union operator to form the final output (depicted on the bottom right). This final fuzzy set is then defuzzified to obtain a crisp output value. \small{Source: \href{https://de.mathworks.com/help/fuzzy/fuzzy-inference-process.html}{MathWorks - Fuzzy Inference Process}}}
       \label{fig:fuzzy_inference_full}
 \end{figure}

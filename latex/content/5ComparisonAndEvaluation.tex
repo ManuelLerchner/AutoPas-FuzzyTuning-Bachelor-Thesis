@@ -15,7 +15,7 @@ The exploding liquid benchmark simulates a high-density liquid that expands outw
 
 The plot in \autoref{fig:explodingTimings_1thread} shows the time spent calculating the forces for each tuning strategy throughout the simulation. We only include the benchmark results using one thread for brevity, as all thread counts resulted in very similar behavior.
 
-The plot shows that both fuzzy tuning strategies perform close to optimal and show very stable force calculation times throughout the simulation. All other tuning strategies show a much higher variance caused by significantly more testing and worse configurations during the tuning phases.
+The plot shows that both fuzzy tuning strategies perform close to optimal and show very stable force calculation times throughout the simulation. All other tuning strategies show a much higher variance caused by testing significantly more and worse configurations during the tuning phases.
 
 To show the differences between the strategies in more detail, we also include a boxplot of the time spent calculating the forces for each tuning strategy based on the current phase in \autoref{fig:explodingLiquidBoxplot_1thread}. All tuning strategies show similar timings during the simulation phases, as they eventually found a close-to-optimal configuration during the tuning phase. The tuning phases, however, differ drastically: All knowledge-based strategies (Fuzzy Tuning and Rule-Based Tuning) tend to perform better in tuning phases and evaluate fewer bad configurations, as the rule files correctly discourage the evaluation of such configurations.
 
@@ -34,7 +34,7 @@ The spinodal decomposition benchmark simulates an unstable liquid that separates
 
 As a full Spinodal Decomposition run with just one rank was included in the training data, and the scenario is very homogeneous, we expect the fuzzy tuning strategies to also perform well in the smaller regions handled by the individual MPI ranks, especially as the rule files only contain \emph{relative} rules, that should be unaffected by rescaling the scenario.
 
-The plot in \autoref{fig:spinodalTimings_14thread} shows the time spent calculating the forces for each tuning strategy throughout the simulation. For brevity, we again only include the benchmark results for the 0th MPI rank, as the results for the other MPI ranks are nearly identical. This time, we see a big difference in both fuzzy tuning strategies, as the component tuning approach performs way better than the suitability approach for most of the simulation.
+The plot in \autoref{fig:spinodalTimings_14thread} shows the time spent calculating the forces for each tuning strategy throughout the simulation. For brevity, we again only include the benchmark results for the 0th MPI rank, as the results for the other MPI ranks are nearly identical. This time, we see a big difference in both fuzzy tuning strategies, as the component tuning approach performs way better than the suitability approach throughout most of the simulation.
 
 We see that the suitability approach performed the worst during most simulation phases, as it never found the true optimal configuration during the tuning phases. This is primarily caused by the suitability threshold of 10\% being too low for this scenario. The low threshold caused the suitability approach to be overly optimistic in its predictions and resulted in very few configurations actually being evaluated during the tuning phases. The predicted configurations were not bad, as shown in \autoref{fig:spinodalBoxplot_14thread}, but didn't include the optimal configuration. \autoref{sec:suitabilityThreshold} will investigate the suitability threshold's effect on the simulation's performance in more detail.
 
@@ -110,7 +110,7 @@ All classical tuning strategies tend to encounter configurations with extremely 
 
 The component tuning approach also encounters such bad configurations, but they are less frequent than in the classical tuning strategies and, therefore, do not significantly impact the overall performance.
 
-The suitability approach performs very well in both scenarios, predicting configurations with the highest median relative speed. However, the high relative speed of the suitability approach could also be caused by the low suitability threshold of 10\%, which resulted in the strategy only predicting very few, reasonably good configurations. As mentioned previously, we will investigate the impact of the suitability threshold in more detail in \autoref{sec:suitabilityThreshold}.
+The suitability approach performs very well in both scenarios, predicting configurations with the highest median relative speed. However, the high relative speed of the suitability approach could also be caused by the low suitability threshold of 10\%, which resulted in the strategy only predicting very few semi-good configurations. As mentioned previously, we will investigate the impact of the suitability threshold in more detail in \autoref{sec:suitabilityThreshold}.
 
 \subsubsection{Potential Improvement: Early Stopping of Bad Configurations}
 \label{sec:earlyStopping}
@@ -123,17 +123,17 @@ A simple strategy could be aborting a configuration's evaluation if it performs 
     \centering
     \begin{subfigure}[c]{\textwidth}
         \includegraphics[width=\columnwidth,trim={1cm 0 0cm 1cm},clip]{figures/Benchmark/Observations/tuning_phase_speedup_explodingLiquid_1_zoomed.png}
-        \caption{Exploding Liquid scenario with one thread.}
+        \caption{Tuning phases of the Exploding Liquid scenario with one thread.}
         \label{fig:explodingLiquidSpeedupDensity}
     \end{subfigure}
     \begin{subfigure}[c]{\textwidth}
         \includegraphics[width=\columnwidth,trim={1cm 0 0cm 1cm},clip]{figures/Benchmark/Observations/tuning_phase_speedup_SpinodalDecompositionMPI_14_0.png}
-        \caption{Rank 0 of the Spinodal Decomposition MPI scenario with 14 threads.}
+        \caption{Tuning phases of rank 0 of the Spinodal Decomposition MPI scenario with 14 threads.}
         \label{fig:spinodalSpeedupDensity}
     \end{subfigure}
     \caption[
         Relative speed distribution of configurations evaluated during tuning phases
-    ]{The plot shows the relative speed distribution of all configurations evaluated during the tuning phases of both the Exploding Liquid and Spinodal Decomposition MPI scenarios calculated from the smoothed timings (see \autoref{des:tuningdatafields}). The fuzzy tuning strategies generally encounter better configurations during the tuning phases, which improves their total performance.}
+    ]{The plot shows the relative speed distribution of all configurations evaluated during the tuning phases of both the Exploding Liquid and Spinodal Decomposition MPI scenarios calculated from the smoothed timings (see \autoref{des:tuningdatafields}). The fuzzy tuning strategies generally encounter better configurations during the tuning phases, which improves their total performance, as less time is spent evaluating bad configurations.}
     \label{fig:tuningPhaseSpeedup}
 \end{figure}
 
@@ -167,7 +167,7 @@ Previous measurements of the Exploding Liquid and the Spinodal Decomposition MPI
 
 To investigate the generalization of the rule extraction process, we reran the rule extraction process without the Exploding Liquid scenario being present in the training data.
 
-To test the resulting impact, we reran the Exploding Liquid benchmark with the new \emph{holdout}-rule files, to see if the fuzzy tuning strategies can still perform well even without the scenario being directly included in the training data.
+To test the resulting impact, we reran the Exploding Liquid benchmark with the new \emph{holdout}-rule files to see if the fuzzy tuning strategies can still perform well even without the scenario being directly included in the training data.
 
 The results in \autoref{fig:explodingTimings_1thread_noTrainingData} show that the fuzzy tuning strategies still perform remarkably well, with comparable performance to the previous measurements.
 
@@ -181,7 +181,7 @@ Therefore, we conclude that the rule extraction process is reasonably robust, an
     \caption[
         Benchmark Results for the Exploding Liquid Scenario (Holdout)
     ]{
-        Total time spent calculating forces for tuning- and simulation phases for the Exploding Liquid benchmark without the scenario being included in the training data. The fuzzy tuning strategies still perform best and are comparable to the previous measurements.
+        Total time spent calculating forces for tuning- and simulation phases for the Exploding Liquid benchmark without the scenario being included in the training data. The fuzzy tuning strategies still perform best, and the timings are comparable to those of the previous measurements.
     }
     \label{fig:explodingTimings_1thread_noTrainingData}
 \end{figure}
