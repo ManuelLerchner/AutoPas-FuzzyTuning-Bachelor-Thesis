@@ -1,0 +1,135 @@
+\documentclass[
+	%sans,			% use sans-serif font
+	%serif,			% use serif-font
+	%mathsans,		% set mathtext to sans-serif
+	%mathserif,		% set mathtext to serif
+	%10pt,
+	10pt,
+	%12pt,
+	t		% add text at the top border of slide
+	%slidescentered,% center text on slide
+	%draft,			% compile as draft version
+	%handout,		% create handout file
+	%notes,			% include nodes in slides
+	%compress		% compress navigation bar
+]{beamer}
+
+
+\usetheme{lmtslides}
+\usepackage{eso-pic}
+\usepackage{graphicx}
+%\usepackage[pdftex]{color}
+\usepackage{times}
+\usepackage[latin1]{inputenc}
+%\usepackage[T1]{fontenc}
+\usepackage[amssymb]{SIunits}
+\usepackage{amsmath,amssymb}
+\usepackage{eurosym}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{url}
+
+\graphicspath{{figures/}}
+
+\setlang{en}		
+
+% Supervisor: Univ.-Prof. Dr. Hans-Joachim Bungartz
+% Advisors: Manish Kumar Mishra, M.Sc. (hons) &
+% Samuel James Newcome, M.Sc.
+
+% MODIFY THESE ACCORDINGLY! ---
+\title{Exploring Fuzzy Tuning Technique for Molecular Dynamics Simulations in AutoPas}
+\type{Bf} % (M/B/D/S)(f/m): (Master/Bachelor/Diplom/Studienarbeit)(final/midterm)
+\author{Manuel Lerchner}
+\email{manuel.lerchner@tum.de}
+\advisorOne{Manish Kumar Mishra, M.Sc. (hons)}
+\advisorTwo{Samuel James Newcome, M.Sc.}
+\date{\today}
+%------------------------------
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+\begin{frame}
+	\frametitle{Introduction}
+	\begin{itemize}
+		\item AutoPas
+		      \begin{itemize}
+			      \item What is AutoPas?
+			      \item Significance in particle simulation
+			      \item Benefits of Tunable Parameters
+			      \item Overview of Tunable Parameters
+		      \end{itemize}
+		\item Tuning strategies in AutoPas
+		      \begin{itemize}
+			      \item Pruning the search space
+			      \item Dealing with potentially bad configurations
+			      \item Importance of efficient tuning strategies
+		      \end{itemize}
+	\end{itemize}
+\end{frame}
+
+\section{Fuzzy Tuning Strategy}
+\begin{frame}
+	\frametitle{Fuzzy Tuning Strategy}
+	\begin{itemize}
+		\item Benefits of Fuzzy Logic
+		\item Recap of Fuzzy Logic concepts
+		\item Application of Fuzzy Logic in AutoPas
+	\end{itemize}
+\end{frame}
+
+\section{Implementation}
+\begin{frame}
+	\frametitle{Implementation}
+	\begin{itemize}
+		\item Fuzzy Logic Framework
+		\item Specification via Rule File
+		\item OutputMapper
+	\end{itemize}
+\end{frame}
+
+\section{Proof of Concept}
+\begin{frame}
+	\frametitle{Proof of Concept}
+	\begin{itemize}
+		\item Data-Driven Rule Extraction
+		\item Fuzzy Systems for md flexible
+	\end{itemize}
+\end{frame}
+
+\section{Comparison and Evaluation}
+\begin{frame}
+	\frametitle{Comparison and Evaluation}
+	\begin{itemize}
+		\item Exploding Liquid Benchmark
+		\item Spinodal Decomposition MPI
+		\item Further Analysis
+	\end{itemize}
+\end{frame}
+
+\section{Future Work}
+\begin{frame}
+	\frametitle{Future Work}
+	\begin{itemize}
+		\item Dynamic Rule Generation
+		\item Improving Tuning Strategies
+		\item Simplification of the Fuzzy System
+	\end{itemize}
+\end{frame}
+
+\section{Conclusion}
+\begin{frame}
+	\frametitle{Conclusion}
+	\begin{itemize}
+		\item Summary of Findings
+		\item Impact
+		\item Final Thoughts
+	\end{itemize}
+\end{frame}
+
+\end{document}
