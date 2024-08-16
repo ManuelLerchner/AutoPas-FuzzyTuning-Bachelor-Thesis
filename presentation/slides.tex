@@ -14,7 +14,6 @@
 	%compress		% compress navigation bar
 ]{beamer}
 
-
 \usetheme{lmtslides}
 \usepackage{eso-pic}
 \usepackage{graphicx}
@@ -28,7 +27,15 @@
 \usepackage{booktabs}
 \usepackage{colortbl}
 \usepackage{url}
+\usepackage{svg}
+\usepackage[absolute,overlay]{textpos}
+\usepackage{graphicx}
 
+
+\renewcommand{\footnoterule}{\vfill\kern -3pt  \kern 2.6pt}
+
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\setbeamertemplate{bibliography item}[online]
 \graphicspath{{figures/}}
 
 \setlang{en}		
@@ -53,25 +60,94 @@
 
 \maketitle
 
-\section{Introduction}
+
+\section{AutoPas}
 \begin{frame}
-	\frametitle{Introduction}
+	\frametitle{What is AutoPas?}
+
+	\begin{textblock*}{5cm}(9cm,1.8cm)
+		\includesvg[width=3cm]{figures/AutoPasLogo}
+	\end{textblock*}
+
+
 	\begin{itemize}
-		\item AutoPas
+		\item Library for optimal node-level performance in N-body simulations
+		\item Many different implementations for the N-body problem
+		\item AutoTuning: Automatically switch between implementations
 		      \begin{itemize}
-			      \item What is AutoPas?
-			      \item Significance in particle simulation
-			      \item Benefits of Tunable Parameters
-			      \item Overview of Tunable Parameters
+			      \item \textbf{Container:} How to find neighboring particles?
+			      \item \textbf{Traversal:} How to handle multi-threading?
+			      \item \textbf{Data Layout:} How to store particles in memory?
+			      \item \textbf{Newton 3:} Can we exploit Newton's 3rd law?
+			      \item \dots
 		      \end{itemize}
-		\item Tuning strategies in AutoPas
+		\item Example applications:
 		      \begin{itemize}
-			      \item Pruning the search space
-			      \item Dealing with potentially bad configurations
-			      \item Importance of efficient tuning strategies
+			      \item \texttt{md\_flexible} (Molecular Dynamics)
+			      \item \texttt{sph} (Smoothed Particle Hydrodynamics)
 		      \end{itemize}
 	\end{itemize}
 \end{frame}
+
+
+\begin{frame}
+	\frametitle{Structure of AutoPas}
+
+	\begin{itemize}
+		\item Three main components:
+		      \begin{itemize}
+			      \item User Application
+			      \item Algorithm Library
+			      \item Tuning Strategies
+		      \end{itemize}
+		\item Algorithm Library:
+		      \begin{itemize}
+			      \item Huge Search Space\footnote{\scriptsize{$\text{Container}\times\text{Traversal} \times \text{Data Layout} \times \text{Newton 3} \times \text{Load Estimator} \times \text{Cell Size Factor}$}
+			            }
+		      \end{itemize}
+		\item Tuning Strategies:
+		      \begin{itemize}
+			      \item Full Search
+			      \item Random Search
+			      \item Predictive Tuning
+			      \item Bayesian Search
+			      \item Rule Based Tuning
+		      \end{itemize}
+	\end{itemize}
+
+	\begin{textblock*}{4cm}(8cm,2cm)
+		\begin{figure}
+			\includegraphics[width=4cm]{figures/AutoPasLibraryStructure.png}
+			\caption{ \footnotesize{Source: \cite{Newcome2023Poster}}}
+
+		\end{figure}
+	\end{textblock*}
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Auto-Tuning }
+
+	\begin{itemize}
+		\item Tuning Phase: Find the best configuration
+		      \begin{itemize}
+			      \item Tuning Strategies select configurations to evaluate
+			      \item Fastest configuration wins
+			      \item Expensive, Time consuming
+		      \end{itemize}
+		\item Simulation Phase: Use the best configuration
+	\end{itemize}
+
+	\vspace{0.2cm}
+
+	\begin{center}
+		\includegraphics[width=0.95\textwidth,trim={0 0 0 0.85cm},clip]{figures/timing_explodingLiquid.png}
+	\end{center}
+
+
+\end{frame}
+
 
 \section{Fuzzy Tuning Strategy}
 \begin{frame}
@@ -130,6 +206,12 @@
 		\item Impact
 		\item Final Thoughts
 	\end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+	\bibliographystyle{apalike}
+	\bibliography{literature}
 \end{frame}
 
 \end{document}
