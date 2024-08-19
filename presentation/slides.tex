@@ -27,10 +27,9 @@
 \usepackage{booktabs}
 \usepackage{colortbl}
 \usepackage{url}
-\usepackage{svg}
 \usepackage[absolute,overlay]{textpos}
 \usepackage{graphicx}
-
+\usepackage{mathtools}
 
 \renewcommand{\footnoterule}{\vfill\kern -3pt  \kern 2.6pt}
 
@@ -66,7 +65,7 @@
 	\frametitle{What is AutoPas?}
 
 	\begin{textblock*}{5cm}(9cm,1.8cm)
-		\includesvg[width=3cm]{figures/AutoPasLogo}
+		\includegraphics[width=3cm]{figures/AutoPasLogo}
 	\end{textblock*}
 
 
@@ -133,7 +132,6 @@
 		\item Tuning Phase: Find the best configuration
 		      \begin{itemize}
 			      \item Tuning Strategies select configurations to evaluate
-			      \item Fastest configuration wins
 			      \item Expensive, Time consuming
 		      \end{itemize}
 		\item Simulation Phase: Use the best configuration
@@ -148,14 +146,210 @@
 
 \end{frame}
 
+\section{Fuzzy Logic}
+\begin{frame}
+	\frametitle{Fuzzy Logic Systems}
+
+	\begin{itemize}
+		\item Use human-like reasoning to model complex systems
+		\item Example: Heater Control
+		      \begin{itemize}
+			      \item Input: temperature (e.g. 20$^{\circ}$C), humidity (e.g. 50\%)
+			      \item Output: heater power (e.g. 50\%)
+			      \item Rules:
+			            \begin{tabular}{lcll}
+				            \textbf{IF}  temp is \textit{cold} & \textbf{AND} & humidity is \textit{dry} & \textbf{THEN}  power is \textit{high}   \\
+				            \textbf{IF}  temp is \textit{hot}  & \textbf{OR}  & humidity is \textit{wet} & \textbf{THEN}  power is \textit{low}    \\
+				            \textbf{IF}  temp is \textit{warm} &              &                          & \textbf{THEN}  power is \textit{medium} \\
+			            \end{tabular}
+		      \end{itemize}
+		\item Very easy to understand and interpret
+		\item Can handle uncertainty and imprecise information
+		\item Complexity is abstracted away in the linguistic terms (e.g. \textit{cold, warm, hot})
+		\item Black box  $f: \mathbb{R}^n \rightarrow \mathbb{R}$
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Mathematical Foundations}
+
+	\begin{itemize}
+		\item Consider the Fuzzy Rule:
+		      \[
+			      \underbrace{  \underbrace{\textbf{IF}  \;(\underbrace{\text{temp}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{cold}}_{\text{Ling. Term}}  \textbf{AND}  \underbrace{\text{hum}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{dry}}_{\text{Ling. Term}}) }_{\text{Antecedent}}
+				      \textbf{THEN}  \underbrace{\underbrace{\text{power}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{high}}_{\text{Ling. Term}}}_{\text{Consequent}}
+			      }_{\text{Fuzzy Rule}}
+		      \]
+		\item Fuzzy Logic Systems consist of:
+		      \begin{itemize}
+			      \item Linguistic Terms / Fuzzy Sets (e.g. \textit{cold, warm, hot})
+			      \item Linguistic Variables (e.g. temperature, humidity, power)
+			      \item Fuzzy Logic Operators (e.g. \textbf{AND, OR, NOT})
+			      \item Fuzzy Rules (e.g. \textbf{IF} \textit{antecedent} \textbf{THEN} \textit{consequent})
+		      \end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Fuzzy Sets}
+	\begin{itemize}
+		\item Fuzzy Sets are generalizations of classical sets
+		      \begin{itemize}
+			      \item Classical Sets: binary membership function $\in_A : A \rightarrow \{false, true\}$
+		      \end{itemize}
+		\item Fuzzy Sets are defined by:
+		      \begin{itemize}
+			      \item Underlying Crisp Set $X$ (e.g. $age \subset \mathbb{R}$)
+			      \item \textbf{Continuous} membership function $\mu_{\tilde{A}} : X  \rightarrow [0,1]$
+		      \end{itemize}
+		\item Allow for uncertainty. When is a person young?
+	\end{itemize}
+	\begin{center}
+		\includegraphics[width=0.75\textwidth,trim={0 0 0 0.85cm},clip]{figures/age-fuzzy-sets.png}
+	\end{center}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Linguistic Variables}
+	\begin{itemize}
+		\item Linguistic Variables can take on linguistic terms / fuzzy sets
+		      \begin{itemize}
+			      \item E.g. \textit{age} can take \textit{young}, \textit{middle-aged} or \textit{old}
+		      \end{itemize}
+		\item Instead of using crisp values (35 years), we use a combination of linguistic terms to describe the age (Fuzzyification):
+		      \[ \text{ 35 years} \implies  \begin{cases}
+				      \text{20\% young}       \\
+				      \text{60\% middle-aged} \\
+				      \text{0\% old}
+			      \end{cases}
+		      \]
+		\item Each fuzzy set describes a \textit{collection} of crisp values
+		\item This allows for very human-like rules.
+		      \begin{itemize}
+			      \item E.g. \textbf{IF} age is \textit{young} \textbf{THEN} fitness is \textit{high}
+			      \item Internally "age is \textit{young}" represents the associated fuzzy set
+		      \end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Fuzzy Logic Operators}
+	\begin{itemize}
+		\item Fuzzy Logic Operators are used to modify/combine fuzzy sets
+		\item Extension of boolean logic operators to real numbers
+		      \begin{itemize}
+			      \item $\wedge : \{false, true\} \times \{false, true\} \rightarrow \{false, true\}$
+			      \item $\textbf{AND} : [0,1] \times [0,1] \rightarrow [0,1]$
+		      \end{itemize}
+		\item Extended operators need to maintain the classical semantics
+		\item Typically, Fuzzy Logic Operators are defined as:
+		      \begin{itemize}
+			      \item \textbf{AND:} Corresponds to the intersection of fuzzy sets
+			            \[ \mu_{\tilde{A} \cap \tilde{B}}(x) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x)) \]
+			      \item \textbf{OR:} Corresponds to the union of fuzzy sets
+			            \[ \mu_{\tilde{A} \cup \tilde{B}}(x) = \max(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x)) \]
+			      \item \textbf{NOT:} Corresponds to the complement of a fuzzy set
+			            \[ \mu_{\neg \tilde{A}}(x) = 1 - \mu_{\tilde{A}}(x) \]
+
+		      \end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Arbitrary Complex Fuzzy Sets}
+
+	\begin{itemize}
+		\item With the above operators, we can define arbitrary complex fuzzy sets:
+		\item TODO insert tree from thesis
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Fuzzy Rules}
+	\begin{itemize}
+		\item Each rule is of the form: $\textbf{IF} \; {antecedent} \; \textbf{THEN} \; {consequent}$
+		      \begin{itemize}
+			      \item Both antecedent and consequent are fuzzy sets
+			      \item E.g. $\textbf{IF} \; \text{age} \; \text{is} \; \textit{young} \; \textbf{THEN} \; \text{fitness} \; \text{is} \; \textit{high}$
+		      \end{itemize}
+		\item The output $\tilde{R}$ of a rule is a fuzzy set
+		      \begin{itemize}
+			      \item Rules are applied with the Mamdani Implication:
+			      \item $\mu_{\tilde{R}}(x) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))$
+			      \item \textit{Effect} of the rule is limited by the \textit{strength} of the antecedent
+		      \end{itemize}
+		\item A Fuzzy System can consist of multiple rules acting on the same linguistic variable
+		      \begin{itemize}
+			      \item The total \textit{effect} on the output is the combination/union of all individual rule outputs
+		      \end{itemize}
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Defuzzification}
+	\begin{itemize}
+		\item Process of converting arbitrary fuzzy sets to a crisp value
+		      \begin{itemize}
+			      \item Special case: Fuzzy set created from Linguistic Variable age
+			            \[  \begin{cases}
+					            \text{20\% young}       \\
+					            \text{60\% middle-aged} \\
+					            \text{0\% old}
+				            \end{cases} \implies \text{35 years}
+			            \]
+		      \end{itemize}
+		\item Common methods:
+		      \begin{itemize}
+			      \item \textbf{Centroid:} Weighted average of the output fuzzy set
+			            \[ \text{Centroid} = \frac{\int x \cdot \mu_{\tilde{R}}(x) dx}{\int \mu_{\tilde{R}}(x) dx} \]
+			      \item \textbf{Mean of Maxima:} Average of the maximum values of the output fuzzy set
+		      \end{itemize}
+		\item Core idea: Represent certain aspects of the fuzzy set as a crisp value
+	\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}
+	\vspace{-0.8cm}
+	\begin{figure}
+		\centering
+		\caption{\tiny{Source: \href{https://de.mathworks.com/help/fuzzy/fuzzy-inference-process.html}{MathWorks - Fuzzy Inference Process}}}
+		\includegraphics[width=0.8\paperwidth]{figures/FullInferenceProcess.png}
+	\end{figure}
+	\label{fig:fuzzy_inference_full}
+
+\end{frame}
+
+
+\begin{frame}
+	\begin{itemize}
+		\item TODO: Maybe add decision surfaces here
+	\end{itemize}
+\end{frame}
 
 \section{Fuzzy Tuning Strategy}
 \begin{frame}
 	\frametitle{Fuzzy Tuning Strategy}
+
 	\begin{itemize}
-		\item Benefits of Fuzzy Logic
-		\item Recap of Fuzzy Logic concepts
-		\item Application of Fuzzy Logic in AutoPas
+		\item Main Idea: Use Fuzzy Logic to tune AutoPas
+		\item Benefits:
+		      \begin{itemize}
+			      \item Similar to Rule-Based Tuning
+			      \item Potentially more expressive and powerful
+			      \item Still easy to understand and interpret
+		      \end{itemize}
+		\item Challenges and Questions for AutoPas:
+		      \begin{itemize}
+			      \item How to perform tuning? (Fuzzy System : $f :\mathbb{R}^n \rightarrow \mathbb{R}$ )
+			      \item What are the input variables?
+			      \item What are the output variables?
+			      \item How to create the fuzzy rules? Expert knowledge?
+			      \item How to specify the linguistic terms / fuzzy sets?
+		      \end{itemize}
 	\end{itemize}
 \end{frame}
 
