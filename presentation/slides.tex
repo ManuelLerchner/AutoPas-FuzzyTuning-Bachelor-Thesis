@@ -166,7 +166,7 @@
 		\item Very easy to understand and interpret
 		\item Can handle uncertainty and imprecise information
 		\item Complexity is abstracted away in the linguistic terms (e.g. \textit{cold, warm, hot})
-		\item Black box  $f: \mathbb{R}^n \rightarrow \mathbb{R}$
+		\item Fuzzy System $f: \mathbb{R}^n \rightarrow \mathbb{R}$
 	\end{itemize}
 
 \end{frame}
@@ -200,7 +200,7 @@
 		      \end{itemize}
 		\item Fuzzy Sets are defined by:
 		      \begin{itemize}
-			      \item Underlying Crisp Set $X$ (e.g. $age \subset \mathbb{R}$)
+			      \item Underlying Crisp Set $X$ (e.g. $age \subseteq \mathbb{R}$)
 			      \item \textbf{Continuous} membership function $\mu_{\tilde{A}} : X  \rightarrow [0,1]$
 		      \end{itemize}
 		\item Allow for uncertainty. When is a person young?
@@ -224,12 +224,12 @@
 				      \text{0\% old}
 			      \end{cases}
 		      \]
-		\item Each fuzzy set describes a \textit{collection} of crisp values
-		\item This allows for very human-like rules.
+		\item This allows for non-numerical reasoning:
 		      \begin{itemize}
 			      \item E.g. \textbf{IF} age is \textit{young} \textbf{THEN} fitness is \textit{high}
-			      \item Internally "age is \textit{young}" represents the associated fuzzy set
+			      \item Use abstract concepts instead of crisp values
 		      \end{itemize}
+		\item Each linguistic term represents a certain \textit{collection} of values
 	\end{itemize}
 \end{frame}
 
@@ -257,12 +257,11 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Arbitrary Complex Fuzzy Sets}
-
-	\begin{itemize}
-		\item With the above operators, we can define arbitrary complex fuzzy sets:
-		\item TODO insert tree from thesis
-	\end{itemize}
+	\vspace{0cm}
+	\begin{figure}
+		\centering
+		\includegraphics[height=0.62\paperwidth]{figures/RecursiveFuzzyTree.png}
+	\end{figure}
 \end{frame}
 
 \begin{frame}
@@ -273,10 +272,15 @@
 			      \item Both antecedent and consequent are fuzzy sets
 			      \item E.g. $\textbf{IF} \; \text{age} \; \text{is} \; \textit{young} \; \textbf{THEN} \; \text{fitness} \; \text{is} \; \textit{high}$
 		      \end{itemize}
-		\item The output $\tilde{R}$ of a rule is a fuzzy set
+		\item Rules can be interpreted as a logical implication
 		      \begin{itemize}
-			      \item Rules are applied with the Mamdani Implication:
-			      \item $\mu_{\tilde{R}}(x) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))$
+			      \item $\textbf{IF} \; \tilde{A} \; \textbf{THEN} \; \tilde{B} \quad \iff \quad \tilde{A} \;  \textbf{IMPLIES} \;  \tilde{B}$
+			      \item Implication is similar to previous operators (\textbf{AND, OR, NOT})
+			      \item Special form of implication: Mamdani Implication
+			            \begin{itemize}
+				            \item $\tilde{R} = \textbf{IF} \; \tilde{A} \; \textbf{THEN} \; \tilde{B}$
+				            \item $\mu_{\tilde{R}}(x) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))$
+			            \end{itemize}
 			      \item \textit{Effect} of the rule is limited by the \textit{strength} of the antecedent
 		      \end{itemize}
 		\item A Fuzzy System can consist of multiple rules acting on the same linguistic variable
@@ -291,7 +295,7 @@
 	\begin{itemize}
 		\item Process of converting arbitrary fuzzy sets to a crisp value
 		      \begin{itemize}
-			      \item Special case: Fuzzy set created from Linguistic Variable age
+			      \item Special case: Fuzzy sets resulting from rule application
 			            \[  \begin{cases}
 					            \text{20\% young}       \\
 					            \text{60\% middle-aged} \\
@@ -299,13 +303,17 @@
 				            \end{cases} \implies \text{35 years}
 			            \]
 		      \end{itemize}
-		\item Common methods:
+		\item Multiple methods for defuzzification:
 		      \begin{itemize}
-			      \item \textbf{Centroid:} Weighted average of the output fuzzy set
+			      \item \textbf{Centroid:} Weighted average of the fuzzy set
 			            \[ \text{Centroid} = \frac{\int x \cdot \mu_{\tilde{R}}(x) dx}{\int \mu_{\tilde{R}}(x) dx} \]
-			      \item \textbf{Mean of Maxima:} Average of the maximum values of the output fuzzy set
+			      \item \textbf{Mean of Maxima:} Average of all maxima of the fuzzy set
 		      \end{itemize}
-		\item Core idea: Represent certain aspects of the fuzzy set as a crisp value
+		\item Core idea: Represent aspects of the fuzzy set with a crisp value
+		      \begin{itemize}
+			      \item E.g. Weighted average of all possible values (Centroid)
+			      \item E.g. Most likely value (Mean of Maxima)
+		      \end{itemize}
 	\end{itemize}
 
 \end{frame}
@@ -336,6 +344,7 @@
 
 	\begin{itemize}
 		\item Main Idea: Use Fuzzy Logic to tune AutoPas
+		\item Make use of LiveInfoData\footnote{Simulation state: \texttt{avgParticles/Cell, homogeneity, threadCount \dots }} to perform tuning
 		\item Benefits:
 		      \begin{itemize}
 			      \item Similar to Rule-Based Tuning
@@ -344,31 +353,98 @@
 		      \end{itemize}
 		\item Challenges and Questions for AutoPas:
 		      \begin{itemize}
-			      \item How to perform tuning? (Fuzzy System : $f :\mathbb{R}^n \rightarrow \mathbb{R}$ )
-			      \item What are the input variables?
-			      \item What are the output variables?
+			      \item What are the output variables? How to predict Configurations?
+			      \item How to interpret the result? (Fuzzy System : $f :\mathbb{R}^n \rightarrow \mathbb{R}$ )
 			      \item How to create the fuzzy rules? Expert knowledge?
 			      \item How to specify the linguistic terms / fuzzy sets?
 		      \end{itemize}
 	\end{itemize}
 \end{frame}
 
-\section{Implementation}
+\section{Approaches}
 \begin{frame}
-	\frametitle{Implementation}
+	\frametitle{Approach 1: Component Tuning}
 	\begin{itemize}
-		\item Fuzzy Logic Framework
-		\item Specification via Rule File
-		\item OutputMapper
+		\item Independently predict good values/patterns for each tunable parameter
+		\item Create a Fuzzy System for each tunable parameter
+		      \begin{itemize}
+			      \item Container\_DataLayout
+			      \item Traversal
+			      \item Newton 3
+		      \end{itemize}
+		\item Output Variables: Nominal Representation of parameter values
+		\item Numeric output mapped to the closest value \cite{Mohammed2022}
+		\item Combine the patterns to obtain final configurations
 	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/component-approach.png}
+	\end{figure}
+
 \end{frame}
 
-\section{Proof of Concept}
+
 \begin{frame}
-	\frametitle{Proof of Concept}
+	\frametitle{Approach 1: Component Tuning}
 	\begin{itemize}
-		\item Data-Driven Rule Extraction
-		\item Fuzzy Systems for md flexible
+		\item TODO Linguistic Variables
+	\end{itemize}
+
+\end{frame}
+
+
+
+
+\begin{frame}
+	\frametitle{Approach 2: Suitability Tuning}
+	\begin{itemize}
+		\item Predict the suitability of \textit{each} configuration
+		\item Use the suitability values to determine worthwhile configurations
+		\item Create a Fuzzy System for each possible configuration
+		\item Output Variables: Suitability of the configuration
+		\item More complex, but potentially more powerful
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/suitability-approach.png}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Approach 2: Suitability Tuning}
+	\begin{itemize}
+		\item Each configuration has a separate suitability variable
+		\item Example rule:
+		      \begin{itemize}
+			      \item
+			            \textbf{IF} threadCount is \textit{high} \textbf{AND} avgParticlesPerCell is \textit{low}\\ \qquad \textbf{THEN} suitability\_LinkedCells\_AoS\_lc\_c18\_disabled is \textit{bad}
+			      \item Where \textit{high, low, bad} are appropriate linguistic terms
+		      \end{itemize}
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/suitability-linguistic-variable.png}
+	\end{figure}
+
+\end{frame}
+
+
+\section{Data-Driven Rule Extraction}
+\begin{frame}
+	\frametitle{Data-Driven Rule Extraction}
+	\begin{itemize}
+		\item Creating the Fuzy Rules is hard
+		      \begin{itemize}
+			      \item Expert Knowledge is required
+			      \item Formalization of knowledge is difficult
+			      \item Potentially many rules required
+		      \end{itemize}
+		\item Use Machine Learning to extract rules from data
+		\item Decision Tree $\rightarrow$ Fuzzy Decision Tree $\rightarrow$ Fuzzy Rules \cite{CROCKETT20062809}
 	\end{itemize}
 \end{frame}
 
