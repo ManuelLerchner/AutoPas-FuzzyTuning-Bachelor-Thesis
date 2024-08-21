@@ -59,8 +59,13 @@
 
 \maketitle
 
+\begin{frame}
+	\frametitle{Table of Contents}
+	\tableofcontents
+\end{frame}
 
-\section{AutoPas}
+
+\section{What is AutoPas?}
 \begin{frame}
 	\frametitle{What is AutoPas?}
 
@@ -80,7 +85,7 @@
 			      \item \textbf{Newton 3:} Can we exploit Newton's 3rd law?
 			      \item \dots
 		      \end{itemize}
-		\item Example applications:
+		\item Official Example applications:
 		      \begin{itemize}
 			      \item \texttt{md\_flexible} (Molecular Dynamics)
 			      \item \texttt{sph} (Smoothed Particle Hydrodynamics)
@@ -146,7 +151,7 @@
 
 \end{frame}
 
-\section{Fuzzy Logic}
+\section{Mathematics of Fuzzy Logic}
 \begin{frame}
 	\frametitle{Fuzzy Logic Systems}
 
@@ -338,7 +343,7 @@
 	\end{itemize}
 \end{frame}
 
-\section{Fuzzy Tuning Strategy}
+\section{Fuzzy Tuning Strategy for AutoPas}
 \begin{frame}
 	\frametitle{Fuzzy Tuning Strategy}
 
@@ -361,7 +366,8 @@
 	\end{itemize}
 \end{frame}
 
-\section{Approaches}
+\section{Approaches for Fuzzy Tuning in AutoPas}
+\subsection{Component Tuning}
 \begin{frame}
 	\frametitle{Approach 1: Component Tuning}
 	\begin{itemize}
@@ -384,17 +390,31 @@
 
 \end{frame}
 
-
 \begin{frame}
 	\frametitle{Approach 1: Component Tuning}
 	\begin{itemize}
-		\item TODO Linguistic Variables
+		\item Each parameter has a separate Fuzzy System
+		\item Mean of Maxima defuzzification $\implies$ no interpolation
+		\item Example rule:
+		      \begin{itemize}
+			      \item
+			            \textbf{IF} avgParticlesPerCell is \textit{low} \textbf{AND} threadCount is \textit{low}\\ \qquad \textbf{THEN} Traversal is \textit{vcl\_c06}
+			      \item Where \textit{low, high, AoS} are appropriate linguistic terms
+		      \end{itemize}
+
+
 	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/component-linguistic-variable.png}
+	\end{figure}
 
 \end{frame}
 
 
 
+\subsection{Suitability Tuning}
 
 \begin{frame}
 	\frametitle{Approach 2: Suitability Tuning}
@@ -417,6 +437,7 @@
 	\frametitle{Approach 2: Suitability Tuning}
 	\begin{itemize}
 		\item Each configuration has a separate suitability variable
+		\item Center of Gravity defuzzification
 		\item Example rule:
 		      \begin{itemize}
 			      \item
@@ -433,7 +454,7 @@
 \end{frame}
 
 
-\section{Data-Driven Rule Extraction}
+\section{Data-Driven Rule Extraction Process}
 \begin{frame}
 	\frametitle{Data-Driven Rule Extraction}
 	\begin{itemize}
@@ -453,41 +474,318 @@
 \begin{frame}
 	\frametitle{Conversion Process}
 
+	\begin{itemize}
+		\item Decision Trees
+		      \begin{itemize}
+			      \item Try to find the best axis-aligned splits to separate classes
+			      \item Results in \textit{if-then-else} rules
+			      \item Easy to understand and interpret
+			      \item Many libraries available
+			      \item Data $\rightarrow$ Decision Tree (trivial)
+		      \end{itemize}
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/decision-tree.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Conversion Process}
+
+	\begin{itemize}
+		\item Fuzzy Decision Trees
+		      \begin{itemize}
+			      \item Convert each (crisp) split into two fuzzy sets
+			            \begin{itemize}
+				            \item Fuzzy sets should maintain the semantics of the split
+				            \item Introduce uncertainty in the split
+				            \item Helpful for generalization, especially if value is close to the split
+			            \end{itemize}
+			      \item Convert leaf nodes into linguistic terms
+		      \end{itemize}
+		\item Create linguistic terms for all Leaf Nodes
+		      \begin{itemize}
+			      \item Each class represented by a linguistic term
+			      \item Collect them into a Linguistic Variable
+		      \end{itemize}
+	\end{itemize}
+
+
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=8cm]{figures/leaf-conversion.png}
+
+	\end{figure}
+
+
+
+
+
+\end{frame}
+
+\begin{frame}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.9\textwidth]{figures/fuzzy-decision-tree.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}
+
+	\frametitle{Fuzzy Rule Extraction}
+
+	\begin{itemize}
+		\item Depth-First traversal of the Fuzzy Decision Tree
+		      \begin{itemize}
+			      \item Each left-right decision corresponds to a condition
+			      \item Leaf node corresponds to the output
+		      \end{itemize}
+		\item One rule per path from root to leaf
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.9\textwidth]{figures/extracted-rules.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}
+
+	\frametitle{Fuzzy Decision Surfaces - CoG vs. MoM}
+
+	\begin{itemize}
+		\item CoG: Interpolation effect + errors, smooth boundaries
+		\item MoM: Hard boundaries, similar to Decision Trees
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.87\textwidth, trim={0 4.8cm 0 0cm},clip]{figures/cog-vs-mom.png}
+
+		\includegraphics[width=0.88\textwidth, trim={0 3.8cm 0 0cm},clip]{figures/decision-surfaces.png}
+	\end{figure}
+
+
+\end{frame}
+
+
+\section{Fuzzy Rule Extraction for \texttt{md\_flexible}}
+\begin{frame}
+	\frametitle{Fuzzy Rule Extraction for \texttt{md\_flexible}}
+
+	\begin{itemize}
+		\item Collect huge dataset of \texttt{md\_flexible} simulations
+		\item LiveInfoData: {\small \texttt{maxDensity, homogeneity, threadCount, \dots} }
+		\item TuningData: {\small \texttt{Container, Traversal, Newton3, \dots, Time} }
+		\item Introduce notion of \textit{relative speed} for each configuration
+		      \begin{itemize}
+			      \item $t_{best}^{(i)}$: Best configuration time in tuning phase $i$
+			      \item $t_{config}^{(i)}$: Time of configuration in tuning phase $i$
+			            \[ \text{relative speed}_{config}^{(i)} = \frac{\text{t}_{best}^{(i)}}{\text{t}_{\text{config}}^{(i)}} \]
+			      \item Allows for fair comparison between different tuning phases
+		      \end{itemize}
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Resulting Dataset}
+
+	\begin{itemize}
+		\item Performance of configurations in different environments
+		\item Can be used to extract rules for both approaches
+		\item Goal: Find configurations with high relative speed
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/relative-speed-table.png}
+	\end{figure}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Rulefile Approach 1: Component Tuning}
+
+	\begin{itemize}
+		\item Naively remove bad configurations (relative speed $<70\%$)
+		\item Group remaining dataset by tuning-phase
+		\item Aggregate present (\textit{good}) values for each parameter
+		\item Apply Rule Extraction algorithm to each parameter
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\vspace{-0.1cm}
+		\includegraphics[width=0.95\textwidth, trim={0 3.8cm 0 0},clip]{figures/aggregated-data-component.png}
+		\includegraphics[width=1\textwidth, trim={0 8cm 0 0},clip]{figures/final-rules-component.png}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Rulefile Approach 2: Suitability Tuning}
+
+	\begin{itemize}
+		\item Assign suitability-classes to each entry in the dataset
+		\item Classes represent ranges of relative speed
+		\item Apply Rule Extraction algorithm for the suitability class
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth, trim={0 2.25cm 0 0},clip]{figures/aggregated-data-suitability.png}
+		\vspace{1.5cm}
+		\includegraphics[width=1\textwidth, trim={0 9cm 0 0.1cm},clip]{figures/final-rules-suitability.png}
+	\end{figure}
 \end{frame}
 
 \section{Comparison and Evaluation}
+\subsection{Exploding Liquid}
 \begin{frame}
-	\frametitle{Comparison and Evaluation}
+	\frametitle{Comparison and Evaluation: Exploding Liquid}
 	\begin{itemize}
-		\item Exploding Liquid Benchmark
-		\item Spinodal Decomposition MPI
-		\item Further Analysis
+		\item Exploding Liquid Benchmark (Included in Dataset)
+		      \begin{itemize}
+			      \item Both approaches look promising
+			      \item Very short tuning phases (not much noise)
+			      \item Selected configurations perform well (tiny spikes)
+			      \item Winning configurations are (mostly) equivalent
+		      \end{itemize}
 	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/exploding-liquid-timings.png}
+	\end{figure}
 \end{frame}
+
+\begin{frame}
+	\frametitle{Comparison and Evaluation: Exploding Liquid}
+	\begin{itemize}
+		\item Exploding Liquid Benchmark (Included in Dataset)
+		      \begin{itemize}
+			      \item Fuzzy tuning performs the best by far
+			      \item Mostly due to the very efficient tuning phases
+			            \begin{itemize}
+				            \item Few configurations evaluated
+				            \item Evaluated configurations are expected to perform well
+			            \end{itemize}
+			      \item Benefits of tuning with tiny overhead
+		      \end{itemize}
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.95\textwidth]{figures/exploding-liquid-total.png}
+	\end{figure}
+\end{frame}
+
+\subsection{Spinodal Decomposition}
+
+\begin{frame}
+	\frametitle{Comparison and Evaluation: Spinodal Decomposition MPI}
+
+	\begin{itemize}
+		\item Spinodal Decomposition (Included in Dataset)
+		      \begin{itemize}
+			      \item Fuzzy tuning promising again
+			      \item Suitability approach struggles, often misses the best configuration
+			      \item However, both approaches have efficient tuning phases
+		      \end{itemize}
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.95\textwidth]{figures/spinodal-timings.png}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Comparison and Evaluation: Spinodal Decomposition}
+
+	\begin{itemize}
+		\item Spinodal Decomposition (Indiretly included in Dataset)
+		      \begin{itemize}
+			      \item Fuzzy tuning performs relatively well
+			      \item Suitability approach still quite good, despite never finding the best configuration
+			            \begin{itemize}
+				            \item Classical tuning strategies perform poorly in tuning phases
+				            \item Fast tuning phases can compensate for suboptimal configurations!
+			            \end{itemize}
+		      \end{itemize}
+	\end{itemize}
+
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.95\textwidth]{figures/spinodal-total.png}
+	\end{figure}
+\end{frame}
+
 
 \section{Future Work}
 \begin{frame}
 	\frametitle{Future Work}
 	\begin{itemize}
 		\item Dynamic Rule Generation
+		      \begin{itemize}
+			      \item Update the expert knowledge on the fly
+			      \item Adapt to new scenarios
+			      \item Share rules between different use cases
+		      \end{itemize}
 		\item Improving Tuning Strategies
-		\item Simplification of the Fuzzy System
+		      \begin{itemize}
+			      \item Implement early stopping mechanism
+			      \item Avoid evaluating extremely bad configurations
+		      \end{itemize}
+		\item Simplification of the Fuzzy System to Decision Trees
+		      \begin{itemize}
+			      \item Use Decision Trees instead of Fuzzy Systems
+			      \item Simplify the tuning process
+			      \item Make the tuning process more transparent
+		      \end{itemize}
 	\end{itemize}
 \end{frame}
+
 
 \section{Conclusion}
 \begin{frame}
 	\frametitle{Conclusion}
 	\begin{itemize}
-		\item Summary of Findings
-		\item Impact
-		\item Final Thoughts
+		\item Fuzzy Logic is very promising for tuning AutoPas
+		\item Data-Driven Rule Extraction is a powerful tool
+		\item However:
+		      \begin{itemize}
+			      \item Requires a lot of  prior data (current training data is 1.1GB)
+			      \item Users cannot be expected to collect this data beforehand
+			      \item A more user-friendly approach is needed for broader adoption
+		      \end{itemize}
+		\item Future work could focus on simplifying the process
+		\item Alternatively: Investigate Early Stopping, to solve the tuning overhead once and for all
 	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\begin{center}
+		\vspace{1cm}
+		{\large \textbf{Thank you for your attention!}}
+
+		\vspace{2cm}
+
+		\Huge{Questions?}
+	\end{center}
 \end{frame}
 
 \begin{frame}[allowframebreaks]
 	\frametitle{References}
-	\bibliographystyle{apalike}
+	\footnotesize
+	\bibliographystyle{plain}
 	\bibliography{literature}
 \end{frame}
 
