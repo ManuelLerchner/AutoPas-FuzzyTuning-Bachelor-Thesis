@@ -365,18 +365,22 @@
 	\begin{itemize}
 		\item Main Idea: Use Fuzzy Logic to tune AutoPas
 		\item Make use of LiveInfoData\footnote{Simulation state: \texttt{avgParticles/Cell, homogeneity, threadCount \dots }} to perform tuning
-		\item Benefits:
+		\item Advantages:
 		      \begin{itemize}
-			      \item Similar to Rule-Based Tuning
-			      \item Potentially more expressive and powerful
-			      \item Still easy to understand and interpret
+			      \item Expert knowledge can provide powerful tuning
+			      \item Potentially more robust against noise
+			      \item May require fewer rules than rule-based tuning
+			      \item Easy to interpret and understand
 		      \end{itemize}
-		\item Challenges and Questions for AutoPas:
+		\item Challenges and Questions:
 		      \begin{itemize}
 			      \item What are the output variables? How to predict Configurations?
 			      \item How to interpret the result? (Fuzzy System : $f :\mathbb{R}^n \rightarrow \mathbb{R}$ )
-			      \item How to create the fuzzy rules? Expert knowledge?
-			      \item How to specify the linguistic terms / fuzzy sets?
+			      \item How to create the fuzzy rules and linguistic terms?
+			            \begin{itemize}
+				            \item Expert knowledge?
+				            \item Machine Learning?
+			            \end{itemize}
 		      \end{itemize}
 	\end{itemize}
 \end{frame}
@@ -386,16 +390,13 @@
 \begin{frame}
 	\frametitle{Approach 1: Component Tuning}
 	\begin{itemize}
-		\item Independently predict good values/patterns for each tunable parameter
-		\item Create a Fuzzy System for each tunable parameter
+		\item Predict good values/patterns for each tunable parameter separately
+		\item A Fuzzy System for each tunable parameter
 		      \begin{itemize}
-			      \item Container\_DataLayout
-			      \item Traversal
-			      \item Newton 3
+			      \item Output Variable: Class values of the parameter
+			      \item Idea: Map numerical output of the Fuzzy System to the \textit{closest} class value {\footnotesize \cite{Mohammed2022}}
 		      \end{itemize}
-		\item Output Variables: Nominal Representation of parameter values
-		\item Numeric output mapped to the closest value {\footnotesize \cite{Mohammed2022}}
-		\item Combine the patterns to obtain final configurations
+		\item Combine all results to find resulting configuration(s)
 	\end{itemize}
 
 	\begin{figure}
@@ -406,15 +407,18 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Approach 1: Component Tuning}
+	\frametitle{Approach 1: Component Tuning (Example)}
 	\begin{itemize}
-		\item Each parameter has a separate Fuzzy System
-		\item Mean of Maxima defuzzification $\implies$ no interpolation
-		\item Example rule:
+		\item Style: {\small \textbf{IF} avgParticlesPerCell is \textit{low} \textbf{AND} threadCount is \textit{low}\\ \qquad  \qquad \quad \textbf{THEN} traversal is \textit{vcl\_c06}}
+		\item \textbf{Benefits:}
 		      \begin{itemize}
-			      \item
-			            \textbf{IF} avgParticlesPerCell is \textit{low} \textbf{AND} threadCount is \textit{low}\\ \qquad \textbf{THEN} Traversal is \textit{vcl\_c06}
-			      \item Where \textit{low, high, AoS} are appropriate linguistic terms
+			      \item Few fuzzy systems
+			      \item Few and natural rules
+		      \end{itemize}
+		\item \textbf{Drawbacks:}
+		      \begin{itemize}
+			      \item Unused power of fuzzy logic (MoM defuzzification)
+			      \item Independence assumption
 		      \end{itemize}
 
 
@@ -422,7 +426,8 @@
 
 	\begin{figure}
 		\centering
-		\includegraphics[width=1\textwidth]{figures/component-linguistic-variable.png}
+		\includegraphics[width=0.9\textwidth,trim={0 0 0 1cm},clip]
+		{figures/component-linguistic-variable.png}
 	\end{figure}
 
 \end{frame}
@@ -435,10 +440,12 @@
 	\frametitle{Approach 2: Suitability Tuning}
 	\begin{itemize}
 		\item Predict the suitability of \textit{each} configuration
-		\item Use the suitability values to determine worthwhile configurations
-		\item Create a Fuzzy System for each possible configuration
-		\item Output Variables: Suitability of the configuration
-		\item More complex, but potentially more powerful
+		\item A Fuzzy System for each possible configuration
+		      \begin{itemize}
+			      \item Output Variable: Suitability classes of the configuration
+			      \item Directly use numerical output as suitability value
+		      \end{itemize}
+		\item Configuration with high suitabilities are chosen
 	\end{itemize}
 
 	\begin{figure}
@@ -449,21 +456,26 @@
 
 
 \begin{frame}
-	\frametitle{Approach 2: Suitability Tuning}
+	\frametitle{Approach 2: Suitability Tuning (Example)}
 	\begin{itemize}
-		\item Each configuration has a separate suitability variable
-		\item Center of Gravity defuzzification
-		\item Example rule:
+		\item Style: {\small
+		      \textbf{IF} threadCount is \textit{high} \textbf{AND} avgParticlesPerCell is \textit{low}\\ \qquad \qquad \quad \textbf{THEN} suitability\_LinkedCells\_AoS\_lc\_c18\_disabled is \textit{bad}}
+
+		\item \textbf{Benefits:}
 		      \begin{itemize}
-			      \item
-			            \textbf{IF} threadCount is \textit{high} \textbf{AND} avgParticlesPerCell is \textit{low}\\ \qquad \textbf{THEN} suitability\_LinkedCells\_AoS\_lc\_c18\_disabled is \textit{bad}
-			      \item Where \textit{high, low, bad} are appropriate linguistic terms
+			      \item Utilizes the full power of fuzzy logic (CoG defuzzification)
+			      \item Dependencies and incompatibilities can be modeled
+		      \end{itemize}
+		\item \textbf{Drawbacks:}
+		      \begin{itemize}
+			      \item Huge number of fuzzy systems
+			      \item Impossible to maintain by hand
 		      \end{itemize}
 	\end{itemize}
 
 	\begin{figure}
 		\centering
-		\includegraphics[width=1\textwidth]{figures/suitability-linguistic-variable.png}
+		\includegraphics[width=0.82\textwidth,trim={0 0 0 1.8cm},clip]{figures/suitability-linguistic-variable.png}
 	\end{figure}
 
 \end{frame}
@@ -473,30 +485,32 @@
 \begin{frame}
 	\frametitle{Data-Driven Rule Extraction}
 	\begin{itemize}
-		\item Creating the Fuzy Rules is hard
+		\item Creating the Fuzy Rules and Linguistic Terms manually is difficult
 		      \begin{itemize}
 			      \item Expert Knowledge is required
 			      \item Formalization of knowledge is difficult
 			      \item Potentially many rules required
 		      \end{itemize}
 		\item Use Machine Learning to extract rules from data
-		\item Decision Tree $\rightarrow$ Fuzzy Decision Tree $\rightarrow$ Fuzzy Rules {\footnotesize \cite{CROCKETT20062809}}
-		\item Does not require expert knowledge
+		      \begin{itemize}
+			      \item Decision Tree $\rightarrow$ Fuzzy Decision Tree $\rightarrow$ Fuzzy Rules {\footnotesize \cite{CROCKETT20062809}}
+			      \item Does not require expert knowledge
+		      \end{itemize}
 		\item Human experts can still validate the rules
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Conversion Process}
+	\frametitle{Decision Trees}
 
 	\begin{itemize}
-		\item Decision Trees
+		\item \textbf{Idea}: Split data with axis-aligned splits to best separate classes
+		\item Corresponds to nested \textit{if-then-else} rules
+		\item Easy to understand and interpret
+		\item TFinal tree contains the entire expert knowledge
+		\item Can be trained automatically, given enough data
 		      \begin{itemize}
-			      \item Try to find the best axis-aligned splits to separate classes
-			      \item Results in \textit{if-then-else} rules
-			      \item Easy to understand and interpret
-			      \item Many libraries available
-			      \item Data $\rightarrow$ Decision Tree (trivial)
+			      \item No expert knowledge required!
 		      \end{itemize}
 	\end{itemize}
 
@@ -508,37 +522,25 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Conversion Process}
+	\frametitle{Decision Trees $\rightarrow$ Fuzzy Decision Trees}
 
 	\begin{itemize}
 		\item Fuzzy Decision Trees
 		      \begin{itemize}
-			      \item Convert each (crisp) split into two fuzzy sets
-			            \begin{itemize}
-				            \item Fuzzy sets should maintain the semantics of the split
-				            \item Introduce uncertainty in the split
-				            \item Helpful for generalization, especially if value is close to the split
-			            \end{itemize}
-			      \item Convert leaf nodes into linguistic terms
+			      \item Each decision is a linguistic term
+			      \item E.g. Traverse left if temperature is \textit{cold}
 		      \end{itemize}
-		\item Create linguistic terms for all Leaf Nodes
+		\item Conversion: Each (crisp) split is turned into two fuzzy sets
 		      \begin{itemize}
-			      \item Each class represented by a linguistic term
-			      \item Collect them into a Linguistic Variable
+			      \item Fuzzy sets should maintain the semantics of the split
+			      \item Provides robustness against noise
 		      \end{itemize}
+		\item Leaf nodes are represented with Linguistic terms
 	\end{itemize}
-
-
-
 	\begin{figure}
 		\centering
 		\includegraphics[width=8cm]{figures/leaf-conversion.png}
-
 	\end{figure}
-
-
-
-
 
 \end{frame}
 
@@ -553,15 +555,16 @@
 
 \begin{frame}
 
-	\frametitle{Fuzzy Rule Extraction}
+	\frametitle{Fuzzy Decision Trees $\rightarrow$ Fuzzy Rules}
 
 	\begin{itemize}
 		\item Depth-First traversal of the Fuzzy Decision Tree
 		      \begin{itemize}
-			      \item Each left-right decision corresponds to a condition
-			      \item Leaf node corresponds to the output
+			      \item Each node corresponds to a condition ofthe antecedent
+			      \item Leaf node corresponds to the consequent
 		      \end{itemize}
 		\item One rule per path from root to leaf
+		\item Corresponds to \textit{unnesting} the decision tree
 	\end{itemize}
 
 	\begin{figure}
@@ -627,11 +630,11 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Rulefile Approach 1: Component Tuning}
+	\frametitle{Generate Rules: Approach 1}
 
 	\begin{itemize}
 		\item Naively remove bad configurations (relative speed $<70\%$)
-		\item Group remaining dataset by tuning-phase
+		\item Group remaining dataset by tuning-phase (same live-info)
 		\item Aggregate present (\textit{good}) values for each parameter
 		\item Apply Rule Extraction algorithm to each parameter
 	\end{itemize}
@@ -645,7 +648,7 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Rulefile Approach 2: Suitability Tuning}
+	\frametitle{Generate Rules: Approach 2}
 
 	\begin{itemize}
 		\item Assign suitability-classes to each entry in the dataset
@@ -661,14 +664,14 @@
 	\end{figure}
 \end{frame}
 
-\section{Comparison and Evaluation}
+\section{Benchmarks}
 \subsection{Exploding Liquid}
 \begin{frame}
-	\frametitle{Comparison and Evaluation: Exploding Liquid}
+	\frametitle{Benchmark 1: Exploding Liquid}
 	\begin{itemize}
 		\item Exploding Liquid Benchmark (Included in Dataset)
 		      \begin{itemize}
-			      \item Both approaches look promising
+			      \item Both fuzzy approaches look promising
 			      \item Very short tuning phases (not much noise)
 			      \item Selected configurations perform well (tiny spikes)
 			      \item Winning configurations are (mostly) equivalent
@@ -682,18 +685,15 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Comparison and Evaluation: Exploding Liquid}
+	\frametitle{Total Time: Exploding Liquid}
 	\begin{itemize}
-		\item Exploding Liquid Benchmark (Included in Dataset)
+		\item Fuzzy tuning has lowest total time
+		\item Mostly due to the very efficient tuning phases
 		      \begin{itemize}
-			      \item Fuzzy tuning performs the best by far
-			      \item Mostly due to the very efficient tuning phases
-			            \begin{itemize}
-				            \item Few configurations evaluated
-				            \item Evaluated configurations are expected to perform well
-			            \end{itemize}
-			      \item Benefits of tuning with tiny overhead
+			      \item Few configurations evaluated
+			      \item Evaluated configurations are expected to perform well
 		      \end{itemize}
+		\item Benefits of tuning with tiny overhead
 	\end{itemize}
 
 	\begin{figure}
@@ -705,10 +705,10 @@
 \subsection{Spinodal Decomposition}
 
 \begin{frame}
-	\frametitle{Comparison and Evaluation: Spinodal Decomposition MPI}
+	\frametitle{Benchmark 2: Spinodal Decomposition MPI}
 
 	\begin{itemize}
-		\item Spinodal Decomposition (Included in Dataset)
+		\item Spinodal Decomposition MPI (Indirectly included in Dataset)
 		      \begin{itemize}
 			      \item Fuzzy tuning promising again
 			      \item Suitability approach struggles, often misses the best configuration
@@ -718,7 +718,7 @@
 
 	\begin{figure}
 		\centering
-		\includegraphics[width=0.95\textwidth]{figures/spinodal-timings.png}
+		\includegraphics[width=1\textwidth]{figures/spinodal-timings.png}
 	\end{figure}
 \end{frame}
 
@@ -726,20 +726,23 @@
 	\frametitle{Comparison and Evaluation: Spinodal Decomposition}
 
 	\begin{itemize}
-		\item Spinodal Decomposition (Indiretly included in Dataset)
+		\item Component approach performs well
+		\item Suitability approach still quite fast
 		      \begin{itemize}
-			      \item Fuzzy tuning performs relatively well
-			      \item Suitability approach still quite good, despite never finding the best configuration
+			      \item Fast tuning phases compensate for suboptimal configurations!
+			      \item Misses caused by to optimisitic suitability threshold
+
 			            \begin{itemize}
-				            \item Classical tuning strategies perform poorly in tuning phases
-				            \item Fast tuning phases can compensate for suboptimal configurations!
+				            \item  Too few configurations are slected for evaluation
+				            \item \textbf{Solution:} Increase the suitability threshold (Top 10\% $\rightarrow$ Top 30\%)
 			            \end{itemize}
 		      \end{itemize}
+
 	\end{itemize}
 
 	\begin{figure}
 		\centering
-		\includegraphics[width=0.95\textwidth]{figures/spinodal-total.png}
+		\includegraphics[width=0.92\textwidth]{figures/spinodal-total.png}
 	\end{figure}
 \end{frame}
 
@@ -752,18 +755,17 @@
 		      \begin{itemize}
 			      \item Update the expert knowledge on the fly
 			      \item Adapt to new scenarios
-			      \item Share rules between different use cases
+			      \item No need for giant datasets
 		      \end{itemize}
 		\item Improving Tuning Strategies
 		      \begin{itemize}
 			      \item Implement early stopping mechanism
-			      \item Avoid evaluating extremely bad configurations
+			      \item Stop evaluating extremely bad configurations early
 		      \end{itemize}
 		\item Simplification of the Fuzzy System to Decision Trees
 		      \begin{itemize}
 			      \item Use Decision Trees instead of Fuzzy Systems
-			      \item Simplify the tuning process
-			      \item Make the tuning process more transparent
+			      \item Could potentially perform equally well, while being easier to understand
 		      \end{itemize}
 	\end{itemize}
 \end{frame}
@@ -781,7 +783,7 @@
 			      \item Users cannot be expected to collect this data beforehand
 			      \item A more user-friendly approach is needed for broader adoption
 		      \end{itemize}
-		\item Future work could focus on simplifying the process
+		\item Future work could focus on simplifying/streamlining the rule extraction process
 		\item Alternatively: Investigate Early Stopping, to solve the tuning overhead once and for all
 	\end{itemize}
 \end{frame}
@@ -797,6 +799,7 @@
 	\end{center}
 \end{frame}
 
+\thispagestyle{empty}
 \begin{frame}[allowframebreaks, noframenumbering]
 	\frametitle{References}
 	\footnotesize
