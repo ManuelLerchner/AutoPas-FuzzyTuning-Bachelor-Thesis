@@ -58,11 +58,14 @@
 \begin{document}
 
 \maketitle
+\thispagestyle{empty}
 
-\begin{frame}
+\begin{frame}[noframenumbering]
 	\frametitle{Table of Contents}
 	\tableofcontents
 \end{frame}
+
+\setcounter{framenumber}{0}
 
 
 \section{What is AutoPas?}
@@ -80,15 +83,16 @@
 		\item AutoTuning: Automatically switch between implementations
 		      \begin{itemize}
 			      \item \textbf{Container:} How to find neighboring particles?
-			      \item \textbf{Traversal:} How to handle multi-threading?
+			      \item \textbf{Traversal:} How to efficiently handle multi-threading?
 			      \item \textbf{Data Layout:} How to store particles in memory?
 			      \item \textbf{Newton 3:} Can we exploit Newton's 3rd law?
 			      \item \dots
 		      \end{itemize}
-		\item Official Example applications:
+		\item Example applications:
 		      \begin{itemize}
 			      \item \texttt{md\_flexible} (Molecular Dynamics)
 			      \item \texttt{sph} (Smoothed Particle Hydrodynamics)
+			      \item Space Debris Collision Modelling
 		      \end{itemize}
 	\end{itemize}
 \end{frame}
@@ -98,7 +102,7 @@
 	\frametitle{Structure of AutoPas}
 
 	\begin{itemize}
-		\item Three main components:
+		\item Three main areas:
 		      \begin{itemize}
 			      \item User Application
 			      \item Algorithm Library
@@ -136,13 +140,14 @@
 	\begin{itemize}
 		\item Tuning Phase: Find the best configuration
 		      \begin{itemize}
-			      \item Tuning Strategies select configurations to evaluate
-			      \item Expensive, Time consuming
+			      \item Tuning Strategies select promising configurations to evaluate
+			      \item All those configurations are evaluated and measured
+			      \item Huge overhead, if done badly
 		      \end{itemize}
 		\item Simulation Phase: Use the best configuration
 	\end{itemize}
 
-	\vspace{0.2cm}
+	\vspace{0.1cm}
 
 	\begin{center}
 		\includegraphics[width=0.95\textwidth,trim={0 0 0 0.85cm},clip]{figures/timing_explodingLiquid.png}
@@ -157,32 +162,42 @@
 
 	\begin{itemize}
 		\item Use human-like reasoning to model complex systems
-		\item Example: Heater Control
+		\item Linguistic Terms (\textit{cold, hot, \dots}) reduce complexity in modeling
 		      \begin{itemize}
-			      \item Input: temperature (e.g. 20$^{\circ}$C), humidity (e.g. 50\%)
-			      \item Output: heater power (e.g. 50\%)
-			      \item Rules:
-			            \begin{tabular}{lcll}
-				            \textbf{IF}  temp is \textit{cold} & \textbf{AND} & humidity is \textit{dry} & \textbf{THEN}  power is \textit{high}   \\
-				            \textbf{IF}  temp is \textit{hot}  & \textbf{OR}  & humidity is \textit{wet} & \textbf{THEN}  power is \textit{low}    \\
-				            \textbf{IF}  temp is \textit{warm} &              &                          & \textbf{THEN}  power is \textit{medium} \\
-			            \end{tabular}
+			      \item Smooth transitions between terms (e.g. \textit{cold} $\rightarrow$ \textit{warm})
 		      \end{itemize}
-		\item Very easy to understand and interpret
-		\item Can handle uncertainty and imprecise information
-		\item Complexity is abstracted away in the linguistic terms (e.g. \textit{cold, warm, hot})
-		\item Fuzzy System $f: \mathbb{R}^n \rightarrow \mathbb{R}$
+		\item Fuzzy Systems are functions $f: \mathbb{R}^n \rightarrow \mathbb{R}$
+		\item Rule based: Easy to understand, interpret and adapt
+		      \begin{itemize}
+			      \item Interpolation effect between regions and conflicting rules
+			      \item No hard boundaries $\rightarrow$ robust against noise
+		      \end{itemize}
 	\end{itemize}
+
+	\begin{example}[Heater Control]
+
+		\begin{description}[wide=0]
+			\item[\textbf{Input:}  ] ~ temperature (e.g. 20$^{\circ}$C), humidity (e.g. 50\%)
+			\item[\textbf{Output:}] heater power (e.g. 50\%)
+			\item[\textbf{Rules:}]
+			      {\footnotesize
+			      \begin{tabular}{lcll}
+				      \textbf{IF}  temp is \textit{cold} & \textbf{AND} & humidity is \textit{dry} & \textbf{THEN}  power is \textit{high}   \\
+				      \textbf{IF}  temp is \textit{hot}  & \textbf{OR}  & humidity is \textit{wet} & \textbf{THEN}  power is \textit{low}    \\
+				      \textbf{IF}  temp is \textit{warm} &              &                          & \textbf{THEN}  power is \textit{medium} \\
+			      \end{tabular} }
+		\end{description}
+	\end{example}
 
 \end{frame}
 
 \begin{frame}
-	\frametitle{Mathematical Foundations}
+	\frametitle{Naming Conventions}
 
 	\begin{itemize}
 		\item Consider the Fuzzy Rule:
 		      \[
-			      \underbrace{  \underbrace{\textbf{IF}  \;(\underbrace{\text{temp}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{cold}}_{\text{Ling. Term}}  \textbf{AND}  \underbrace{\text{hum}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{dry}}_{\text{Ling. Term}}) }_{\text{Antecedent}}
+			      \underbrace{  \underbrace{\textbf{IF}  \;\underbrace{\text{temp}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{cold}}_{\text{Ling. Term}}  \textbf{AND}  \underbrace{\text{hum}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{dry}}_{\text{Ling. Term}} }_{\text{Antecedent}}
 				      \textbf{THEN}  \underbrace{\underbrace{\text{power}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{high}}_{\text{Ling. Term}}}_{\text{Consequent}}
 			      }_{\text{Fuzzy Rule}}
 		      \]
@@ -197,28 +212,30 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Fuzzy Sets}
+	\frametitle{Fuzzy Sets vs Classical Sets}
 	\begin{itemize}
 		\item Fuzzy Sets are generalizations of classical sets
 		      \begin{itemize}
-			      \item Classical Sets: binary membership function $\in_A : A \rightarrow \{false, true\}$
+			      \item $U$ is the universe of discourse (e.g. $age \subseteq \mathbb{R}$)
+			      \item Classical Set $A \subseteq U$:
+			            \begin{itemize}
+				            \item Defined via indicator function $\chi_A : U \rightarrow \{0,1\}$
+			            \end{itemize}
+			      \item Fuzzy Sets $\tilde{A} \subseteq U$:
+			            \begin{itemize}
+				            \item Defined via \textbf{Continuous} membership function $\mu_{\tilde{A}} : U  \rightarrow [0,1]$
+			            \end{itemize}
 		      \end{itemize}
-		\item Fuzzy Sets are defined by:
-		      \begin{itemize}
-			      \item Underlying Crisp Set $X$ (e.g. $age \subseteq \mathbb{R}$)
-			      \item \textbf{Continuous} membership function $\mu_{\tilde{A}} : X  \rightarrow [0,1]$
-		      \end{itemize}
-		\item Allow for uncertainty. When is a person young?
 	\end{itemize}
 	\begin{center}
-		\includegraphics[width=0.75\textwidth,trim={0 0 0 0.85cm},clip]{figures/age-fuzzy-sets.png}
+		\includegraphics[width=0.8\textwidth,trim={0 0.1cm 0 1.2cm},clip]{figures/age-fuzzy-sets.png}
 	\end{center}
 \end{frame}
 
 \begin{frame}
 	\frametitle{Linguistic Variables}
 	\begin{itemize}
-		\item Linguistic Variables can take on linguistic terms / fuzzy sets
+		\item Linguistic Variables can take linguistic terms (fuzzy sets)
 		      \begin{itemize}
 			      \item E.g. \textit{age} can take \textit{young}, \textit{middle-aged} or \textit{old}
 		      \end{itemize}
@@ -234,7 +251,7 @@
 			      \item E.g. \textbf{IF} age is \textit{young} \textbf{THEN} fitness is \textit{high}
 			      \item Use abstract concepts instead of crisp values
 		      \end{itemize}
-		\item Each linguistic term represents a certain \textit{collection} of values
+		\item Each linguistic term represents a certain \textit{collection} of values with varying degrees of membership
 	\end{itemize}
 \end{frame}
 
@@ -247,7 +264,12 @@
 			      \item $\wedge : \{false, true\} \times \{false, true\} \rightarrow \{false, true\}$
 			      \item $\textbf{AND} : [0,1] \times [0,1] \rightarrow [0,1]$
 		      \end{itemize}
-		\item Extended operators need to maintain the classical semantics
+		\item Fuzzy operators defined via extension of set
+		      \begin{itemize}
+			      \item Need to maintain the classical semantics
+			      \item Boolean logic is a special case of fuzzy logic
+		      \end{itemize}
+
 		\item Typically, Fuzzy Logic Operators are defined as:
 		      \begin{itemize}
 			      \item \textbf{AND:} Corresponds to the intersection of fuzzy sets
@@ -274,23 +296,23 @@
 	\begin{itemize}
 		\item Each rule is of the form: $\textbf{IF} \; {antecedent} \; \textbf{THEN} \; {consequent}$
 		      \begin{itemize}
-			      \item Both antecedent and consequent are fuzzy sets
+			      \item Both \textit{antecedent} and \textit{consequent} are fuzzy sets
 			      \item E.g. $\textbf{IF} \; \text{age} \; \text{is} \; \textit{young} \; \textbf{THEN} \; \text{fitness} \; \text{is} \; \textit{high}$
 		      \end{itemize}
-		\item Rules can be interpreted as a logical implication
+		\item Rules are evaluated as logical implications
 		      \begin{itemize}
 			      \item $\textbf{IF} \; \tilde{A} \; \textbf{THEN} \; \tilde{B} \quad \iff \quad \tilde{A} \;  \textbf{IMPLIES} \;  \tilde{B}$
-			      \item Implication is similar to previous operators (\textbf{AND, OR, NOT})
-			      \item Special form of implication: Mamdani Implication
+			      \item Special form of (fuzzy) implication: Mamdani Implication
 			            \begin{itemize}
 				            \item $\tilde{R} = \textbf{IF} \; \tilde{A} \; \textbf{THEN} \; \tilde{B}$
 				            \item $\mu_{\tilde{R}}(x) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))$
 			            \end{itemize}
 			      \item \textit{Effect} of the rule is limited by the \textit{strength} of the antecedent
 		      \end{itemize}
-		\item A Fuzzy System can consist of multiple rules acting on the same linguistic variable
+		\item Multiple rules can act on the same linguistic variable
 		      \begin{itemize}
-			      \item The total \textit{effect} on the output is the combination/union of all individual rule outputs
+			      \item The total \textit{effect} on the output is the aggregation/union of all individual fuzzy sets
+			      \item Each rule \textit{effect} is considered proportional to the \textit{strength} of its antecedent
 		      \end{itemize}
 	\end{itemize}
 \end{frame}
@@ -300,7 +322,7 @@
 	\begin{itemize}
 		\item Process of converting arbitrary fuzzy sets to a crisp value
 		      \begin{itemize}
-			      \item Special case: Fuzzy sets resulting from rule application
+			      \item Special case: Fuzzy sets corresponding to a fuzzification
 			            \[  \begin{cases}
 					            \text{20\% young}       \\
 					            \text{60\% middle-aged} \\
@@ -310,9 +332,8 @@
 		      \end{itemize}
 		\item Multiple methods for defuzzification:
 		      \begin{itemize}
-			      \item \textbf{Centroid:} Weighted average of the fuzzy set
-			            \[ \text{Centroid} = \frac{\int x \cdot \mu_{\tilde{R}}(x) dx}{\int \mu_{\tilde{R}}(x) dx} \]
-			      \item \textbf{Mean of Maxima:} Average of all maxima of the fuzzy set
+			      \item \textbf{Center of Gravity:} Considers all values based on their membership. Finds weighted average of all possible values
+			      \item \textbf{Mean of Maxima:} Considers only the most likely values (with highest membership). Finds the mean of all maxima
 		      \end{itemize}
 		\item Core idea: Represent aspects of the fuzzy set with a crisp value
 		      \begin{itemize}
@@ -336,12 +357,6 @@
 
 \end{frame}
 
-
-\begin{frame}
-	\begin{itemize}
-		\item TODO: Maybe add decision surfaces here
-	\end{itemize}
-\end{frame}
 
 \section{Fuzzy Tuning Strategy for AutoPas}
 \begin{frame}
@@ -782,10 +797,10 @@
 	\end{center}
 \end{frame}
 
-\begin{frame}[allowframebreaks]
+\begin{frame}[allowframebreaks, noframenumbering]
 	\frametitle{References}
 	\footnotesize
-	\bibliographystyle{plain}
+	\bibliographystyle{apalike}
 	\bibliography{literature}
 \end{frame}
 
