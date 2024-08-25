@@ -68,11 +68,11 @@
 \section{Introduction}
 \begin{frame}
 	\frametitle{What is AutoPas?}
-
+	
 	\begin{textblock*}{5cm}(9cm,1.8cm)
 		\includegraphics[width=3cm]{figures/AutoPasLogo}
 	\end{textblock*}
-
+	
 	\begin{itemize}
 		\item Library for arbitrary N-body simulations
 		\item Optimal performance by switching implementations
@@ -83,23 +83,23 @@
 			      \item \textbf{Newton 3:} Force calculation optimization
 		      \end{itemize}
 	\end{itemize}
-
+	
 	\vspace{-0.1cm}
 	\begin{figure}
 		\centering
 		\includegraphics[width=0.72\textwidth]{figures/traversals.png}
 	\end{figure}
-
+	
 	\begin{textblock*}{5cm}(6.3cm,9.35cm)
 		\tiny{\cite{SIAM_PP24}}
 	\end{textblock*}
-
+	
 \end{frame}
 
 
 \begin{frame}
 	\frametitle{Structure of AutoPas}
-
+	
 	\begin{itemize}
 		\item Three main areas:
 		      \begin{itemize}
@@ -121,12 +121,12 @@
 			      \item Rule Based Tuning
 		      \end{itemize}
 	\end{itemize}
-
+	
 	\begin{textblock*}{4cm}(8cm,2cm)
 		\begin{figure}
 			\includegraphics[width=4cm]{figures/AutoPasLibraryStructure.png}
 			\caption{ \footnotesize{Source: \cite{Newcome2023Poster}}}
-
+			
 		\end{figure}
 	\end{textblock*}
 \end{frame}
@@ -135,26 +135,26 @@
 
 \begin{frame}
 	\frametitle{Auto-Tuning }
-
+	
 	\begin{itemize}
 		\item Tuning Phase $\rightarrow$ Simulation Phase $\rightarrow$ Repeat
 		\item Potential Tuning Overhead
 	\end{itemize}
-
+	
 	\vspace{0.1cm}
-
+	
 	\begin{figure}
 		\makebox[\textwidth][c]{
 			\includegraphics[width=1.1\textwidth,trim={0 0 0 0.85cm},clip]{figures/timing_explodingLiquid.png}
 		}
 	\end{figure}
-
-
+	
+	
 \end{frame}
 
 \begin{frame}
 	\frametitle{Fuzzy Logic Systems}
-
+	
 	\begin{itemize}
 		\item Human-like reasoning to model systems $f: \mathbb{R}^n \rightarrow \mathbb{R}$
 		\item (Fuzzy) Rule based systems
@@ -167,24 +167,24 @@
 			      \item E.g. \textit{cold, warm, hot} instead of \textit{20$^{\circ}$C, 30$^{\circ}$C, 40$^{\circ}$C}
 		      \end{itemize}
 	\end{itemize}
-
+	
 	\vspace{0.4cm}
-
+	
 	\begin{example}[Heater Control]
-
+		
 		\begin{description}[wide=0]
 			\item[\textbf{Input:}  ] ~ temperature (e.g. 20$^{\circ}$C), humidity (e.g. 60\%)
 			\item[\textbf{Output:}] heater power (e.g. 50\%)
 			\item[\textbf{Rules:}]
-			      {\footnotesize
-			      \begin{tabular}{lcll}
-				      \textbf{IF}  temp is \textit{cold} & \textbf{AND} & humidity is \textit{dry} & \textbf{THEN}  power is \textit{high}   \\
-				      \textbf{IF}  temp is \textit{hot}  & \textbf{OR}  & humidity is \textit{wet} & \textbf{THEN}  power is \textit{low}    \\
-				      \textbf{IF}  temp is \textit{warm} &              &                          & \textbf{THEN}  power is \textit{medium} \\
-			      \end{tabular} }
+				{\footnotesize
+				\begin{tabular}{lcll}
+					\textbf{IF}  temp is \textit{cold} & \textbf{AND} & humidity is \textit{dry} & \textbf{THEN}  power is \textit{high}   \\
+					\textbf{IF}  temp is \textit{hot}  & \textbf{OR}  & humidity is \textit{wet} & \textbf{THEN}  power is \textit{low}    \\
+					\textbf{IF}  temp is \textit{warm} &              &                          & \textbf{THEN}  power is \textit{medium} \\
+				\end{tabular} }
 		\end{description}
 	\end{example}
-
+	
 \end{frame}
 
 % \begin{frame}
@@ -347,14 +347,14 @@
 		\includegraphics[width=0.8\paperwidth]{figures/FullInferenceProcess.png}
 	\end{figure}
 	\label{fig:fuzzy_inference_full}
-
+	
 \end{frame}
 
 
 \section{Fuzzy Tuning Implementation}
 \begin{frame}
 	\frametitle{Fuzzy Tuning for AutoPas}
-
+	
 	\begin{itemize}
 		\item Main Idea: Use Fuzzy Logic to tune AutoPas
 		\item Expected Benefits:
@@ -375,11 +375,11 @@
 \section{Fuzzy Tuning Implementation}
 \begin{frame}
 	\frametitle{Challenges and Questions}
-
+	
 	\begin{itemize}
 		\item Fuzzy Tuning not directly applicable to AutoPas
 		      \begin{itemize}
-			      \item Tuning is a \textit{discrete} optimization problem\\
+			      \item Tuning is an \textit{algorithm selection} problem
 			      \item Fuzzy tuning provides functions $f :\mathbb{R}^n \rightarrow \mathbb{R}$
 			      \item Big Question: How to interpret the numerical output?\\
 			            \quad $\rightarrow$ \textit{Component Tuning} Approach \\
@@ -392,7 +392,8 @@
 			            \quad \xmark \; Difficult to formalize non-trivial knowledge
 			      \item Extracting rules from data?\\
 			            \quad \cmark \; No prior expert knowledge required\\
-			            \quad \cmark \; Semi-automated process
+			            \quad \cmark \; Semi-automated process\\
+			            \quad \cmark \; Good starting point for human tuning
 		      \end{itemize}
 	\end{itemize}
 \end{frame}
@@ -410,12 +411,12 @@
 		      \end{itemize}
 		\item Combine individual predictions to form final configuration(s)
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=1\textwidth]{figures/component-approach.png}
 	\end{figure}
-
+	
 \end{frame}
 
 \begin{frame}
@@ -432,16 +433,16 @@
 			      \item Limited interpolation effect (MoM defuzzification)
 			      \item Independence assumption
 		      \end{itemize}
-
-
+		      
+		      
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=0.9\textwidth,trim={0 0 0 1cm},clip]
 		{figures/component-linguistic-variable.png}
 	\end{figure}
-
+	
 \end{frame}
 
 
@@ -459,7 +460,7 @@
 			      \item \textit{Best} configurations are selected
 		      \end{itemize}
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=1\textwidth]{figures/suitability-approach.png}
@@ -472,7 +473,7 @@
 	\begin{itemize}
 		\item Style: {\small
 		      \textbf{IF} threadCount is \textit{high} \textbf{AND} avgParticlesPerCell is \textit{low}\\ \qquad \qquad \quad \textbf{THEN} suitability\_LinkedCells\_AoS\_lc\_c18\_disabled is \textit{bad}}
-
+		      
 		\item \textbf{Benefits:}
 		      \begin{itemize}
 			      \item Utilizes the full power of fuzzy logic (CoG defuzzification)
@@ -484,75 +485,81 @@
 			      \item Impossible to maintain by hand
 		      \end{itemize}
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=0.82\textwidth,trim={0 0 0 1.8cm},clip]{figures/suitability-linguistic-variable.png}
 	\end{figure}
-
+	
 \end{frame}
 
 
 \begin{frame}
 	\frametitle{Data-Driven Rule Extraction}
 	\begin{itemize}
-		\item Creating the Fuzy Rules and Linguistic Terms manually is difficult
+
+		\item Use data to automatically generate fuzzy systems
 		      \begin{itemize}
-			      \item Expert Knowledge is required
-			      \item Formalization of knowledge is difficult
-			      \item Potentially many rules required
+			      \item Utilize machine learning techniques to extract rules
+			      \item We follow \cite{CROCKETT20062809}
+			            \begin{enumerate}
+				            \item Train a Decision Tree on the data
+				            \item Decision Tree $\rightarrow$ Fuzzy Decision Tree
+				            \item Fuzzy Decision Tree $\rightarrow$ Fuzzy Rules
+			            \end{enumerate}
 		      \end{itemize}
-		\item Use Machine Learning to extract rules from data
+		\item Practical Considerations:
 		      \begin{itemize}
-			      \item Decision Tree $\rightarrow$ Fuzzy Decision Tree $\rightarrow$ Fuzzy Rules {\footnotesize \cite{CROCKETT20062809}}
-			      \item Does not require expert knowledge
+			      \item Ensemble Learning for Decision Trees
+			            \begin{itemize}
+				            \item Train with selected features
+				            \item Different splitting criteria
+				            \item Different tree depths / pruning
+			            \end{itemize}
+			      \item \textit{Overlapping} rules $\rightarrow$ \textit{Interpolation} effect
 		      \end{itemize}
-		\item Human experts can still validate the rules
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
 	\frametitle{Decision Trees}
-
+	
 	\begin{itemize}
-		\item \textbf{Idea}: Split data with axis-aligned splits to best separate classes
+		\item Seperate classes recursively with axis-aligned splits
 		\item Corresponds to nested \textit{if-then-else} rules
-		\item Easy to understand and interpret
-		\item TFinal tree contains the entire expert knowledge
-		\item Can be trained automatically, given enough data
 		      \begin{itemize}
-			      \item No expert knowledge required!
+			      \item Easy to understand and interpret
 		      \end{itemize}
+		\item Trained automatically from data
+		\item Tree contains the entire expert knowledge
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=1\textwidth]{figures/decision-tree.png}
 	\end{figure}
-
+	
 \end{frame}
 
 \begin{frame}
 	\frametitle{Decision Trees $\rightarrow$ Fuzzy Decision Trees}
-
+	
 	\begin{itemize}
-		\item Fuzzy Decision Trees
-		      \begin{itemize}
-			      \item Each decision is a linguistic term
-			      \item E.g. Traverse left if temperature is \textit{cold}
-		      \end{itemize}
 		\item Conversion: Each (crisp) split is turned into two fuzzy sets
 		      \begin{itemize}
 			      \item Fuzzy sets should maintain the semantics of the split
 			      \item Provides robustness against noise
 		      \end{itemize}
-		\item Leaf nodes are represented with Linguistic terms
+		\item Leaf nodes are turned into fuzzy sets
+		      \begin{itemize}
+			      \item Each class corresponds to a fuzzy set
+		      \end{itemize}
 	\end{itemize}
 	\begin{figure}
 		\centering
 		\includegraphics[width=8cm]{figures/leaf-conversion.png}
 	\end{figure}
-
+	
 \end{frame}
 
 \begin{frame}
@@ -561,110 +568,137 @@
 		\centering
 		\includegraphics[width=0.9\textwidth]{figures/fuzzy-decision-tree.png}
 	\end{figure}
-
+	
 \end{frame}
 
 \begin{frame}
 
 	\frametitle{Fuzzy Decision Trees $\rightarrow$ Fuzzy Rules}
-
+	
 	\begin{itemize}
 		\item Depth-First traversal of the Fuzzy Decision Tree
 		      \begin{itemize}
-			      \item Each node corresponds to a condition ofthe antecedent
+			      \item Fuzzy splits are collected in the antecedent
 			      \item Leaf node corresponds to the consequent
 		      \end{itemize}
 		\item One rule per path from root to leaf
 		\item Corresponds to \textit{unnesting} the decision tree
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=0.9\textwidth]{figures/extracted-rules.png}
 	\end{figure}
-
+	
 \end{frame}
 
 \begin{frame}
 
-	\frametitle{Fuzzy Decision Surfaces - CoG vs. MoM}
-
+	\frametitle{Decision Surfaces}
+	
 	\begin{itemize}
-		\item CoG: Interpolation effect + errors, smooth boundaries
-		\item MoM: Hard boundaries, similar to Decision Trees
+		\item Defuzzification Method affects the decision surface
+		      \begin{itemize}
+			      \item CoG: Interpolation effect, smooth boundaries
+			      \item MoM: Most likely class, hard boundaries
+		      \end{itemize}
+		\item CoG: \textit{Interpolation errors} for nominal values
 	\end{itemize}
-
+	
+	\vspace{-0.2cm}
+	
 	\begin{figure}
 		\centering
-		\includegraphics[width=0.87\textwidth, trim={0 4.8cm 0 0cm},clip]{figures/cog-vs-mom.png}
-
-		\includegraphics[width=0.88\textwidth, trim={0 3.8cm 0 0cm},clip]{figures/decision-surfaces.png}
+		\includegraphics[width=0.7\textwidth, trim={1.2cm 4.8cm 2.9cm 0cm},clip]{figures/cog-vs-mom.png}
+		
+		\includegraphics[width=0.78\textwidth, trim={0 3.7cm 2.3cm 0cm},clip]{figures/decision-surfaces.png}
 	\end{figure}
-
-
+	
 \end{frame}
 
 \begin{frame}
 	\frametitle{Fuzzy Rule Extraction for \texttt{md\_flexible}}
-
+	
 	\begin{itemize}
-		\item Collect huge dataset of \texttt{md\_flexible} simulations
-		\item LiveInfoData: {\small \texttt{maxDensity, homogeneity, threadCount, \dots} }
-		\item TuningData: {\small \texttt{Container, Traversal, Newton3, \dots, Time} }
-		\item Introduce notion of \textit{relative speed} for each configuration
+		\item Collect dataset of \texttt{md\_flexible} simulations (FullSearch)
+		\item For each tuning phase $i$, store:
 		      \begin{itemize}
-			      \item $t_{best}^{(i)}$: Best configuration time in tuning phase $i$
-			      \item $t_{config}^{(i)}$: Time of configuration in tuning phase $i$
+			      \item LiveInfoData: {\footnotesize \texttt{maxDensity, homogeneity, threadCount, \dots} }
+			      \item TuningData: {\footnotesize \texttt{Container, Traversal, Newton3, \dots, \textbf{Time}} }
+		      \end{itemize}
+		\item Introduce \textit{relative speed} metric
+		      \begin{itemize}
+			      \item Absolute time is not meaningful across different \textit{environments}
 			            \[ \text{relative speed}_{config}^{(i)} = \frac{\text{t}_{best}^{(i)}}{\text{t}_{\text{config}}^{(i)}} \]
-			      \item Allows for fair comparison between different tuning phases
 		      \end{itemize}
 	\end{itemize}
-
+	
 \end{frame}
 
 \begin{frame}
 	\frametitle{Resulting Dataset}
-
+	
 	\begin{itemize}
-		\item Performance of configurations in different environments
-		\item Can be used to extract rules for both approaches
-		\item Goal: Find configurations with high relative speed
+		\item Contains expected \textit{relative speed} based on:
+		      \begin{itemize}
+			      \item Simulation state
+			      \item Configuration
+		      \end{itemize}
+		\item Forms basis for \textit{Suitability} and \textit{Component} tuning approaches
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=1\textwidth]{figures/relative-speed-table.png}
 	\end{figure}
-
+	
 \end{frame}
 
 \begin{frame}
-	\frametitle{Generate Rules: Approach 1}
-
+	\frametitle{Component Tuning: Extracted Rules}
+	
 	\begin{itemize}
-		\item Naively remove bad configurations (relative speed $<70\%$)
-		\item Group remaining dataset by tuning-phase (same live-info)
-		\item Aggregate present (\textit{good}) values for each parameter
-		\item Apply Rule Extraction algorithm to each parameter
+		\item Preprocessing:
+		      \begin{enumerate}
+			      {\footnotesize
+			      \item Naively remove bad configurations (relative speed $<70\%$)
+			      \item Group remaining dataset by tuning-phase
+			      \item Aggregate present (\textit{good}) values for each parameter
+			            }
+		      \end{enumerate}
+		\item Apply Rule Extraction algorithm for each parameter
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\vspace{-0.1cm}
-		\includegraphics[width=0.95\textwidth, trim={0 3.8cm 0 0},clip]{figures/aggregated-data-component.png}
-		\includegraphics[width=1\textwidth, trim={0 8cm 0 0},clip]{figures/final-rules-component.png}
+		\includegraphics[width=0.93\textwidth, trim={0 3.8cm 0 0},clip]{figures/aggregated-data-component.png}
+		\vspace{-0.1cm}
+		\includegraphics[width=0.98\textwidth, trim={0 8cm 0 0},clip]{figures/final-rules-component.png}
 	\end{figure}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Generate Rules: Approach 2}
-
+	\frametitle{Suitability Tuning: Extracted Rules}
+	
 	\begin{itemize}
-		\item Assign suitability-classes to each entry in the dataset
-		\item Classes represent ranges of relative speed
-		\item Apply Rule Extraction algorithm for the suitability class
+		\item Preprocessing:
+		      \begin{enumerate}
+			      {\footnotesize
+			      \item Assign suitability-classes to each entry in the dataset
+			            }
+		      \end{enumerate}
+		\item Extraction:
+		      \begin{enumerate}
+			      {\footnotesize
+			      \item Group dataset by configuration
+			      \item Apply Rule Extraction algorithm for each configuration
+			            }
+		      \end{enumerate}
 	\end{itemize}
-
+	
+	\vspace{-0.1cm}
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=1\textwidth, trim={0 2.25cm 0 0},clip]{figures/aggregated-data-suitability.png}
@@ -685,7 +719,7 @@
 			      \item Winning configurations are (mostly) equivalent
 		      \end{itemize}
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=1\textwidth]{figures/exploding-liquid-timings.png}
@@ -696,14 +730,14 @@
 	\frametitle{Total Time: Exploding Liquid}
 	\begin{itemize}
 		\item Fuzzy tuning has lowest total time
-		\item Mostly due to the very efficient tuning phases
+		\item Mostly due to the very efficient tuning phases:
 		      \begin{itemize}
 			      \item Few configurations evaluated
 			      \item Evaluated configurations are expected to perform well
 		      \end{itemize}
-		\item Benefits of tuning with tiny overhead
+		\item Benefits of tuning with tiny tuning overhead
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=0.95\textwidth]{figures/exploding-liquid-total.png}
@@ -712,16 +746,21 @@
 
 \begin{frame}
 	\frametitle{Benchmark 2: Spinodal Decomposition MPI}
-
+	
 	\begin{itemize}
 		\item Spinodal Decomposition MPI (Indirectly included in Dataset)
 		      \begin{itemize}
-			      \item Fuzzy tuning promising again
-			      \item Suitability approach struggles, often misses the best configuration
-			      \item However, both approaches have efficient tuning phases
+			      \item Component approach performs well
+			      \item Suitability approach struggles
+			            \begin{itemize}
+				            \item However, very fast tuning phases
+				            \item Can this make up for the suboptimal configurations?
+			            \end{itemize}
 		      \end{itemize}
 	\end{itemize}
-
+	
+	\vspace{-0.1cm}
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=1\textwidth]{figures/spinodal-timings.png}
@@ -730,22 +769,17 @@
 
 \begin{frame}
 	\frametitle{Comparison and Evaluation: Spinodal Decomposition}
-
+	
 	\begin{itemize}
-		\item Component approach performs well
-		\item Suitability approach still quite fast
+		\item Similar trends as previously
+		\item Fast tuning phases compensate for suboptimal configurations!
+		\item Improvements to the suitability approach:
 		      \begin{itemize}
-			      \item Fast tuning phases compensate for suboptimal configurations!
-			      \item Misses caused by to optimisitic suitability threshold
-
-			            \begin{itemize}
-				            \item  Too few configurations are slected for evaluation
-				            \item \textbf{Solution:} Increase the suitability threshold (Top 10\% $\rightarrow$ Top 30\%)
-			            \end{itemize}
+			      \item Increase suitability threshold $\rightarrow$ encourage longer tuning phases
+			      \item Optimal: Evaluating Top 30\% {\scriptsize (instead of 10\%)} of configurations
 		      \end{itemize}
-
 	\end{itemize}
-
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=0.92\textwidth]{figures/spinodal-total.png}
@@ -754,52 +788,64 @@
 
 
 \section{Conclusion}
-\begin{frame}
-	\frametitle{Future Work}
-	\begin{itemize}
-		\item Dynamic Rule Generation
-		      \begin{itemize}
-			      \item Update the expert knowledge on the fly
-			      \item Adapt to new scenarios
-			      \item No need for giant datasets
-		      \end{itemize}
-		\item Improving Tuning Strategies
-		      \begin{itemize}
-			      \item Implement early stopping mechanism
-			      \item Stop evaluating extremely bad configurations early
-		      \end{itemize}
-		\item Simplification of the Fuzzy System to Decision Trees
-		      \begin{itemize}
-			      \item Use Decision Trees instead of Fuzzy Systems
-			      \item Could potentially perform equally well, while being easier to understand
-		      \end{itemize}
-	\end{itemize}
-\end{frame}
-
 
 \begin{frame}
 	\frametitle{Conclusion}
 	\begin{itemize}
 		\item Fuzzy Logic is very promising for tuning AutoPas
-		\item Data-Driven Rule Extraction is a powerful tool
-		\item However:
 		      \begin{itemize}
-			      \item Requires a lot of  prior data (current training data is 1.1GB)
-			      \item Users cannot be expected to collect this data beforehand
-			      \item A more user-friendly approach is needed for broader adoption
+			      \item Massive reduction in tuning overhead
+			      \item Still competitive results
 		      \end{itemize}
-		\item Future work could focus on simplifying/streamlining the rule extraction process
-		\item Alternatively: Investigate Early Stopping, to solve the tuning overhead once and for all
+		\item Data-Driven Rule Extraction is a good starting point
+		      \begin{itemize}
+			      \item \textbf{Benefits:}\\
+			            \quad \cmark \; No need for expert knowledge\\
+			            \quad \cmark \; Semi-automated process\\
+			            \quad \cmark \; Generalizes to new applications\\
+			            \quad \cmark \; Interpretabilty is a huge benefit
+			      \item \textbf{Drawbacks:}\\
+			            \quad \xmark \; Requires a lot of data (1.1GB) \\
+			            \quad \xmark \; Unapealing for users \\
+			            \quad \xmark \; Maybe too complex for simple problems
+		      \end{itemize}
+		      
 	\end{itemize}
 \end{frame}
+
+
+\begin{frame}
+	\frametitle{Future Work}
+	\begin{itemize}
+		\item Dynamic Rule Generation
+		      \begin{itemize}
+			      \item Update expert knowledge on the fly
+			      \item No need for giant datasets
+			      \item Could automatically adapt to new scenarios / applications
+		      \end{itemize}
+		\item General Improvements to the Tuning Process
+		      \begin{itemize}
+			      \item Investigate early stopping mechanism
+			      \item Stop evaluating extremely bad configurations early
+			      \item Maybe solve the tuning overhead once and for all
+		      \end{itemize}
+		\item Simplification of the Model
+		      \begin{itemize}
+			      \item Decision Trees instead of Fuzzy Systems
+			      \item Easier to maintain and understand
+			      \item Maybe comparable results
+		      \end{itemize}
+	\end{itemize}
+\end{frame}
+
 
 \begin{frame}
 	\begin{center}
 		\vspace{1cm}
 		{\large \textbf{Thank you for your attention!}}
-
+		
 		\vspace{2cm}
-
+		
 		\Huge{Questions?}
 	\end{center}
 \end{frame}
