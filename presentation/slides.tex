@@ -31,6 +31,7 @@
 \usepackage{graphicx}
 \usepackage{mathtools}
 \usepackage{pifont}% http://ctan.org/pkg/pifont
+\usepackage{appendixnumberbeamer}
 
 \newcommand{\xmark}{\ding{55}}%
 \newcommand{\cmark}{\ding{51}}%
@@ -153,6 +154,18 @@
 \end{frame}
 
 \begin{frame}
+	\frametitle{Motivation: Tuning based on Simulation State}
+	
+	\vspace{-0.2cm}
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=0.75\textwidth,trim={0 0 0 0cm},clip]{figures/t-SNE_Container_DataLayout_filtered.png}
+	\end{figure}
+	
+\end{frame}
+
+\begin{frame}
 	\frametitle{Fuzzy Logic Systems}
 	
 	\begin{itemize}
@@ -187,169 +200,6 @@
 	
 \end{frame}
 
-% \begin{frame}
-% 	\frametitle{Naming Conventions}
-
-% 	\begin{itemize}
-% 		\item Consider the Fuzzy Rule:
-% 		      \[
-% 			      \underbrace{  \underbrace{\textbf{IF}  \;\underbrace{\text{temp}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{cold}}_{\text{Ling. Term}}  \textbf{AND}  \underbrace{\text{hum}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{dry}}_{\text{Ling. Term}} }_{\text{Antecedent}}
-% 				      \textbf{THEN}  \underbrace{\underbrace{\text{power}}_{\text{Ling. Var.}} \text{is} \underbrace{\textit{high}}_{\text{Ling. Term}}}_{\text{Consequent}}
-% 			      }_{\text{Fuzzy Rule}}
-% 		      \]
-% 		\item Fuzzy Logic Systems consist of:
-% 		      \begin{itemize}
-% 			      \item Linguistic Terms / Fuzzy Sets (e.g. \textit{cold, warm, hot})
-% 			      \item Linguistic Variables (e.g. temperature, humidity, power)
-% 			      \item Fuzzy Logic Operators (e.g. \textbf{AND, OR, NOT})
-% 			      \item Fuzzy Rules (e.g. \textbf{IF} \textit{antecedent} \textbf{THEN} \textit{consequent})
-% 		      \end{itemize}
-% 	\end{itemize}
-% \end{frame}
-
-% \begin{frame}
-% 	\frametitle{Fuzzy Sets vs Classical Sets}
-% 	\begin{itemize}
-% 		\item Fuzzy Sets are generalizations of classical sets
-% 		      \begin{itemize}
-% 			      \item $U$ is the universe of discourse (e.g. $age \subseteq \mathbb{R}$)
-% 			      \item Classical Set $A \subseteq U$:
-% 			            \begin{itemize}
-% 				            \item Defined via indicator function $\chi_A : U \rightarrow \{0,1\}$
-% 			            \end{itemize}
-% 			      \item Fuzzy Sets $\tilde{A} \subseteq U$:
-% 			            \begin{itemize}
-% 				            \item Defined via \textbf{Continuous} membership function $\mu_{\tilde{A}} : U  \rightarrow [0,1]$
-% 			            \end{itemize}
-% 		      \end{itemize}
-% 	\end{itemize}
-% 	\begin{center}
-% 		\includegraphics[width=0.8\textwidth,trim={0 0.1cm 0 1.2cm},clip]{figures/age-fuzzy-sets.png}
-% 	\end{center}
-% \end{frame}
-
-% \begin{frame}
-% 	\frametitle{Linguistic Variables}
-% 	\begin{itemize}
-% 		\item Use terms instead of numeric values
-% 		\item Instead of using crisp values (35 years), we use a combination of linguistic terms to describe the age (Fuzzyification):
-% 		      \[ \text{ 35 years} \implies  \begin{cases}
-% 				      \text{20\% young}       \\
-% 				      \text{60\% middle-aged} \\
-% 				      \text{0\% old}
-% 			      \end{cases}
-% 		      \]
-% 		\item This allows for non-numerical reasoning:
-% 		      \begin{itemize}
-% 			      \item E.g. \textbf{IF} age is \textit{young} \textbf{THEN} fitness is \textit{high}
-% 			      \item Use abstract concepts instead of crisp values
-% 		      \end{itemize}
-% 		\item Each linguistic term represents a certain \textit{collection} of values with varying degrees of membership
-% 	\end{itemize}
-% \end{frame}
-
-% \begin{frame}
-% 	\frametitle{Fuzzy Logic Operators}
-% 	\begin{itemize}
-% 		\item Fuzzy Logic Operators are used to modify/combine fuzzy sets
-% 		\item Extension of boolean logic operators to real numbers
-% 		      \begin{itemize}
-% 			      \item $\wedge : \{false, true\} \times \{false, true\} \rightarrow \{false, true\}$
-% 			      \item $\textbf{AND} : [0,1] \times [0,1] \rightarrow [0,1]$
-% 		      \end{itemize}
-% 		\item Fuzzy operators defined via extension of set
-% 		      \begin{itemize}
-% 			      \item Need to maintain the classical semantics
-% 			      \item Boolean logic is a special case of fuzzy logic
-% 		      \end{itemize}
-
-% 		\item Typically, Fuzzy Logic Operators are defined as:
-% 		      \begin{itemize}
-% 			      \item \textbf{AND:} Corresponds to the intersection of fuzzy sets
-% 			            \[ \mu_{\tilde{A} \cap \tilde{B}}(x) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x)) \]
-% 			      \item \textbf{OR:} Corresponds to the union of fuzzy sets
-% 			            \[ \mu_{\tilde{A} \cup \tilde{B}}(x) = \max(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x)) \]
-% 			      \item \textbf{NOT:} Corresponds to the complement of a fuzzy set
-% 			            \[ \mu_{\neg \tilde{A}}(x) = 1 - \mu_{\tilde{A}}(x) \]
-
-% 		      \end{itemize}
-% 	\end{itemize}
-% \end{frame}
-
-% \begin{frame}
-% 	\vspace{0cm}
-% 	\begin{figure}
-% 		\centering
-% 		\includegraphics[height=0.62\paperwidth]{figures/RecursiveFuzzyTree.png}
-% 	\end{figure}
-% \end{frame}
-
-% \begin{frame}
-% 	\frametitle{Fuzzy Rules}
-% 	\begin{itemize}
-% 		\item Each rule is of the form: $\textbf{IF} \; {antecedent} \; \textbf{THEN} \; {consequent}$
-% 		      \begin{itemize}
-% 			      \item Both \textit{antecedent} and \textit{consequent} are fuzzy sets
-% 			      \item E.g. $\textbf{IF} \; \text{age} \; \text{is} \; \textit{young} \; \textbf{THEN} \; \text{fitness} \; \text{is} \; \textit{high}$
-% 		      \end{itemize}
-% 		\item Rules are evaluated as logical implications
-% 		      \begin{itemize}
-% 			      \item $\textbf{IF} \; \tilde{A} \; \textbf{THEN} \; \tilde{B} \quad \iff \quad \tilde{A} \;  \textbf{IMPLIES} \;  \tilde{B}$
-% 			      \item Special form of (fuzzy) implication: Mamdani Implication
-% 			            \begin{itemize}
-% 				            \item $\tilde{R} = \textbf{IF} \; \tilde{A} \; \textbf{THEN} \; \tilde{B}$
-% 				            \item $\mu_{\tilde{R}}(x) = \min(\mu_{\tilde{A}}(x), \mu_{\tilde{B}}(x))$
-% 			            \end{itemize}
-% 			      \item \textit{Effect} of the rule is limited by the \textit{strength} of the antecedent
-% 		      \end{itemize}
-% 		\item Multiple rules can act on the same linguistic variable
-% 		      \begin{itemize}
-% 			      \item The total \textit{effect} on the output is the aggregation/union of all individual fuzzy sets
-% 			      \item Each rule \textit{effect} is considered proportional to the \textit{strength} of its antecedent
-% 		      \end{itemize}
-% 	\end{itemize}
-% \end{frame}
-
-% \begin{frame}
-% 	\frametitle{Defuzzification}
-% 	\begin{itemize}
-% 		\item Process of converting arbitrary fuzzy sets to a crisp value
-% 		      \begin{itemize}
-% 			      \item Special case: Fuzzy sets corresponding to a fuzzification
-% 			            \[  \begin{cases}
-% 					            \text{20\% young}       \\
-% 					            \text{60\% middle-aged} \\
-% 					            \text{0\% old}
-% 				            \end{cases} \implies \text{35 years}
-% 			            \]
-% 		      \end{itemize}
-% 		\item Multiple methods for defuzzification:
-% 		      \begin{itemize}
-% 			      \item \textbf{Center of Gravity:} Considers all values based on their membership. Finds weighted average of all possible values
-% 			      \item \textbf{Mean of Maxima:} Considers only the most likely values (with highest membership). Finds the mean of all maxima
-% 		      \end{itemize}
-% 		\item Core idea: Represent aspects of the fuzzy set with a crisp value
-% 		      \begin{itemize}
-% 			      \item E.g. Weighted average of all possible values (Centroid)
-% 			      \item E.g. Most likely value (Mean of Maxima)
-% 		      \end{itemize}
-% 	\end{itemize}
-
-% \end{frame}
-
-
-
-\begin{frame}
-	\vspace{-0.8cm}
-	\begin{figure}
-		\centering
-		\caption{\tiny{Source: \href{https://de.mathworks.com/help/fuzzy/fuzzy-inference-process.html}{MathWorks - Fuzzy Inference Process}}}
-		\includegraphics[width=0.8\paperwidth]{figures/FullInferenceProcess.png}
-	\end{figure}
-	\label{fig:fuzzy_inference_full}
-	
-\end{frame}
-
 
 \section{Fuzzy Tuning Implementation}
 \begin{frame}
@@ -366,8 +216,7 @@
 			            \quad \cmark \; Fewer rules than Rule-Based tuning \\
 			            \quad \cmark \; Generalization to new environments
 			      \item Simplicity of the model\\
-			            \quad \cmark \; Easy to understand and interpret\\
-			            \quad \cmark \; Easy to maintain
+			            \quad \cmark \; Interpretable rules \\
 		      \end{itemize}
 	\end{itemize}
 \end{frame}
@@ -379,12 +228,10 @@
 	\begin{itemize}
 		\item Fuzzy Tuning not directly applicable to AutoPas
 		      \begin{itemize}
-			      \item Tuning is an \textit{algorithm selection} problem
 			      \item Fuzzy tuning provides functions $f :\mathbb{R}^n \rightarrow \mathbb{R}$
-			      \item Big Question: How to interpret the numerical output?\\
-			            \quad $\rightarrow$ \textit{Component Tuning} Approach \\
-			            \quad $\rightarrow$ \textit{Suitability Tuning} Approach
+			      \item Big Question: How to interpret the numerical output?
 		      \end{itemize}
+		      \pause
 		\item How to design the Fuzzy System?
 		      \begin{itemize}
 			      \item Creating it manually?\\
@@ -404,10 +251,8 @@
 		\item Predict good values for each tunable parameter separately
 		\item Explicit Fuzzy System for each tunable parameter
 		      \begin{itemize}
-			      \item Output Variable: Continuous representation of the parameter
-			      \item \textit{Discrete} implementations are placed in the output space
-			      \item Map numerical output to the \textit{closest} value\\
-			            \quad {\footnotesize (Inspired by: \cite{Mohammed2022})}
+			      \item Continuous representation of the parameter values
+			      \item Map numerical output to the \textit{closest} value
 		      \end{itemize}
 		\item Combine individual predictions to form final configuration(s)
 	\end{itemize}
@@ -451,14 +296,8 @@
 	\frametitle{Approach 2: Suitability Tuning}
 	\begin{itemize}
 		\item Predict the $suitability$ of \textbf{each} configuration separately
-		\item Explicit Fuzzy System for all possible configurations
-		      \begin{itemize}
-			      \item Output Variable: Numerical suitability of the configuration
-		      \end{itemize}
-		\item Results in $(suitability, configuration)$ pairs
-		      \begin{itemize}
-			      \item \textit{Best} configurations are selected
-		      \end{itemize}
+		\item A Fuzzy System for each possible configurations
+		\item \textit{Best} configurations are selected
 	\end{itemize}
 	
 	\begin{figure}
@@ -476,7 +315,7 @@
 		      
 		\item \textbf{Benefits:}
 		      \begin{itemize}
-			      \item Utilizes the full power of fuzzy logic (CoG defuzzification)
+			      \item Utilizes interpolation (CoG defuzzification)
 			      \item Dependencies and incompatibilities can be modeled
 		      \end{itemize}
 		\item \textbf{Drawbacks:}
@@ -498,41 +337,32 @@
 	\frametitle{Data-Driven Rule Extraction}
 	\begin{itemize}
 
-		\item Use data to automatically generate fuzzy systems
-		      \begin{itemize}
-			      \item Utilize machine learning techniques to extract rules
-			      \item We follow \cite{CROCKETT20062809}
-			            \begin{enumerate}
-				            \item Train a Decision Tree on the data
-				            \item Decision Tree $\rightarrow$ Fuzzy Decision Tree
-				            \item Fuzzy Decision Tree $\rightarrow$ Fuzzy Rules
-			            \end{enumerate}
-		      \end{itemize}
+		\item Machine learning to generate rules {\scriptsize  \cite{CROCKETT20062809}}
+		      \begin{enumerate}
+			      \item Train a Decision Tree on the data
+			      \item Decision Tree $\rightarrow$ Fuzzy Decision Tree
+			      \item Fuzzy Decision Tree $\rightarrow$ Fuzzy Rules
+		      \end{enumerate}
+		      
+		      \pause
 		\item Practical Considerations:
 		      \begin{itemize}
 			      \item Ensemble Learning for Decision Trees
-			            \begin{itemize}
-				            \item Train with selected features
-				            \item Different splitting criteria
-				            \item Different tree depths / pruning
-			            \end{itemize}
 			      \item \textit{Overlapping} rules $\rightarrow$ \textit{Interpolation} effect
 		      \end{itemize}
 	\end{itemize}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Decision Trees}
+	\frametitle{Data $\rightarrow$ Decision Tree}
 	
 	\begin{itemize}
 		\item Seperate classes recursively with axis-aligned splits
 		\item Corresponds to nested \textit{if-then-else} rules
-		      \begin{itemize}
-			      \item Easy to understand and interpret
-		      \end{itemize}
-		\item Trained automatically from data
 		\item Tree contains the entire expert knowledge
 	\end{itemize}
+	
+	\vspace{0.2cm}
 	
 	\begin{figure}
 		\centering
@@ -550,11 +380,8 @@
 			      \item Fuzzy sets should maintain the semantics of the split
 			      \item Provides robustness against noise
 		      \end{itemize}
-		\item Leaf nodes are turned into fuzzy sets
-		      \begin{itemize}
-			      \item Each class corresponds to a fuzzy set
-		      \end{itemize}
 	\end{itemize}
+	
 	\begin{figure}
 		\centering
 		\includegraphics[width=8cm]{figures/leaf-conversion.png}
@@ -576,13 +403,7 @@
 	\frametitle{Fuzzy Decision Trees $\rightarrow$ Fuzzy Rules}
 	
 	\begin{itemize}
-		\item Depth-First traversal of the Fuzzy Decision Tree
-		      \begin{itemize}
-			      \item Fuzzy splits are collected in the antecedent
-			      \item Leaf node corresponds to the consequent
-		      \end{itemize}
-		\item One rule per path from root to leaf
-		\item Corresponds to \textit{unnesting} the decision tree
+		\item \textit{Unnest} the fuzzy decision tree
 	\end{itemize}
 	
 	\begin{figure}
@@ -620,7 +441,7 @@
 	\frametitle{Fuzzy Rule Extraction for \texttt{md\_flexible}}
 	
 	\begin{itemize}
-		\item Collect dataset of \texttt{md\_flexible} simulations (FullSearch)
+		\item Collect dataset of \texttt{md\_flexible} simulations
 		\item For each tuning phase $i$, store:
 		      \begin{itemize}
 			      \item LiveInfoData: {\footnotesize \texttt{maxDensity, homogeneity, threadCount, \dots} }
@@ -628,7 +449,7 @@
 		      \end{itemize}
 		\item Introduce \textit{relative speed} metric
 		      \begin{itemize}
-			      \item Absolute time is not meaningful across different \textit{environments}
+			      \item Absolute time is not meaningful
 			            \[ \text{relative speed}_{config}^{(i)} = \frac{\text{t}_{best}^{(i)}}{\text{t}_{\text{config}}^{(i)}} \]
 		      \end{itemize}
 	\end{itemize}
@@ -644,7 +465,6 @@
 			      \item Simulation state
 			      \item Configuration
 		      \end{itemize}
-		\item Forms basis for \textit{Suitability} and \textit{Component} tuning approaches
 	\end{itemize}
 	
 	\begin{figure}
@@ -655,7 +475,7 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Component Tuning: Extracted Rules}
+	\frametitle{Approach 1: Component Tuning - Rule Extraction}
 	
 	\begin{itemize}
 		\item Preprocessing:
@@ -666,7 +486,7 @@
 			      \item Aggregate present (\textit{good}) values for each parameter
 			            }
 		      \end{enumerate}
-		\item Apply Rule Extraction algorithm for each parameter
+		\item Extraction: Rule Extraction for each parameter
 	\end{itemize}
 	
 	\begin{figure}
@@ -679,7 +499,7 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Suitability Tuning: Extracted Rules}
+	\frametitle{Approach 2: Suitability Tuning - Rule Extraction}
 	
 	\begin{itemize}
 		\item Preprocessing:
@@ -692,7 +512,7 @@
 		      \begin{enumerate}
 			      {\footnotesize
 			      \item Group dataset by configuration
-			      \item Apply Rule Extraction algorithm for each configuration
+			      \item Rule Extraction for each configuration
 			            }
 		      \end{enumerate}
 	\end{itemize}
@@ -711,12 +531,13 @@
 \begin{frame}
 	\frametitle{Benchmark 1: Exploding Liquid}
 	\begin{itemize}
-		\item Exploding Liquid Benchmark (Included in Dataset)
+		\item Fuzzy Tuning Aproaches:
 		      \begin{itemize}
-			      \item Both fuzzy approaches look promising
+			      {\footnotesize
 			      \item Very short tuning phases (not much noise)
 			      \item Selected configurations perform well (tiny spikes)
 			      \item Winning configurations are (mostly) equivalent
+			            }
 		      \end{itemize}
 	\end{itemize}
 	
@@ -729,13 +550,15 @@
 \begin{frame}
 	\frametitle{Total Time: Exploding Liquid}
 	\begin{itemize}
-		\item Fuzzy tuning has lowest total time
-		\item Mostly due to the very efficient tuning phases:
+		\item Fuzzy Tuning is good because:
 		      \begin{itemize}
-			      \item Few configurations evaluated
-			      \item Evaluated configurations are expected to perform well
+			      \item Few evaluated configurations
+			      \item Good evaluated configurations
 		      \end{itemize}
-		\item Benefits of tuning with tiny tuning overhead
+		\item Massive reduction in time spent Tuning
+		      \begin{itemize}
+			      \item[$\rightarrow$] More frequent tuning phases
+		      \end{itemize}
 	\end{itemize}
 	
 	\begin{figure}
@@ -745,17 +568,14 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Benchmark 2: Spinodal Decomposition MPI}
+	\frametitle{Benchmark 2: Spinodal Decomposition (MPI)}
 	
 	\begin{itemize}
-		\item Spinodal Decomposition MPI (Indirectly included in Dataset)
+		\item Component approach performs well
+		\item Suitability approach misses the optimal configuration
 		      \begin{itemize}
-			      \item Component approach performs well
-			      \item Suitability approach struggles
-			            \begin{itemize}
-				            \item However, very fast tuning phases
-				            \item Can this make up for the suboptimal configurations?
-			            \end{itemize}
+			      \item However: no tuning overhead
+			      \item Can this make up for the suboptimal configurations?
 		      \end{itemize}
 	\end{itemize}
 	
@@ -771,12 +591,15 @@
 	\frametitle{Comparison and Evaluation: Spinodal Decomposition}
 	
 	\begin{itemize}
-		\item Similar trends as previously
-		\item Fast tuning phases compensate for suboptimal configurations!
-		\item Improvements to the suitability approach:
+		\item Component tuning wins again
+		\item Suitability tuning:
 		      \begin{itemize}
-			      \item Increase suitability threshold $\rightarrow$ encourage longer tuning phases
-			      \item Optimal: Evaluating Top 30\% {\scriptsize (instead of 10\%)} of configurations
+			      \item Fast tuning phases compensate for suboptimal configurations!
+			      \item Improvement: Encourage longer tuning phases
+			            \begin{itemize}
+				            \item Increase suitability threshold {\scriptsize (Currently: Top 10\% )}
+				            \item Optimal: Top 30\% best configurations
+			            \end{itemize}
 		      \end{itemize}
 	\end{itemize}
 	
@@ -792,22 +615,22 @@
 \begin{frame}
 	\frametitle{Conclusion}
 	\begin{itemize}
-		\item Fuzzy Logic is very promising for tuning AutoPas
+		\item Fuzzy Tuning is very promising for AutoPas
 		      \begin{itemize}
 			      \item Massive reduction in tuning overhead
-			      \item Still competitive results
+			      \item Stil competitive tuning results
+			      \item Fastest runtimes in both benchmarks $^\ast$
 		      \end{itemize}
+		      \pause
 		\item Data-Driven Rule Extraction is a good starting point
 		      \begin{itemize}
 			      \item \textbf{Benefits:}\\
 			            \quad \cmark \; No need for expert knowledge\\
 			            \quad \cmark \; Semi-automated process\\
 			            \quad \cmark \; Generalizes to new applications\\
-			            \quad \cmark \; Interpretabilty is a huge benefit
 			      \item \textbf{Drawbacks:}\\
 			            \quad \xmark \; Requires a lot of data (1.1GB) \\
 			            \quad \xmark \; Unapealing for users \\
-			            \quad \xmark \; Maybe too complex for simple problems
 		      \end{itemize}
 		      
 	\end{itemize}
@@ -820,20 +643,18 @@
 		\item Dynamic Rule Generation
 		      \begin{itemize}
 			      \item Update expert knowledge on the fly
-			      \item No need for giant datasets
-			      \item Could automatically adapt to new scenarios / applications
+			      \item Automatically adapt to new scenarios
 		      \end{itemize}
-		\item General Improvements to the Tuning Process
+		\item Improvements to the Tuning Process
 		      \begin{itemize}
-			      \item Investigate early stopping mechanism
-			      \item Stop evaluating extremely bad configurations early
-			      \item Maybe solve the tuning overhead once and for all
+			      \item Investigate \textit{early stopping} mechanism
+			      \item Dismiss slow configurations early
+			      \item Solve tuning overhead once and for all?
 		      \end{itemize}
 		\item Simplification of the Model
 		      \begin{itemize}
 			      \item Decision Trees instead of Fuzzy Systems
-			      \item Easier to maintain and understand
-			      \item Maybe comparable results
+			      \item Maybe comparable results?
 		      \end{itemize}
 	\end{itemize}
 \end{frame}
@@ -850,12 +671,67 @@
 	\end{center}
 \end{frame}
 
-\thispagestyle{empty}
 \begin{frame}[allowframebreaks, noframenumbering]
 	\frametitle{References}
 	\footnotesize
 	\bibliographystyle{apalike}
 	\bibliography{literature}
 \end{frame}
+
+\appendix
+
+\begin{frame}
+	\frametitle{Backup: What happens on new scenarios?}
+	
+	\begin{itemize}
+		\item Exploding Liquid: bigger $\varepsilon$ $\rightarrow$ more spacing
+		\item Component Tuning is winning again
+	\end{itemize}
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/exploding-liquid-timings-eps.png}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Backup: Optimal Suitability Threshold}
+	
+	\begin{itemize}
+		\item Goal: find optimal hyperparameters for suitability-appraoch
+	\end{itemize}
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/suitability-search.png}
+	\end{figure}
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Backup: Speedup Distribution}
+	
+	\begin{itemize}
+		\item How good is the average configuration?
+	\end{itemize}
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/speedup.png}
+	\end{figure}
+\end{frame}
+
+\begin{frame}
+	\vspace{-0.8cm}
+	\begin{figure}
+		\centering
+		\caption{\tiny{Source: \href{https://de.mathworks.com/help/fuzzy/fuzzy-inference-process.html}{MathWorks - Fuzzy Inference Process}}}
+		\includegraphics[width=0.8\paperwidth]{figures/FullInferenceProcess.png}
+	\end{figure}
+	\label{fig:fuzzy_inference_full}
+	
+\end{frame}
+
 
 \end{document}
