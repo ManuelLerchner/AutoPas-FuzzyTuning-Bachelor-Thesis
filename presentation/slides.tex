@@ -465,7 +465,7 @@
 			      \item Few evaluated configurations
 			      \item Good evaluated configurations
 		      \end{itemize}
-		\item Massive reduction in time spent Tuning
+		\item Massive reduction in time spent tuning
 		      \begin{itemize}
 			      \item[$\rightarrow$] More frequent tuning phases
 		      \end{itemize}
@@ -507,8 +507,7 @@
 			      \item Fast tuning phases compensate for suboptimal configurations!
 			      \item Improvement: Encourage longer tuning phases
 			            \begin{itemize}
-				            \item Increase suitability threshold {\scriptsize (Currently: Top 10\% )}
-				            \item Optimal: Top 30\% best configurations
+				            \item Increase suitability threshold {\scriptsize (Top 10\% $\rightarrow$ Top 30\%)}
 			            \end{itemize}
 		      \end{itemize}
 	\end{itemize}
@@ -528,26 +527,24 @@
 		\item Fuzzy Tuning is very promising for AutoPas
 		      \begin{itemize}
 			      \item Massive reduction in tuning overhead
-			      \item Stil competitive tuning results
+			      \item Reduction of total simulation time (up to factor 1.96x)
+			      \item Among the best tuning strategies (but very complex)
 		      \end{itemize}
 		      \pause
-		\item Data-driven rule extraction is a good starting point
+		\item Ongoing Challenge:
 		      \begin{itemize}
-			      \item \textbf{Benefits:}\\
-			            \quad \cmark \; No need for expert knowledge\\
-			            \quad \cmark \; Semi-automated process\\
-			            \quad \cmark \; Generalizes to new applications\\
-			      \item \textbf{Drawbacks:}\\
+			      \item Rule generation \\
 			            \quad \xmark \; Requires a lot of data (1.1GB) \\
 			            \quad \xmark \; Unappealing for users \\
+			            \quad \xmark \; Limited generalization \\	
+			            \quad \xmark \; No universal solution (showed some generalization)
 		      \end{itemize}
-		      
 	\end{itemize}
 \end{frame}
 
 
 \begin{frame}
-	\frametitle{Future Work}
+	\frametitle{Improvements and Future Work}
 	\begin{itemize}
 		\item Dynamic Rule Generation
 		      \begin{itemize}
