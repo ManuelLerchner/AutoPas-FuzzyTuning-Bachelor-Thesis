@@ -32,6 +32,7 @@
 \usepackage{mathtools}
 \usepackage{pifont}% http://ctan.org/pkg/pifont
 \usepackage{appendixnumberbeamer}
+\usepackage{subcaption}
 
 \newcommand{\xmark}{\ding{55}}%
 \newcommand{\cmark}{\ding{51}}%
@@ -329,8 +330,8 @@
 	\begin{itemize}
 		\item Conversion: Each (crisp) split is turned into two fuzzy sets
 		      \begin{itemize}
-			      \item Fuzzy sets should maintain the semantics of the split
-			      \item Provides robustness against noise
+				\item Provides robustness against noise
+				\item Both branches are considered
 		      \end{itemize}
 	\end{itemize}
 	
@@ -361,6 +362,26 @@
 	\begin{figure}
 		\centering
 		\includegraphics[width=0.9\textwidth]{figures/extracted-rules.png}
+	\end{figure}
+	
+\end{frame}
+
+\begin{frame}
+
+	\frametitle{Decision Surfaces}
+	
+	\begin{figure}
+		\begin{subfigure}[t]{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\textwidth, trim={0.5cm 0.5cm 1cm 1cm},clip]{figures/fuzzy_system_cog.png}
+			\caption{Center of Gravity - Defuzzification}
+		\end{subfigure}
+		\begin{subfigure}[t]{0.49\textwidth}
+			\centering
+			\includegraphics[width=1\textwidth, trim={0.5cm 0.5cm 1cm 1cm},clip]{figures/fuzzy_system_mom.png}
+			\caption{Mean of Maxima - Defuzzification}
+		\end{subfigure}
+		\caption{Decision Surfaces of Fuzzy System}
 	\end{figure}
 	
 \end{frame}
@@ -536,7 +557,6 @@
 			      \item Rule generation \\
 			            \quad \xmark \; Requires a lot of data (1.1GB) \\
 			            \quad \xmark \; Unappealing for users \\
-			            \quad \xmark \; Limited generalization \\	
 			            \quad \xmark \; No universal solution (showed some generalization)
 		      \end{itemize}
 	\end{itemize}
@@ -544,7 +564,7 @@
 
 
 \begin{frame}
-	\frametitle{Improvements and Future Work}
+	\frametitle{Improvement Ideas}
 	\begin{itemize}
 		\item Dynamic Rule Generation
 		      \begin{itemize}
@@ -613,6 +633,24 @@
 	\end{figure}
 \end{frame}
 
+\begin{frame}
+	\frametitle{Backup: Linguistic Variables for Component Tuning}
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/component-linguistic-variable.png}
+	\end{figure}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Backup: Linguistic Variables for Suitability Tuning}
+	\begin{figure}
+		\centering
+		\includegraphics[width=1\textwidth]{figures/suitability-linguistic-variable.png}
+	\end{figure}
+	
+\end{frame}
 
 
 \begin{frame}
