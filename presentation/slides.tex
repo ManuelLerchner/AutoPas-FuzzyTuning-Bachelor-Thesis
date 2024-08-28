@@ -373,38 +373,19 @@
 \end{frame}
 
 \begin{frame}
-	\frametitle{Component Tuning - Rule Extraction}
-	
-	\begin{enumerate}
-		\item Combine \textit{good} values for each simulation state
-		\item Extract rules for each parameter
-	\end{enumerate}
-	
+	\frametitle{Fuzzy Rule Extraction}
+	\vspace{-0.3cm}
 	\begin{figure}
 		\centering
-		\includegraphics[width=0.93\textwidth, trim={0 3.8cm 0 0},clip]{figures/aggregated-data-component.png}
-		\vspace{1.5cm}
-		\includegraphics[width=0.98\textwidth, trim={0 8cm 0 0},clip]{figures/final-rules-component.png}
+		\includegraphics[width=1\textwidth, trim={1cm 8cm 0.5cm 0},clip]{figures/final-rules-component.png}
+		\\		{\footnotesize Example: Component Tuning Rules}
+	\end{figure}
+	\begin{figure}
+		\includegraphics[width=1\textwidth, trim={0 9cm 0 0.1cm},clip]{figures/final-rules-suitability.png}
+		\\		{\footnotesize Example: Suitability Tuning Rules}
 	\end{figure}
 \end{frame}
 
-\begin{frame}
-	\frametitle{Suitability Tuning - Rule Extraction}
-	
-	\begin{enumerate}
-		\item Assign suitability classes to each entry in the dataset
-		\item Group dataset by configuration
-		\item Rule Extraction for each configuration
-	\end{enumerate}
-	
-	
-	\begin{figure}
-		\centering
-		\includegraphics[width=1\textwidth, trim={0 2.25cm 0 0},clip]{figures/aggregated-data-suitability.png}
-		\vspace{1.5cm}
-		\includegraphics[width=1\textwidth, trim={0 9cm 0 0.1cm},clip]{figures/final-rules-suitability.png}
-	\end{figure}
-\end{frame}
 
 \section{Benchmarks}
 \begin{frame}
