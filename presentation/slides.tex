@@ -302,52 +302,20 @@
 			      \item Decision Tree $\rightarrow$ Fuzzy Decision Tree
 			      \item Fuzzy Decision Tree $\rightarrow$ Fuzzy Rules
 		      \end{enumerate}
-		\item Repeat to create overlapping rules (ensemble)
-	\end{itemize}
-\end{frame}
-
-\begin{frame}
-	\frametitle{Data $\rightarrow$ Decision Tree}
-	
-	\begin{itemize}
-		\item Separate classes recursively with axis-aligned splits
-		\item Corresponds to nested \textit{if-then-else} rules
-		\item Tree contains the entire expert knowledge
-	\end{itemize}
-	
-	\vspace{0.2cm}
-	
-	\begin{figure}
-		\centering
-		\includegraphics[width=1\textwidth]{figures/decision-tree.png}
-	\end{figure}
-	
-\end{frame}
-
-\begin{frame}
-	\frametitle{Decision Trees $\rightarrow$ Fuzzy Decision Trees}
-	
-	\begin{itemize}
-		\item Conversion: Each (crisp) split is turned into two fuzzy sets
-		      \begin{itemize}
-			      \item Provides robustness against noise
-			      \item Both branches are considered
-		      \end{itemize}
 	\end{itemize}
 	
 	\begin{figure}
-		\centering
-		\includegraphics[width=8cm]{figures/leaf-conversion.png}
+
+		\begin{subfigure}[t]{0.47\textwidth}
+			\centering
+			\includegraphics[width=0.9\textwidth, trim={1cm 2.8cm 26cm 0.5cm},clip]{figures/decision-tree.png}
+		\end{subfigure}
+		\begin{subfigure}[t]{0.52\textwidth}
+			\centering
+			\includegraphics[width=1\textwidth, trim={0 0.2cm 0cm 0cm},clip]{figures/fuzzy-decision-tree.png}
+		\end{subfigure}
 	\end{figure}
 	
-\end{frame}
-
-\begin{frame}
-
-	\begin{figure}
-		\centering
-		\includegraphics[width=0.9\textwidth]{figures/fuzzy-decision-tree.png}
-	\end{figure}
 	
 \end{frame}
 
